@@ -1,0 +1,18 @@
+== Foodista sample documents
+
+Folder: named_entity_json_cas
+
+These sample documents contain blog posts by Michael and Eli from Foodista.com. Each document
+states its source and license at its end. They are shortened versions of the original posts and
+contain added annotations.
+
+  Northern British Columbia: Small Town Charm, Big Time Adventure
+  https://www.foodista.com/blog/2019/08/13/northern-british-columbia-small-town-charm-big-time-adventure
+
+  Lewiston-Clarkston's New Wine District
+  https://www.foodista.com/blog/2019/10/22/lewiston-clarkstons-new-wine-district
+
+Original source: Foodista.com - The Cooking Encyclopedia Everyone Can Edit
+License:         Creative Commons Attribution, as stated in the documents
+                 (http://creativecommons.org/licenses/by/3.0/) and in the Foodista terms of use
+                 (https://www.foodista.com/terms, version 4.0, effective January 23, 2026)

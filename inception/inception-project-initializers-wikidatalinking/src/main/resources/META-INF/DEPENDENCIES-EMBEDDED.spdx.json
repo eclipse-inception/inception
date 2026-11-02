@@ -1,0 +1,46 @@
+{
+  "$schema": "https://raw.githubusercontent.com/spdx/spdx-spec/v2.2.2/schemas/spdx-schema.json",
+  "packages": [
+    {
+      "name": "Foodista: Northern British Columbia: Small Town Charm, Big Time Adventure",
+      "versionInfo": "unversioned",
+      "originator": "Michael and Eli, Foodista.com",
+      "homepage": "https://www.foodista.com",
+      "downloadLocation": "https://www.foodista.com/blog/2019/08/13/northern-british-columbia-small-town-charm-big-time-adventure",
+      "licenseConcluded": "CC-BY-3.0",
+      "licenseComments": "Each document states CC BY 3.0 at its end. The Foodista terms of use (https://www.foodista.com/terms, effective January 23, 2026) offer the content under CC BY 4.0.",
+      "description": "Abbreviated version of the blog post. The JSON file additionally contains example annotations.",
+      "hasFiles": [
+        "de/tudarmstadt/ukp/inception/project/initializers/neannotation/data/foodista_blog_2019_08_13_northern-british-columbia_abbreviated.json",
+        "de/tudarmstadt/ukp/inception/project/initializers/neannotation/data/foodista_blog_2019_08_13_northern-british-columbia_abbreviated.txt"
+      ]
+    },
+    {
+      "name": "Foodista: Lewiston-Clarkston's New Wine District",
+      "versionInfo": "unversioned",
+      "originator": "Michael and Eli, Foodista.com",
+      "homepage": "https://www.foodista.com",
+      "downloadLocation": "https://www.foodista.com/blog/2019/10/22/lewiston-clarkstons-new-wine-district",
+      "licenseConcluded": "CC-BY-3.0",
+      "licenseComments": "Each document states CC BY 3.0 at its end. The Foodista terms of use (https://www.foodista.com/terms, effective January 23, 2026) offer the content under CC BY 4.0.",
+      "description": "Abbreviated version of the blog post. The JSON file additionally contains example annotations.",
+      "hasFiles": [
+        "de/tudarmstadt/ukp/inception/project/initializers/neannotation/data/foodista_blog_2019_10_22_lewiston-clarkstons-new-wine-district_abbreviated.json",
+        "de/tudarmstadt/ukp/inception/project/initializers/neannotation/data/foodista_blog_2019_10_22_lewiston-clarkstons-new-wine-district_abbreviated.txt"
+      ]
+    },
+    {
+      "name": "Foodista: The Schoolhouse District of Downtown Woodinville, Washington",
+      "versionInfo": "unversioned",
+      "originator": "Michael and Eli, Foodista.com",
+      "homepage": "https://www.foodista.com",
+      "downloadLocation": "https://www.foodista.com/blog/2024/09/18/the-schoolhouse-district-of-downtown-woodinville-washington",
+      "licenseConcluded": "CC-BY-3.0",
+      "licenseComments": "Each document states CC BY 3.0 at its end. The Foodista terms of use (https://www.foodista.com/terms, effective January 23, 2026) offer the content under CC BY 4.0.",
+      "description": "Blog post used as a sample document.",
+      "hasFiles": [
+        "de/tudarmstadt/ukp/inception/project/initializers/neannotation/data/foodista_blog_2024_09_18_the-schoolhouse-district-of-downtown-woodinville-washington.txt"
+      ]
+    }
+  ]
+}
