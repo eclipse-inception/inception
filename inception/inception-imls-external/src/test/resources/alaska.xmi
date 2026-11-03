@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?><xmi:XMI xmlns:pos="http:///de/tudarmstadt/ukp/dkpro/core/api/lexmorph/type/pos.ecore" xmlns:tcas="http:///uima/tcas.ecore" xmlns:xmi="http://www.omg.org/XMI" xmlns:cas="http:///uima/cas.ecore" xmlns:tweet="http:///de/tudarmstadt/ukp/dkpro/core/api/lexmorph/type/pos/tweet.ecore" xmlns:morph="http:///de/tudarmstadt/ukp/dkpro/core/api/lexmorph/type/morph.ecore" xmlns:dependency="http:///de/tudarmstadt/ukp/dkpro/core/api/syntax/type/dependency.ecore" xmlns:type5="http:///de/tudarmstadt/ukp/dkpro/core/api/semantics/type.ecore" xmlns:type8="http:///de/tudarmstadt/ukp/dkpro/core/api/transform/type.ecore" xmlns:type7="http:///de/tudarmstadt/ukp/dkpro/core/api/syntax/type.ecore" xmlns:type2="http:///de/tudarmstadt/ukp/dkpro/core/api/metadata/type.ecore" xmlns:type9="http:///org/dkpro/core/api/xml/type.ecore" xmlns:type3="http:///de/tudarmstadt/ukp/dkpro/core/api/ner/type.ecore" xmlns:type4="http:///de/tudarmstadt/ukp/dkpro/core/api/segmentation/type.ecore" xmlns:type="http:///de/tudarmstadt/ukp/dkpro/core/api/coref/type.ecore" xmlns:type6="http:///de/tudarmstadt/ukp/dkpro/core/api/structure/type.ecore" xmlns:constituent="http:///de/tudarmstadt/ukp/dkpro/core/api/syntax/type/constituent.ecore" xmlns:chunk="http:///de/tudarmstadt/ukp/dkpro/core/api/syntax/type/chunk.ecore" xmi:version="2.0">
+  <cas:NULL xmi:id="0"/>
+  <type2:DocumentMetaData xmi:id="8" sofa="1" begin="0" end="97" language="x-unspecified" documentTitle="alaksa.txt" documentId="alaksa.txt" documentUri="file:/srv/inception-experimental/repository/project/267/document/3333/source/alaksa.txt" collectionId="file:/srv/inception-experimental/repository/project/267/document/3333/source/" documentBaseUri="file:/srv/inception-experimental/repository/project/267/document/3333/source/" isLastSegment="false"/>
+  <type4:Sentence xmi:id="19" sofa="1" begin="0" end="38"/>
+  <type4:Sentence xmi:id="24" sofa="1" begin="39" end="97"/>
+  <type4:Token xmi:id="29" sofa="1" begin="0" end="4" order="0"/>
+  <type4:Token xmi:id="42" sofa="1" begin="5" end="10" order="0"/>
+  <type4:Token xmi:id="55" sofa="1" begin="11" end="14" order="0"/>
+  <type4:Token xmi:id="68" sofa="1" begin="15" end="19" order="0"/>
+  <type4:Token xmi:id="81" sofa="1" begin="20" end="27" order="0"/>
+  <type4:Token xmi:id="94" sofa="1" begin="28" end="30" order="0"/>
+  <type4:Token xmi:id="107" sofa="1" begin="31" end="37" order="0"/>
+  <type4:Token xmi:id="120" sofa="1" begin="37" end="38" order="0"/>
+  <type4:Token xmi:id="133" sofa="1" begin="39" end="41" order="0"/>
+  <type4:Token xmi:id="146" sofa="1" begin="42" end="49" order="0"/>
+  <type4:Token xmi:id="159" sofa="1" begin="50" end="52" order="0"/>
+  <type4:Token xmi:id="172" sofa="1" begin="53" end="56" order="0"/>
+  <type4:Token xmi:id="185" sofa="1" begin="57" end="67" order="0"/>
+  <type4:Token xmi:id="198" sofa="1" begin="68" end="70" order="0"/>
+  <type4:Token xmi:id="211" sofa="1" begin="71" end="81" order="0"/>
+  <type4:Token xmi:id="224" sofa="1" begin="82" end="84" order="0"/>
+  <type4:Token xmi:id="237" sofa="1" begin="85" end="88" order="0"/>
+  <type4:Token xmi:id="250" sofa="1" begin="89" end="96" order="0"/>
+  <type4:Token xmi:id="263" sofa="1" begin="96" end="97" order="0"/>
+  <cas:Sofa xmi:id="1" sofaNum="1" sofaID="_InitialView" mimeType="text" sofaString="John works for ACME Company in Alaska. He studied at the University of California in Los Angeles."/>
+  <cas:View sofa="1" members="8 19 24 29 42 55 68 81 94 107 120 133 146 159 172 185 198 211 224 237 250 263 "/>
+</xmi:XMI>

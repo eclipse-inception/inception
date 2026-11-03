@@ -1,0 +1,69 @@
+<!--
+  Licensed to the Technische Universität Darmstadt under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The Technische Universität Darmstadt 
+  licenses this file to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.
+   
+  http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<html xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:wicket="http://wicket.apache.org/dtds.data/wicket-xhtml1.4-strict.dtd">
+<wicket:extend>
+  <form wicket:id="form">
+
+    <div class="form-group form-row" wicket:enclosure="remoteUrl">
+      <label class="col-sm-3 col-form-label" wicket:for="remoteUrl">
+        <wicket:message key="remoteUrl"/>
+      </label>
+
+      <div class="input-group col-sm-9">
+        <input wicket:id="remoteUrl" type="text" class="form-control col col-sm-8"/>
+
+        <div class="input-group-append col col-sm-4">
+          <button wicket:id="checkServerConnection" class="btn btn-primary">
+            <wicket:message key="checkServerConnection"/>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group form-row" wicket:enclosure="classifierInfo">
+      <label class="col-form-label col-sm-3" wicket:for="classifierInfo">
+        <wicket:message key="classifierInfo"/>
+      </label>
+
+      <div class="input-group col-sm-9">
+        <select wicket:id="classifierInfo" data-size="5" class="form-control col col-sm-8"></select>
+
+        <div class="input-group-append col col-sm-4">
+          <button wicket:id="checkClassifier" class="btn btn-primary">
+            <wicket:message key="checkClassifier"/>
+          </button>
+        </div>
+      </div>
+
+
+    </div>
+    
+    <div class="form-group form-row" wicket:enclosure="trainable">
+      <div class="offset-sm-3 col-sm-9">
+        <div class="form-check">
+          <input wicket:id="trainable" class="form-check-input" type="checkbox"/>
+          <label wicket:for="trainable" class="form-check-label">
+            <wicket:label key="trainable"/>
+          </label>
+        </div>
+      </div>
+    </div>
+  </form>
+</wicket:extend>
+</html>

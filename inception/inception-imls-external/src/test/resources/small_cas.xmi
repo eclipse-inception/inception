@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><xmi:XMI xmlns:pos="http:///de/tudarmstadt/ukp/dkpro/core/api/lexmorph/type/pos.ecore" xmlns:tcas="http:///uima/tcas.ecore" xmlns:xmi="http://www.omg.org/XMI" xmlns:cas="http:///uima/cas.ecore" xmlns:tweet="http:///de/tudarmstadt/ukp/dkpro/core/api/lexmorph/type/pos/tweet.ecore" xmlns:morph="http:///de/tudarmstadt/ukp/dkpro/core/api/lexmorph/type/morph.ecore" xmlns:dependency="http:///de/tudarmstadt/ukp/dkpro/core/api/syntax/type/dependency.ecore" xmlns:type5="http:///de/tudarmstadt/ukp/dkpro/core/api/semantics/type.ecore" xmlns:type8="http:///de/tudarmstadt/ukp/dkpro/core/api/transform/type.ecore" xmlns:type7="http:///de/tudarmstadt/ukp/dkpro/core/api/syntax/type.ecore" xmlns:type2="http:///de/tudarmstadt/ukp/dkpro/core/api/metadata/type.ecore" xmlns:type9="http:///org/dkpro/core/api/xml/type.ecore" xmlns:type3="http:///de/tudarmstadt/ukp/dkpro/core/api/ner/type.ecore" xmlns:type4="http:///de/tudarmstadt/ukp/dkpro/core/api/segmentation/type.ecore" xmlns:type="http:///de/tudarmstadt/ukp/dkpro/core/api/coref/type.ecore" xmlns:type6="http:///de/tudarmstadt/ukp/dkpro/core/api/structure/type.ecore" xmlns:constituent="http:///de/tudarmstadt/ukp/dkpro/core/api/syntax/type/constituent.ecore" xmlns:chunk="http:///de/tudarmstadt/ukp/dkpro/core/api/syntax/type/chunk.ecore" xmi:version="2.0">
+  <cas:NULL xmi:id="0"/>
+  <type2:DocumentMetaData xmi:id="8" sofa="1" begin="0" end="47" language="x-unspecified" documentTitle="doc.txt" documentId="doc.txt" documentUri="file:/srv/inception-experimental/repository/project/267/document/3331/source/doc.txt" collectionId="file:/srv/inception-experimental/repository/project/267/document/3331/source/" documentBaseUri="file:/srv/inception-experimental/repository/project/267/document/3331/source/" isLastSegment="false"/>
+  <type4:Sentence xmi:id="19" sofa="1" begin="0" end="26"/>
+  <type4:Sentence xmi:id="24" sofa="1" begin="27" end="47"/>
+  <type4:Token xmi:id="29" sofa="1" begin="0" end="3" order="0"/>
+  <type4:Token xmi:id="42" sofa="1" begin="4" end="10" order="0"/>
+  <type4:Token xmi:id="55" sofa="1" begin="11" end="14" order="0"/>
+  <type4:Token xmi:id="68" sofa="1" begin="15" end="18" order="0"/>
+  <type4:Token xmi:id="81" sofa="1" begin="19" end="24" order="0"/>
+  <type4:Token xmi:id="94" sofa="1" begin="25" end="26" order="0"/>
+  <type4:Token xmi:id="107" sofa="1" begin="27" end="30" order="0"/>
+  <type4:Token xmi:id="120" sofa="1" begin="31" end="36" order="0"/>
+  <type4:Token xmi:id="133" sofa="1" begin="37" end="40" order="0"/>
+  <type4:Token xmi:id="146" sofa="1" begin="41" end="45" order="0"/>
+  <type4:Token xmi:id="159" sofa="1" begin="46" end="47" order="0"/>
+  <type3:NamedEntity xmi:id="172" sofa="1" begin="0" end="3" value="PER"/>
+  <type3:NamedEntity xmi:id="178" sofa="1" begin="19" end="24" value="OTH"/>
+  <type3:NamedEntity xmi:id="184" sofa="1" begin="31" end="36" value="OTH"/>
+   <cas:Sofa xmi:id="1" sofaNum="1" sofaID="_InitialView" mimeType="text" sofaString="Joe waited for the train . The train was late ."/>
+  <cas:View sofa="1" members="8 19 24 29 42 55 68 81 94 107 120 133 146 159 172 178 184"/>
+</xmi:XMI>
