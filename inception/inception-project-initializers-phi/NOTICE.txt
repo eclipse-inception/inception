@@ -1,0 +1,14 @@
+NOTE: See META-INF/DEPENDENCIES-EMBEDDED.spdx.json
+
+== GraSCCo_PHI sample documents and tagset
+
+Folder: src/main/resources/de/tudarmstadt/ukp/inception/project/initializers/phi
+
+The sample documents in the data folder and the tagset in phi.json are derived from the GraSCCo_PHI
+dataset (Graz Synthetic Clinical text Corpus with Protected Health Information Annotations).
+
+  Christina Lohr et al.
+
+Original source: https://doi.org/10.5281/zenodo.11502329
+License:         Creative Commons Attribution 4.0 International
+                 (https://creativecommons.org/licenses/by/4.0/)
