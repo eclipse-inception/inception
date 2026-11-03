@@ -9,7 +9,7 @@ on:
 
 permissions:
   contents: read
-  checks: write
+#  checks: write
 
 concurrency:
   group: ${{ github.ref }}
@@ -21,53 +21,54 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest]
-        jdk: [21]
+        jdk: [25]
 
     runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Harden Runner
-      uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
-      with:
-        # egress-policy: audit
-        egress-policy: block
-        # sudo is left available so the "Allocate swap space" step below can work
-        disable-sudo: false
-        allowed-endpoints: >
-          *.data.mcr.microsoft.com:443
-          api.github.com:443
-          archive.ics.uci.edu:80
-          auth.docker.io:443
-          build.shibboleth.net:443
-          cdn01.quay.io:443
-          docker-images-prod.s3.amazonaws.com:443
-          docker-images-prod.s3.dualstack.us-east-1.amazonaws.com:443
-          download.eclipse.org:443
-          github.com:443
-          objects.githubusercontent.com:443
-          raw.githubusercontent.com:443
-          release-assets.githubusercontent.com:443
-          hosted-compute-request-orchestrator-prod-eus-01.githubapp.com:443
-          hosted-compute-request-orchestrator-prod-iad-01.githubapp.com:443
-          hosted-compute-watchdog-prod-eus-01.githubapp.com:443
-          hosted-compute-watchdog-prod-eus-02.githubapp.com:443
-          hosted-compute-watchdog-prod-iad-01.githubapp.com:443
-          hosted-compute-watchdog-prod-iad-02.githubapp.com:443
-          maven-central.storage-download.googleapis.com:443
-          mcr.microsoft.com:443
-          nodejs.org:443
-          oss.sonatype.org:443
-          production.cloudflare.docker.com:443
-          production.cloudfront.docker.com:443
-          quay.io:443
-          registry-1.docker.io:443
-          registry.npmjs.org:443
-          repo.maven.apache.org:443
-          repository.apache.org:443
-          repo.spring.io:443
-          repo1.maven.org:443
-          www.ims.uni-stuttgart.de:443
-          zoidberg.ukp.informatik.tu-darmstadt.de:443
+# Disabled until step-security/harden-runner is on the action allowlist of the organization
+#    - name: Harden Runner
+#      uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+#      with:
+#        # egress-policy: audit
+#        egress-policy: block
+#        # sudo is left available so the "Allocate swap space" step below can work
+#        disable-sudo: false
+#        allowed-endpoints: >
+#          *.data.mcr.microsoft.com:443
+#          api.github.com:443
+#          archive.ics.uci.edu:80
+#          auth.docker.io:443
+#          build.shibboleth.net:443
+#          cdn01.quay.io:443
+#          docker-images-prod.s3.amazonaws.com:443
+#          docker-images-prod.s3.dualstack.us-east-1.amazonaws.com:443
+#          download.eclipse.org:443
+#          github.com:443
+#          objects.githubusercontent.com:443
+#          raw.githubusercontent.com:443
+#          release-assets.githubusercontent.com:443
+#          hosted-compute-request-orchestrator-prod-eus-01.githubapp.com:443
+#          hosted-compute-request-orchestrator-prod-iad-01.githubapp.com:443
+#          hosted-compute-watchdog-prod-eus-01.githubapp.com:443
+#          hosted-compute-watchdog-prod-eus-02.githubapp.com:443
+#          hosted-compute-watchdog-prod-iad-01.githubapp.com:443
+#          hosted-compute-watchdog-prod-iad-02.githubapp.com:443
+#          maven-central.storage-download.googleapis.com:443
+#          mcr.microsoft.com:443
+#          nodejs.org:443
+#          oss.sonatype.org:443
+#          production.cloudflare.docker.com:443
+#          production.cloudfront.docker.com:443
+#          quay.io:443
+#          registry-1.docker.io:443
+#          registry.npmjs.org:443
+#          repo.maven.apache.org:443
+#          repository.apache.org:443
+#          repo.spring.io:443
+#          repo1.maven.org:443
+#          www.ims.uni-stuttgart.de:443
+#          zoidberg.ukp.informatik.tu-darmstadt.de:443
 
     - name: Allocate swap space
       # Headroom for the Linux build, which pairs 15 GB of RAM with only 3 GB of swap
@@ -179,16 +180,17 @@ jobs:
           || echo "no OOM killer activity in dmesg"
         echo "::endgroup::"
 
-    - name: Publish Test Report
-      uses: mikepenz/action-junit-report@49b2ca06f62aa7ef83ae6769a2179271e160d8e4 # v6.3.1
-      if: success() || failure() # always run even if the previous step fails
-      with:
-        check_name: |
-          Surefire Report
-          Vitest Report
-        report_paths: |
-          **/target/surefire-reports/TEST-*.xml
-          **/target/surefire-reports/vitest-test-report.xml
+# Disabled until mikepenz/action-junit-report is on the action allowlist of the organization
+#    - name: Publish Test Report
+#      uses: mikepenz/action-junit-report@49b2ca06f62aa7ef83ae6769a2179271e160d8e4 # v6.3.1
+#      if: success() || failure() # always run even if the previous step fails
+#      with:
+#        check_name: |
+#          Surefire Report
+#          Vitest Report
+#        report_paths: |
+#          **/target/surefire-reports/TEST-*.xml
+#          **/target/surefire-reports/vitest-test-report.xml
 
     - name: Capture build artifacts
       if: matrix.os == 'ubuntu-24.04-arm'

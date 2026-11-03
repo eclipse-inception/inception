@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/spdx/spdx-spec/v2.2.2/schemas/spdx-schema.json",
+  "packages": [
+    {
+      "name": "GraSCCo_PHI",
+      "versionInfo": "unversioned",
+      "originator": "Christina Lohr et al.",
+      "homepage": "https://doi.org/10.5281/zenodo.11502329",
+      "downloadLocation": "https://zenodo.org/records/11502329",
+      "licenseConcluded": "CC-BY-4.0",
+      "description": "Graz Synthetic Clinical text Corpus with Protected Health Information Annotations. The sample documents and the PHI tagset of the project template are derived from this dataset.",
+      "hasFiles": [
+        "de/tudarmstadt/ukp/inception/project/initializers/phi/data/Albers.txt_phi.json",
+        "de/tudarmstadt/ukp/inception/project/initializers/phi/data/Amanda_Alzheimer.txt_phi.json",
+        "de/tudarmstadt/ukp/inception/project/initializers/phi/data/Baastrup.txt_phi.json",
+        "de/tudarmstadt/ukp/inception/project/initializers/phi/phi.json"
+      ]
+    }
+  ]
+}
