@@ -117,19 +117,16 @@ public abstract class BratSuggestionVisualizer
     private final LambdaStringResourceBehavior collProvider;
     private final LambdaStringResourceBehavior docProvider;
 
-    private final int position;
-
     private final DocumentEditorManager manager;
 
     public BratSuggestionVisualizer(String aId, DocumentEditorManager aManager,
-            IModel<AnnotatorSegmentState> aModel, int aPosition)
+            IModel<AnnotatorSegmentState> aModel)
     {
         super(aId, aModel);
 
         Validate.notNull(aManager, "Document editor manager must be provided");
 
         manager = aManager;
-        position = aPosition;
 
         vis = new WebMarkupContainer("vis");
         vis.setOutputMarkupId(true);
@@ -221,7 +218,7 @@ public abstract class BratSuggestionVisualizer
         Project project = aSegment.getAnnotatorState().getProject();
         if (project.isAnonymousCuration()
                 && !projectService.hasRole(userService.getCurrentUser(), project, MANAGER)) {
-            return "Anonymized annotator " + (position + 1);
+            return "Anonymized annotator " + (aSegment.getPosition() + 1);
         }
 
         return aSegment.getUser().getUiName();

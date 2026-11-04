@@ -36,6 +36,7 @@ public class AnnotatorSegmentState
     private User user;
     private AnnotatorState state;
     private VDocument vDocument;
+    private int position;
 
     public AnnotatorSegmentState()
     {
@@ -60,6 +61,21 @@ public class AnnotatorSegmentState
     public void setUser(User aUser)
     {
         user = aUser;
+    }
+
+    /**
+     * @return the position of the annotator among all curatable annotators of the document. Used to
+     *         number the annotator under anonymous curation, so the number does not depend on which
+     *         annotators are currently shown.
+     */
+    public int getPosition()
+    {
+        return position;
+    }
+
+    public void setPosition(int aPosition)
+    {
+        position = aPosition;
     }
 
     public AnnotatorState getAnnotatorState()

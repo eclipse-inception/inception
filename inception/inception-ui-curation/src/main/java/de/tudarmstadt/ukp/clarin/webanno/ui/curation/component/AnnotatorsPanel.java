@@ -19,6 +19,7 @@ package de.tudarmstadt.ukp.clarin.webanno.ui.curation.component;
 
 import static de.tudarmstadt.ukp.clarin.webanno.curation.casdiff.CasDiff.doDiff;
 import static de.tudarmstadt.ukp.clarin.webanno.model.AnnotationSet.CURATION_SET;
+import static de.tudarmstadt.ukp.clarin.webanno.model.PermissionLevel.MANAGER;
 import static de.tudarmstadt.ukp.clarin.webanno.model.SourceDocumentState.CURATION_FINISHED;
 import static de.tudarmstadt.ukp.clarin.webanno.ui.curation.component.model.AnnotationState.ACCEPTED_BY_CURATOR;
 import static de.tudarmstadt.ukp.clarin.webanno.ui.curation.component.model.AnnotationState.ANNOTATORS_AGREE;
@@ -64,6 +65,7 @@ import de.tudarmstadt.ukp.clarin.webanno.model.AnnotationSet;
 import de.tudarmstadt.ukp.clarin.webanno.model.Project;
 import de.tudarmstadt.ukp.clarin.webanno.model.SourceDocument;
 import de.tudarmstadt.ukp.clarin.webanno.security.UserDao;
+import de.tudarmstadt.ukp.clarin.webanno.security.model.User;
 import de.tudarmstadt.ukp.clarin.webanno.ui.annotation.detail.ShowAnnotationReadOnlyEvent;
 import de.tudarmstadt.ukp.clarin.webanno.ui.curation.component.model.AnnotationState;
 import de.tudarmstadt.ukp.clarin.webanno.ui.curation.component.model.AnnotatorSegmentState;
@@ -81,6 +83,7 @@ import de.tudarmstadt.ukp.inception.curation.merge.CasMergeOperationResult;
 import de.tudarmstadt.ukp.inception.curation.merge.MergeConflictException;
 import de.tudarmstadt.ukp.inception.curation.service.CurationDocumentService;
 import de.tudarmstadt.ukp.inception.documents.api.DocumentService;
+import de.tudarmstadt.ukp.inception.project.api.ProjectService;
 import de.tudarmstadt.ukp.inception.rendering.editorstate.AnnotationException;
 import de.tudarmstadt.ukp.inception.rendering.editorstate.AnnotatorState;
 import de.tudarmstadt.ukp.inception.rendering.editorstate.DocumentEditorManager;
@@ -124,6 +127,7 @@ public class AnnotatorsPanel
     private @SpringBean AnnotationSchemaService schemaService;
     private @SpringBean ApplicationEventPublisherHolder applicationEventPublisher;
     private @SpringBean UserDao userService;
+    private @SpringBean ProjectService projectService;
     private @SpringBean CurationRenderer curationRenderer;
     private @SpringBean BratSchemaGenerator bratSchemaGenerator;
     private @SpringBean AnnotationSchemaProperties annotationEditorProperties;
@@ -156,7 +160,7 @@ public class AnnotatorsPanel
             {
                 final var annotatorSegment = aItem.getModelObject();
                 var curationVisualizer = new BratSuggestionVisualizer("annotationViewer", manager,
-                        new Model<>(annotatorSegment), aItem.getIndex())
+                        new Model<>(annotatorSegment))
                 {
                     private static final long serialVersionUID = -1205541428144070566L;
 
@@ -330,7 +334,7 @@ public class AnnotatorsPanel
                 .orElse(0L);
 
         var content = new MergeAllConfirmationDialogPanel(BootstrapModalDialog.CONTENT_ID, count,
-                aLayer.getUiName(), aSegment.getUser().getUiName());
+                aLayer.getUiName(), maybeAnonymizeUsername(aSegment));
         content.setConfirmAction(_target -> actionAcceptAll(_target, aSegment, aLayer));
         mergeAllDialog.open(content, aTarget);
     }
@@ -475,6 +479,17 @@ public class AnnotatorsPanel
                 .ifPresent(state::setAnnotationDocumentTimestamp);
     }
 
+    private String maybeAnonymizeUsername(AnnotatorSegmentState aSegment)
+    {
+        var project = aSegment.getAnnotatorState().getProject();
+        if (project.isAnonymousCuration()
+                && !projectService.hasRole(userService.getCurrentUser(), project, MANAGER)) {
+            return "Anonymized annotator " + (aSegment.getPosition() + 1);
+        }
+
+        return aSegment.getUser().getUiName();
+    }
+
     private CAS readAnnotatorCas(AnnotatorSegmentState aSegment) throws IOException
     {
         return documentService.readAnnotationCas(aSegment.getAnnotatorState().getDocument(),
@@ -507,6 +522,14 @@ public class AnnotatorsPanel
         Map<String, Map<VID, AnnotationState>> annoStates = calculateAnnotationStates(aState,
                 casses);
 
+        // Number the annotators by their position among all curatable annotators, not among the
+        // shown ones, so they get the same anonymized names as in the curation sidebar and the
+        // merge dialog
+        var curatableUserNames = curationDocumentService.listCuratableUsers(aState.getDocument())
+                .stream() //
+                .map(User::getUsername) //
+                .toList();
+
         var segments = new ArrayList<AnnotatorSegmentState>();
         for (String username : casses.keySet().stream().sorted().collect(toList())) {
             if (username.equals(CURATION_USER)) {
@@ -523,6 +546,7 @@ public class AnnotatorsPanel
             // Create curation view for the current user
             var seg = new AnnotatorSegmentState();
             seg.setUser(userService.get(username));
+            seg.setPosition(curatableUserNames.indexOf(username));
             seg.setAnnotatorState(aState);
             renderSegment(aTarget, seg, cas, annotationStates);
             segments.add(seg);
