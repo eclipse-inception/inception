@@ -161,6 +161,19 @@
             </configuration>
           </execution>
           <execution>
+            <!-- The playwright package does not download its browser; this is a no-op once the
+              matching Chromium is present -->
+            <id>bun install test browser</id>
+            <goals>
+              <goal>bun</goal>
+            </goals>
+            <phase>${ts-test-phase}</phase>
+            <configuration>
+              <skip>${skipTests}</skip>
+              <arguments>x playwright install chromium</arguments>
+            </configuration>
+          </execution>
+          <execution>
             <id>bun test</id>
             <goals>
               <goal>bun</goal>
