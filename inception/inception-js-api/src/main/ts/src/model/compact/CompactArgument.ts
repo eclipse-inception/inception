@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { VID } from '..';
+import type { VID } from '..';
 
 /**
  * Represents the endpoint of an arc.

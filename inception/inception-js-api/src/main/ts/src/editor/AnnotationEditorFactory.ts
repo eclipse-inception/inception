@@ -15,8 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the L
  */
-import { DiamClientFactory } from '../diam';
-import { AnnotationEditor, AnnotationEditorProperties } from '.';
+import type { DiamClientFactory } from '../diam';
+import type { AnnotationEditor, AnnotationEditorProperties } from '.';
 
 export interface AnnotationEditorFactory {
     getOrInitialize(

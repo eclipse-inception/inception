@@ -15,8 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { MarkerType } from './Marker';
-import { Offsets } from './Offsets';
+import type { MarkerType } from './Marker';
+import type { Offsets } from './Offsets';
 
 export class TextMarker {
     type: MarkerType;

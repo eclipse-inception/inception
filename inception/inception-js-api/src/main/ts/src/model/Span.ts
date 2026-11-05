@@ -15,8 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Annotation, Offsets, VID, Comment, AnnotatedText } from '.';
-import { Layer } from './Layer';
+import type { Annotation, Offsets, VID, Comment, AnnotatedText } from '.';
+import type { Layer } from './Layer';
 
 export type ClippingStatus = undefined | 's' | 'e' | 'se';
 

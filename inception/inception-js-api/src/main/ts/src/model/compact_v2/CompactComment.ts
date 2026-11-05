@@ -15,7 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { AnnotatedText, Comment, Annotation } from '..';
+import type { AnnotatedText, Annotation } from '..';
+import { Comment } from '..';
 
 /**
  * Represents the endpoint of an arc.

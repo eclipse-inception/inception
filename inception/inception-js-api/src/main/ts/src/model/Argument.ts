@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Span, VID } from '.';
+import type { Span, VID } from '.';
 
 /**
  * Represents the endpoint of a relation.

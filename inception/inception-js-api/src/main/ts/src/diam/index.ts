@@ -15,6 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './DiamClientFactory';
-export * from './DiamAjax';
-export * from './DiamWebsocket';
+export type * from './DiamClientFactory';
+export type * from './DiamAjax';
+export type * from './DiamWebsocket';

@@ -15,9 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Offsets, Span, VID, AnnotatedText } from '..';
+import type { Offsets, VID, AnnotatedText } from '..';
+import { Span } from '..';
 import { unpackCompactComments } from './CompactComment';
-import { CompactSpanAttributes } from './CompactSpanAttributes';
+import type { CompactSpanAttributes } from './CompactSpanAttributes';
 
 export type CompactSpan = [
     layerId: number,

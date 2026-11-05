@@ -15,7 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { VID, AnnotationMarker } from '..';
+import type { VID } from '..';
+import { AnnotationMarker } from '..';
 
 export type CompactAnnotationMarker = [type: string, vid: Array<VID>];
 

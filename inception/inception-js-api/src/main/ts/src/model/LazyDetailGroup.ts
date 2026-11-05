@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { LazyDetail } from './LazyDetail';
+import type { LazyDetail } from './LazyDetail';
 
 export interface LazyDetailGroup {
     title: string;
