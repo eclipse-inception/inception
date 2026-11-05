@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import { Annotation } from '../model';
+import type { Annotation } from '../model';
 
 const eventType = 'i7n-annotation-out';
 export class AnnotationOutEvent extends Event {

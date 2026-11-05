@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { VID, Comment, Layer, AnnotatedText } from '.';
+import type { VID, Comment, Layer, AnnotatedText } from '.';
 
 export interface Annotation {
     document: AnnotatedText;

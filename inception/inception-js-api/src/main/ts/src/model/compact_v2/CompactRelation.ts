@@ -15,10 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { VID, Relation, AnnotatedText } from '..';
-import { CompactArgument, unpackCompactArgument } from './CompactArgument';
+import type { VID, AnnotatedText } from '..';
+import { Relation } from '..';
+import type { CompactArgument } from './CompactArgument';
+import { unpackCompactArgument } from './CompactArgument';
 import { unpackCompactComments } from './CompactComment';
-import { CompactRelationAttributes } from './CompactRelationAttributes';
+import type { CompactRelationAttributes } from './CompactRelationAttributes';
 
 export type CompactRelation = [
     layerId: number,

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Annotation, VID, Argument, Layer, Comment, AnnotatedText } from '.';
+import type { Annotation, VID, Argument, Layer, Comment, AnnotatedText } from '.';
 
 export class Relation implements Annotation {
     document: AnnotatedText;

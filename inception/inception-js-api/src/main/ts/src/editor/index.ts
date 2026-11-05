@@ -15,11 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export {
+export type {
     AnnotationEditor,
-    type ViewportSyncPeer,
-    type ViewportScrollPosition,
-    type ViewportScrollTarget,
+    ViewportSyncPeer,
+    ViewportScrollPosition,
+    ViewportScrollTarget,
 } from './AnnotationEditor';
-export { AnnotationEditorFactory } from './AnnotationEditorFactory';
-export { AnnotationEditorProperties } from './AnnotationEditorProperties';
+export type { AnnotationEditorFactory } from './AnnotationEditorFactory';
+export type { AnnotationEditorProperties } from './AnnotationEditorProperties';

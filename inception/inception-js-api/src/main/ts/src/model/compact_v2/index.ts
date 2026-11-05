@@ -15,12 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { CompactAnnotatedText, unpackCompactAnnotatedText } from './CompactAnnotatedText';
-export { CompactAnnotationAttributes } from './CompactAnnotationAttributes';
-export { CompactArgument } from './CompactArgument';
-export { CompactComment } from './CompactComment';
-export { CompactRelationAttributes } from './CompactRelationAttributes';
-export { CompactSpan } from './CompactSpan';
-export { CompactSpanAttributes } from './CompactSpanAttributes';
-export { CompactTextMarker } from './CompactTextMarker';
-export { CompactAnnotationMarker } from './CompactAnnotationMarker';
+export { type CompactAnnotatedText, unpackCompactAnnotatedText } from './CompactAnnotatedText';
+export type { CompactAnnotationAttributes } from './CompactAnnotationAttributes';
+export type { CompactArgument } from './CompactArgument';
+export type { CompactComment } from './CompactComment';
+export type { CompactRelationAttributes } from './CompactRelationAttributes';
+export type { CompactSpan } from './CompactSpan';
+export type { CompactSpanAttributes } from './CompactSpanAttributes';
+export type { CompactTextMarker } from './CompactTextMarker';
+export type { CompactAnnotationMarker } from './CompactAnnotationMarker';

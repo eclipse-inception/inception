@@ -15,8 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { DiamWebsocket } from './DiamWebsocket';
-import { DiamAjax, DiamAjaxConnectOptions } from './DiamAjax';
+import type { DiamWebsocket } from './DiamWebsocket';
+import type { DiamAjax, DiamAjaxConnectOptions } from './DiamAjax';
 
 export interface DiamClientFactory {
     createWebsocketClient(): DiamWebsocket;

@@ -20,7 +20,7 @@
 // must be deep-imported directly by their full subpath so that consumers of
 // inception-js-api whose bundler is not configured for Svelte (e.g.
 // inception-diam, inception-external-editor) are not forced to pull them in.
-export * from './DocumentStructureStrategy';
-export * from './DocumentStructureFactory';
+export type * from './DocumentStructureStrategy';
+export type * from './DocumentStructureFactory';
 export * from './DocumentStructureNavigatorUtils';
 export * from './NoopDocumentStructure';

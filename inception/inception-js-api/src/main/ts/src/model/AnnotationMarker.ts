@@ -15,8 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { VID } from '.';
-import { MarkerType } from './Marker';
+import type { VID } from '.';
+import type { MarkerType } from './Marker';
 
 export class AnnotationMarker {
     type: MarkerType;

@@ -15,15 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Offsets } from './Offsets';
-import { VID } from './VID';
-import { AnnotationMarker } from './AnnotationMarker';
+import type { Offsets } from './Offsets';
+import type { VID } from './VID';
+import type { AnnotationMarker } from './AnnotationMarker';
 import { Relation } from './Relation';
 import { Span } from './Span';
-import { TextMarker } from './TextMarker';
+import type { TextMarker } from './TextMarker';
 import { Layer } from './Layer';
-import { MarkerType } from './Marker';
-import { Annotation } from './Annotation';
+import type { MarkerType } from './Marker';
+import type { Annotation } from './Annotation';
 
 export class AnnotatedText {
     window: Offsets;

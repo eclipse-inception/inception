@@ -15,13 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { AnnotatedText, Offsets, VID, AnnotationMarker } from '..';
-import { MarkerType } from '../Marker';
-import { CompactAnnotationMarker, unpackCompactAnnotationMarker } from './CompactAnnotationMarker';
-import { CompactLayer, unpackCompactLayer } from './CompactLayer';
-import { CompactRelation, unpackCompactRelation } from './CompactRelation';
-import { CompactSpan, unpackCompactSpan } from './CompactSpan';
-import { CompactTextMarker, unpackCompactTextMarker } from './CompactTextMarker';
+import type { Offsets, VID, AnnotationMarker } from '..';
+import { AnnotatedText } from '..';
+import type { MarkerType } from '../Marker';
+import type { CompactAnnotationMarker } from './CompactAnnotationMarker';
+import { unpackCompactAnnotationMarker } from './CompactAnnotationMarker';
+import type { CompactLayer } from './CompactLayer';
+import { unpackCompactLayer } from './CompactLayer';
+import type { CompactRelation } from './CompactRelation';
+import { unpackCompactRelation } from './CompactRelation';
+import type { CompactSpan } from './CompactSpan';
+import { unpackCompactSpan } from './CompactSpan';
+import type { CompactTextMarker } from './CompactTextMarker';
+import { unpackCompactTextMarker } from './CompactTextMarker';
 
 export interface CompactAnnotatedText {
     text?: string;

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Annotation } from '..';
+import type { Annotation } from '..';
 
 export interface Span extends Annotation {
     begin: number;

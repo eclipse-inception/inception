@@ -15,8 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Arc } from './Arc';
-import { Span } from './Span';
+import type { Arc } from './Arc';
+import type { Span } from './Span';
 
 export interface Viewport {
     text: string;
