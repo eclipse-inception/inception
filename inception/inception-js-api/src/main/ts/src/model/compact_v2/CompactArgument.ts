@@ -15,7 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { VID, Argument, AnnotatedText } from '..';
+import type { VID, AnnotatedText } from '..';
+import { Argument } from '..';
 
 /**
  * Represents the endpoint of an arc.

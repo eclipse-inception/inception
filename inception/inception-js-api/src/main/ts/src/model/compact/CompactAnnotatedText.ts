@@ -15,12 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Offsets } from '../Offsets';
-import { VID } from '../VID';
-import { CompactAnnotationMarker } from './CompactAnnotationMarker';
-import { CompactRelation } from './CompactRelation';
-import { CompactSpan } from './CompactSpan';
-import { CompactTextMarker } from './CompactTextMarker';
+import type { Offsets } from '../Offsets';
+import type { VID } from '../VID';
+import type { CompactAnnotationMarker } from './CompactAnnotationMarker';
+import type { CompactRelation } from './CompactRelation';
+import type { CompactSpan } from './CompactSpan';
+import type { CompactTextMarker } from './CompactTextMarker';
 
 export interface CompactAnnotatedText {
     text?: string;

@@ -26,6 +26,9 @@ dependency-reduced-pom.xml
 **/node_modules
 **/src/main/ts/package.json
 **/src/main/ts/package-lock.json
+# Failure screenshots from Vitest browser-mode tests
+**/src/main/ts/.vitest-attachments/
+**/__screenshots__/
 local/
 .asciidoctorconfig.adoc
 outdated-packages-report.txt

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Annotation, LazyDetailGroup, Offsets, VID } from '../model';
+import type { Annotation, LazyDetailGroup, Offsets, VID } from '../model';
 
 export type DiamLoadAnnotationsOptions = {
     format?: string;

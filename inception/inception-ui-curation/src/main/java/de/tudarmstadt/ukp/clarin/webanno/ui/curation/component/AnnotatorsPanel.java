@@ -19,6 +19,7 @@ package de.tudarmstadt.ukp.clarin.webanno.ui.curation.component;
 
 import static de.tudarmstadt.ukp.clarin.webanno.curation.casdiff.CasDiff.doDiff;
 import static de.tudarmstadt.ukp.clarin.webanno.model.AnnotationSet.CURATION_SET;
+import static de.tudarmstadt.ukp.clarin.webanno.model.PermissionLevel.MANAGER;
 import static de.tudarmstadt.ukp.clarin.webanno.model.SourceDocumentState.CURATION_FINISHED;
 import static de.tudarmstadt.ukp.clarin.webanno.ui.curation.component.model.AnnotationState.ACCEPTED_BY_CURATOR;
 import static de.tudarmstadt.ukp.clarin.webanno.ui.curation.component.model.AnnotationState.ANNOTATORS_AGREE;
@@ -83,6 +84,7 @@ import de.tudarmstadt.ukp.inception.curation.merge.CasMergeOperationResult;
 import de.tudarmstadt.ukp.inception.curation.merge.MergeConflictException;
 import de.tudarmstadt.ukp.inception.curation.service.CurationDocumentService;
 import de.tudarmstadt.ukp.inception.documents.api.DocumentService;
+import de.tudarmstadt.ukp.inception.project.api.ProjectService;
 import de.tudarmstadt.ukp.inception.rendering.editorstate.AnnotationException;
 import de.tudarmstadt.ukp.inception.rendering.editorstate.AnnotatorState;
 import de.tudarmstadt.ukp.inception.rendering.editorstate.DocumentEditorManager;
@@ -127,6 +129,7 @@ public class AnnotatorsPanel
     private @SpringBean AnnotationSchemaService schemaService;
     private @SpringBean ApplicationEventPublisherHolder applicationEventPublisher;
     private @SpringBean UserDao userService;
+    private @SpringBean ProjectService projectService;
     private @SpringBean CurationRenderer curationRenderer;
     private @SpringBean BratSchemaGenerator bratSchemaGenerator;
     private @SpringBean AnnotationSchemaProperties annotationEditorProperties;
@@ -333,7 +336,7 @@ public class AnnotatorsPanel
                 .orElse(0L);
 
         var content = new MergeAllConfirmationDialogPanel(BootstrapModalDialog.CONTENT_ID, count,
-                aLayer.getUiName(), aSegment.getUser().getUiName());
+                aLayer.getUiName(), maybeAnonymizeUsername(aSegment));
         content.setConfirmAction(_target -> actionAcceptAll(_target, aSegment, aLayer));
         mergeAllDialog.open(content, aTarget);
     }
@@ -476,6 +479,17 @@ public class AnnotatorsPanel
         curationDocumentService.writeCurationCas(aCas, state.getDocument(), true);
         curationDocumentService.getCurationCasTimestamp(state.getDocument())
                 .ifPresent(state::setAnnotationDocumentTimestamp);
+    }
+
+    private String maybeAnonymizeUsername(AnnotatorSegmentState aSegment)
+    {
+        var project = aSegment.getAnnotatorState().getProject();
+        if (project.isAnonymousCuration()
+                && !projectService.hasRole(userService.getCurrentUser(), project, MANAGER)) {
+            return "Anonymized annotator " + (aSegment.getPosition() + 1);
+        }
+
+        return aSegment.getUser().getUiName();
     }
 
     private CAS readAnnotatorCas(AnnotatorSegmentState aSegment) throws IOException

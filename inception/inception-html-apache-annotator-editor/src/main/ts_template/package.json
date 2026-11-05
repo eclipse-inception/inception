@@ -60,6 +60,8 @@
     "uuid": "${uuid.version}",
     "vite": "${vite.version}",
     "vitest": "${vitest.version}",
+    "@vitest/browser-playwright": "${vitest.version}",
+    "playwright": "${playwright.version}",
     "yargs": "${yargs.version}"
   }
 }

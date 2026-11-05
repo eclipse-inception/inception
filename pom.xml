@@ -259,6 +259,7 @@
     <minimatch.version>^10.2.6</minimatch.version>
     <pdfjs.version>5.4.449</pdfjs.version>
     <neostandard.version>^0.13.0</neostandard.version>
+    <playwright.version>1.64.1</playwright.version>
     <popperjs.version>^2.11.8</popperjs.version>
     <prettier.version>^3.9.6</prettier.version>
     <prettier-plugin-svelte.version>^3.5.2</prettier-plugin-svelte.version>
