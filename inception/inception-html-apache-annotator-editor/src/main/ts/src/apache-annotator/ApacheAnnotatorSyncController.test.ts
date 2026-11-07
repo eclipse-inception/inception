@@ -15,16 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { buildDocumentStructure, type TocLevel } from '@inception-project/inception-js-api';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import {
+    buildDocumentStructure,
+    type SectionTop,
+    type TocLevel,
+    type ViewportScrollPosition,
+    type ViewportScrollTarget,
+} from '@inception-project/inception-js-api';
 
 import {
+    ApacheAnnotatorSyncController,
     blendTowardScrollProgress,
     buildSyncRegions,
     LEADING_REGION_KEY,
-    resolveRegionTarget,
+    resolveSegmentTarget,
     sameScrollProgress,
-    shouldBlendTowardScrollProgress,
+    scrollTopForSyncPointAt,
+    syncPointFraction,
+    type SegmentRegion,
     type SyncRegion,
 } from './ApacheAnnotatorSyncController';
 import { calculateEndOffset } from '@inception-project/inception-js-api';
@@ -124,6 +133,100 @@ describe('blendTowardScrollProgress', () => {
             const inside = blendTowardScrollProgress(anchoredTop, BAND - 0.001, MAX_SCROLL);
             expect(Math.abs(outside - inside)).toBeLessThan(2);
         });
+    });
+});
+
+describe('syncPointFraction', () => {
+    const H = 500;
+    // One viewport height per transition, so the expectations below read in whole viewports
+    const ONE = { start: 1, end: 1 };
+
+    it('takes half a viewport height for each transition by default', () => {
+        expect(syncPointFraction(125, 5000, H)).toBe(0.25);
+        expect(syncPointFraction(250, 5000, H)).toBe(0.5);
+        expect(syncPointFraction(4750, 5000, H)).toBe(0.5);
+        expect(syncPointFraction(5000, 5000, H)).toBe(1);
+    });
+
+    it('is at the viewport top at the start of the document', () => {
+        expect(syncPointFraction(0, 5000, H, ONE)).toBe(0);
+    });
+
+    it('reaches the middle of the viewport after one viewport height and stays there', () => {
+        expect(syncPointFraction(250, 5000, H, ONE)).toBe(0.25);
+        expect([500, 2500, 4500].map((t) => syncPointFraction(t, 5000, H, ONE))).toEqual([
+            0.5, 0.5, 0.5,
+        ]);
+    });
+
+    it('moves to the viewport bottom over the last viewport height', () => {
+        expect(syncPointFraction(4750, 5000, H, ONE)).toBe(0.75);
+        expect(syncPointFraction(5000, 5000, H, ONE)).toBe(1);
+    });
+
+    it('lets the ramps meet halfway when the scroll range is shorter than two viewport heights', () => {
+        expect([0, 150, 300, 450, 600].map((t) => syncPointFraction(t, 600, H, ONE))).toEqual([
+            0, 0.25, 0.5, 0.75, 1,
+        ]);
+    });
+
+    it('stays at the top when there is nothing to scroll', () => {
+        expect(syncPointFraction(0, 0, H)).toBe(0);
+    });
+
+    it('takes the configured number of viewport heights for each transition', () => {
+        const ramps = { start: 1.5, end: 0.5 };
+        expect(syncPointFraction(375, 5000, H, ramps)).toBe(0.25);
+        expect(syncPointFraction(750, 5000, H, ramps)).toBe(0.5);
+        expect(syncPointFraction(4750, 5000, H, ramps)).toBe(0.5);
+        expect(syncPointFraction(4875, 5000, H, ramps)).toBe(0.75);
+    });
+
+    it('shrinks unequal transitions in proportion when they do not fit the scroll range', () => {
+        // 1.5 + 0.5 viewport heights = 1000 px, scaled to the 500 px range: 375 and 125
+        const ramps = { start: 1.5, end: 0.5 };
+        expect([0, 375, 437.5, 500].map((t) => syncPointFraction(t, 500, H, ramps))).toEqual([
+            0, 0.5, 0.75, 1,
+        ]);
+    });
+
+    it('runs the sync point from the top to the bottom of the content, only ever forward', () => {
+        for (const maxScroll of [5000, 600, 100]) {
+            let previous = -1;
+            for (let t = 0; t <= maxScroll; t += maxScroll / 50) {
+                const syncPoint = t + syncPointFraction(t, maxScroll, H) * H;
+                expect(syncPoint).toBeGreaterThan(previous);
+                previous = syncPoint;
+            }
+            expect(previous).toBeCloseTo(maxScroll + H, 6);
+        }
+    });
+});
+
+describe('scrollTopForSyncPointAt', () => {
+    const H = 500;
+
+    it('inverts the sync point on the ramps and on the plateau', () => {
+        for (const ramps of [undefined, { start: 1.5, end: 0.5 }, { start: 0.2, end: 3 }]) {
+            for (const maxScroll of [5000, 600, 100]) {
+                for (let t = 0; t <= maxScroll; t += maxScroll / 50) {
+                    const syncPoint = t + syncPointFraction(t, maxScroll, H, ramps) * H;
+                    expect(scrollTopForSyncPointAt(syncPoint, maxScroll, H, ramps)).toBeCloseTo(
+                        t,
+                        6
+                    );
+                }
+            }
+        }
+    });
+
+    it('clamps positions outside the content to its ends', () => {
+        expect(scrollTopForSyncPointAt(-100, 5000, H)).toBe(0);
+        expect(scrollTopForSyncPointAt(9999, 5000, H)).toBe(5000);
+    });
+
+    it('stays at the top when there is nothing to scroll', () => {
+        expect(scrollTopForSyncPointAt(300, 0, H)).toBe(0);
     });
 });
 
@@ -243,6 +346,8 @@ describe('buildSyncRegions', () => {
         const rs = regions();
         // leading region is empty (first section at 0), so only the 'dup' region(s) — deduped to one
         expect(rs.filter((r) => r.key === 'dup').length).toBe(1);
+        // and it is the first section's region, which starts at 0, not the second's at 5
+        expect(rs.find((r) => r.key === 'dup')?.start).toBe(0);
     });
 
     it('produces a single leading region spanning the whole document when there are no sections', () => {
@@ -255,289 +360,588 @@ describe('buildSyncRegions', () => {
     });
 });
 
-describe('resolveRegionTarget', () => {
-    // Pure key-order reasoning, no geometry -- regions only need a `key` for these tests, so offsets
-    // are irrelevant filler.
-    function region(key: string): SyncRegion {
-        return { key, start: 0, end: 0 };
+/**
+ * The sender's regions with where each starts, in the unit of scroll progress, and optionally the
+ * key of the region enclosing it.
+ */
+function sender(...entries: ([string, number] | [string, number, string])[]): SectionTop[] {
+    return entries.map(([key, top, parent]) => ({ key, top, parent }));
+}
+
+describe('resolveSegmentTarget', () => {
+    /** The receiver's regions with their tops in content pixels, and optionally their parent. */
+    function local(...entries: ([string, number] | [string, number, string])[]): SegmentRegion[] {
+        return entries.map(([key, top, parentKey]) => ({ key, top, parentKey }));
     }
 
-    it('matches directly when the receiver has a region for the key (interior, not at either extreme)', () => {
-        const regions = [region('a'), region('b'), region('c')];
-        expect(resolveRegionTarget(regions, 'b', ['a', 'b', 'c'])).toEqual({
-            kind: 'exact',
-            regionIndex: 1,
-            atDocumentStart: false,
-            atDocumentEnd: false,
-        });
+    const END = 3000;
+    const VIEWPORT = 500;
+
+    /** Where the receiver goes, rounded, for a sender in the given region at the given progress. */
+    function target(
+        regions: SegmentRegion[],
+        key: string,
+        sections: SectionTop[],
+        progress: number,
+        band = 0
+    ) {
+        const t = resolveSegmentTarget(
+            regions,
+            END,
+            key,
+            sections,
+            progress,
+            band,
+            VIEWPORT / END,
+            VIEWPORT
+        );
+        return t === undefined ? undefined : Math.round(t);
+    }
+
+    it('places the receiver at the same fraction of a region both sides have', () => {
+        const regions = local(['a', 0], ['b', 900], ['c', 1800]);
+        const sections = sender(['a', 0], ['b', 0.3], ['c', 0.6]);
+        expect(target(regions, 'b', sections, 0.45)).toBe(1350);
     });
 
-    it('matches directly even with no sender sequence supplied, defaulting both extreme flags true (nothing to disprove correspondence)', () => {
-        const regions = [region('a'), region('b')];
-        expect(resolveRegionTarget(regions, 'b', undefined)).toEqual({
-            kind: 'exact',
-            regionIndex: 1,
-            atDocumentStart: false,
-            atDocumentEnd: true,
-        });
+    it('has no answer without the sender regions, its progress, or a shared key', () => {
+        const regions = local(['a', 0], ['b', 1000]);
+        const sections = sender(['a', 0], ['b', 0.5]);
+        expect(resolveSegmentTarget(regions, END, 'b', undefined, 0.6)).toBeUndefined();
+        expect(resolveSegmentTarget(regions, END, 'b', sections, undefined)).toBeUndefined();
+        // The key is not among the sender's regions
+        expect(target(regions, 'z', sections, 0.2)).toBeUndefined();
+        // Nothing is shared around the sender's region
+        expect(
+            target(local(['a', 0]), 'z', sender(['y', 0], ['z', 0.3], ['x', 0.6]), 0.4)
+        ).toBeUndefined();
     });
 
-    it('reports no bracket when the key is absent from the sender sequence entirely', () => {
-        const regions = [region('a'), region('b')];
-        // 'z' isn't in the sender's own sequence -- can't bracket at all.
-        expect(resolveRegionTarget(regions, 'z', ['a', 'b'])).toEqual({ kind: 'none' });
-        expect(resolveRegionTarget(regions, 'z', undefined)).toEqual({ kind: 'none' });
+    it('without a band, holds at the next shared key while the sender passes a section only it has', () => {
+        const regions = local(['a', 0], ['b', 1000], ['c', 2000]);
+        const sections = sender(['a', 0], ['x', 0.3], ['b', 0.5], ['c', 0.8]);
+        expect(target(regions, 'a', sections, 0.3)).toBe(1000);
+        expect([0.3, 0.4, 0.5].map((p) => target(regions, 'x', sections, p))).toEqual([
+            1000, 1000, 1000,
+        ]);
     });
 
-    it('reports no bracket when neither neighbour of the missing key exists locally', () => {
-        const regions = [region('a')];
-        // 'z' sits between two other keys the receiver also lacks.
-        expect(resolveRegionTarget(regions, 'z', ['y', 'z', 'x'])).toEqual({ kind: 'none' });
+    it('with a band, creeps through the end of the shared section while the sender passes a section only it has', () => {
+        const regions = local(['a', 0], ['b', 1000], ['c', 2000]);
+        const sections = sender(['a', 0], ['x', 0.3], ['b', 0.5], ['c', 0.8]);
+        // Half a viewport (250 px) of 'a' is given to 'x'
+        expect([0, 0.15, 0.3].map((p) => target(regions, 'a', sections, p, 0.5))).toEqual([
+            0, 375, 750,
+        ]);
+        expect([0.3, 0.4, 0.5].map((p) => target(regions, 'x', sections, p, 0.5))).toEqual([
+            750, 875, 1000,
+        ]);
+        expect(target(regions, 'b', sections, 0.5, 0.5)).toBe(1000);
     });
 
-    it('interpolates between the nearest shared keys when the sender key is an interior gap (the "Characters" case)', () => {
-        // Sender: Chapter 1, Characters (unmatched), Chapter 2. Receiver only has Chapter 1 / Chapter 2.
-        const regions = [region('chapter-1'), region('chapter-2')];
-        const senderSeq = ['chapter-1', 'characters', 'chapter-2'];
-
-        const plan = resolveRegionTarget(regions, 'characters', senderSeq, 0.5);
-        expect(plan).toEqual({
-            kind: 'interpolate',
-            beforeRegionIndex: 0,
-            afterRegionIndex: 1,
-            progress: 0.75, // 1 key-step past chapter-1, plus 0.5 through "characters", out of 2 steps
-        });
+    it('gives at most half of the shared section to the band', () => {
+        const regions = local(['a', 0], ['b', 200], ['c', 2000]);
+        const sections = sender(['a', 0], ['x', 0.3], ['b', 0.5], ['c', 0.8]);
+        expect(target(regions, 'x', sections, 0.3, 0.5)).toBe(100);
     });
 
-    it('interpolates smoothly across the gap as the sender scrolls through the unmatched region', () => {
-        const regions = [region('chapter-1'), region('chapter-2')];
-        const senderSeq = ['chapter-1', 'characters', 'chapter-2'];
+    it('without a band, stretches the shared section over a section only the receiver has', () => {
+        const regions = local(['a', 0], ['y', 1000], ['b', 1500], ['c', 2000]);
+        const sections = sender(['a', 0], ['b', 0.3], ['c', 0.6]);
+        expect([0, 0.15, 0.3].map((p) => target(regions, 'a', sections, p))).toEqual([
+            0, 750, 1500,
+        ]);
+    });
 
-        const start = resolveRegionTarget(regions, 'characters', senderSeq, 0);
-        const mid = resolveRegionTarget(regions, 'characters', senderSeq, 0.5);
-        const end = resolveRegionTarget(regions, 'characters', senderSeq, 1);
-        expect(start.kind).toBe('interpolate');
-        expect(mid.kind).toBe('interpolate');
-        expect(end.kind).toBe('interpolate');
-        if (start.kind === 'interpolate' && mid.kind === 'interpolate' && end.kind === 'interpolate') {
-            expect(start.progress).toBeLessThan(mid.progress);
-            expect(mid.progress).toBeLessThan(end.progress);
+    it('passes sections only one side has during each other where both sides have one', () => {
+        const regions = local(['a', 0], ['y', 1000], ['b', 1500], ['c', 2000]);
+        const sections = sender(['a', 0], ['x', 0.3], ['b', 0.5], ['c', 0.8]);
+        expect([0.3, 0.4, 0.5].map((p) => target(regions, 'x', sections, p, 0.5))).toEqual([
+            1000, 1250, 1500,
+        ]);
+    });
+
+    it('with a band, maps back to where it came from when the other side leads', () => {
+        // 'x' only exists on the left. Each side's pixels and progress share the same scale here.
+        const left = local(['a', 0], ['x', 1000], ['b', 1500], ['c', 2000]);
+        const right = local(['a', 0], ['b', 1000], ['c', 2000]);
+        const asSender = (regions: SegmentRegion[]) =>
+            sender(...regions.map((r): [string, number] => [r.key, r.top / END]));
+        const keyAt = (regions: SegmentRegion[], px: number) =>
+            regions.filter((r) => r.top <= px).pop()!.key;
+        const map = (from: SegmentRegion[], to: SegmentRegion[], px: number, band: number) =>
+            resolveSegmentTarget(
+                to,
+                END,
+                keyAt(from, px),
+                asSender(from),
+                px / END,
+                band,
+                VIEWPORT / END,
+                VIEWPORT
+            )!;
+
+        for (const px of [0, 400, 800, 1000, 1200, 1499, 1500, 2500]) {
+            const there = map(left, right, px, 0.5);
+            expect(map(right, left, there, 0.5)).toBeCloseTo(px, 6);
         }
+
+        // Without a band the held position stands for all of 'x', so it maps back to one point
+        expect(map(right, left, map(left, right, 1200, 0), 0)).not.toBeCloseTo(1200, 0);
     });
 
-    it('spans multiple unmatched keys between the same bracket', () => {
-        const regions = [region('a'), region('e')];
-        const senderSeq = ['a', 'b', 'c', 'd', 'e'];
-        // 'c' is the middle of 3 unmatched keys between 'a' and 'e' -> halfway across.
-        expect(resolveRegionTarget(regions, 'c', senderSeq)).toEqual({
-            kind: 'interpolate',
-            beforeRegionIndex: 0,
-            afterRegionIndex: 1,
-            progress: 0.5,
-        });
+    it('counts subsections only the sender has as part of their parent', () => {
+        const regions = local(['ch1', 0], ['ch2', 1200]);
+        const nested = sender(
+            ['ch1', 0],
+            ['ch1-1', 0.1, 'ch1'],
+            ['ch1-2', 0.3, 'ch1'],
+            ['ch2', 0.6]
+        );
+        expect(
+            [0.05, 0.3, 0.45].map((p) =>
+                target(regions, p < 0.1 ? 'ch1' : p < 0.3 ? 'ch1-1' : 'ch1-2', nested, p, 0.5)
+            )
+        ).toEqual([100, 600, 900]);
+
+        // The same sections as siblings are sections the receiver lacks
+        const siblings = sender(['ch1', 0], ['ch1-1', 0.1], ['ch1-2', 0.3], ['ch2', 0.6]);
+        expect(target(regions, 'ch1-2', siblings, 0.45, 0)).toBe(1200);
     });
 
-    it('freezes at the last shared region when the sender is past every key this document has (trailing gap)', () => {
-        const regions = [region('chapter-1'), region('chapter-2')];
-        const senderSeq = ['chapter-1', 'chapter-2', 'appendix'];
-
-        expect(resolveRegionTarget(regions, 'appendix', senderSeq)).toEqual({
-            kind: 'freeze-after',
-            regionIndex: 1,
-        });
+    it('counts subsections only the receiver has as part of their parent', () => {
+        const regions = local(
+            ['ch1', 0],
+            ['ch1-1', 400, 'ch1'],
+            ['ch1-2', 800, 'ch1'],
+            ['ch2', 1200]
+        );
+        const sections = sender(['ch1', 0], ['ch2', 0.6]);
+        expect([0, 0.3, 0.6].map((p) => target(regions, 'ch1', sections, p, 0.5))).toEqual([
+            0, 600, 1200,
+        ]);
     });
 
-    it('freezes at the first shared region when the sender is before every key this document has (leading gap)', () => {
-        const regions = [region('chapter-1'), region('chapter-2')];
-        const senderSeq = ['preface', 'chapter-1', 'chapter-2'];
-
-        expect(resolveRegionTarget(regions, 'preface', senderSeq)).toEqual({
-            kind: 'freeze-before',
-            regionIndex: 0,
-        });
+    it('spreads the sender\'s leading region over everything before the first shared key here (the "Dryhaven" case)', () => {
+        // Sender: an unkeyed prologue, then Chapter 1. Receiver: a cast list with keyed sections of
+        // its own before Chapter 1. Matching the two leading regions sent the receiver to its empty
+        // leading region at the very top.
+        const regions = local(['cast', 0], ['cast/heroes', 1000], ['1', 2000], ['2', 2500]);
+        const sections = sender([LEADING_REGION_KEY, 0], ['1', 0.4], ['2', 0.7]);
+        expect(target(regions, LEADING_REGION_KEY, sections, 0.1)).toBe(500);
     });
 
-    it('clamps progress into [0,1] even if sectionFraction is out of range', () => {
-        const regions = [region('a'), region('c')];
-        const senderSeq = ['a', 'b', 'c'];
-        expect(resolveRegionTarget(regions, 'b', senderSeq, 5).kind).toBe('interpolate');
-        const plan = resolveRegionTarget(regions, 'b', senderSeq, 5);
-        if (plan.kind === 'interpolate') expect(plan.progress).toBe(1);
+    it('never matches the leading regions of the two documents directly', () => {
+        // Both have the sentinel. Before the first shared key there is only the gap, which is
+        // exactly the two leading regions here, so they line up anyway.
+        const regions = local([LEADING_REGION_KEY, 0], ['chapter-1', 1000], ['chapter-2', 2000]);
+        const sections = sender([LEADING_REGION_KEY, 0], ['chapter-1', 0.2], ['chapter-2', 0.6]);
+        expect(target(regions, LEADING_REGION_KEY, sections, 0.1)).toBe(500);
     });
 
-    it('does not treat the shared LEADING_REGION_KEY sentinel as a real bracket (regression)', () => {
-        // Both documents trivially have a leading region (every region list starts with one), but
-        // their actual leading content is unrelated (e.g. a different title page/TOC). The sender is
-        // still inside ITS leading region -- key equals LEADING_REGION_KEY exactly, which IS an exact
-        // match here (both docs are "in their own leading region"), so this must resolve 'exact', not
-        // interpolate toward chapter-1. Both sides' leading region is at index 0 of its own sequence,
-        // so atDocumentStart is true here.
-        const regions = [region(LEADING_REGION_KEY), region('chapter-1'), region('chapter-2')];
-        const senderSeq = [LEADING_REGION_KEY, 'chapter-1', 'chapter-2'];
-
-        expect(resolveRegionTarget(regions, LEADING_REGION_KEY, senderSeq, 0.5)).toEqual({
-            kind: 'exact',
-            regionIndex: 0,
-            atDocumentStart: true,
-            atDocumentEnd: false,
-        });
+    it('does not use the leading region as a bracket for an unmatched intro section (regression)', () => {
+        const regions = local([LEADING_REGION_KEY, 0], ['chapter-1', 1000], ['chapter-2', 2000]);
+        const sections = sender(
+            [LEADING_REGION_KEY, 0],
+            ['toc', 0.1],
+            ['chapter-1', 0.4],
+            ['chapter-2', 0.6]
+        );
+        expect(target(regions, 'toc', sections, 0.2)).toBe(500);
     });
 
-    it('reports atDocumentStart=false for an exact match at THIS document\'s first region when the SENDER\'s matching key is not at the start of ITS sequence (the "Chapter 1" asymmetric-extreme regression)', () => {
-        // Live bug (2026-07-17): main doc starts directly at "1" (Chapter 1, index 0 of its own
-        // sequence). The reference doc (tei-book1-outline.xml) shares that same key "1", but only
-        // after 12 unmatched front-matter regions, so key "1" sits at regionIndex 13 there, NOT 0.
-        // Scrolling the main doc from its very top (sender sectionKey "1", scrollProgress near 0)
-        // must NOT snap the reference doc toward ITS OWN top (which would land it back on
-        // "Characters") -- atDocumentStart must be false so the blend is skipped.
-        const regions = [
-            region('front-1'),
-            region('front-2'),
-            region('1'), // "Chapter 1" -- the shared key, NOT this document's first region
-            region('2'),
-        ];
-        const senderSeq = ['1', '2']; // sender's OWN sequence: "1" opens it, at index 0
-
-        const plan = resolveRegionTarget(regions, '1', senderSeq);
-        expect(plan).toEqual({
-            kind: 'exact',
-            regionIndex: 2,
-            atDocumentStart: false, // regionIndex 2 !== 0 locally, regardless of the sender's index 0
-            atDocumentEnd: false,
-        });
+    it('runs to the document end after the last shared key', () => {
+        const regions = local(['a', 0], ['b', 1000], ['notes', 2000]);
+        const sections = sender(['a', 0], ['b', 0.3], ['appendix', 0.6]);
+        expect([0.6, 0.8, 1].map((p) => target(regions, 'appendix', sections, p, 0.5))).toEqual([
+            2000, 2500, 3000,
+        ]);
     });
 
-    it('reports atDocumentStart=true when the exact match is at index 0 on BOTH sides (symmetric documents, the ordinary case)', () => {
-        const regions = [region('1'), region('2'), region('3')];
-        const senderSeq = ['1', '2', '3', '4'];
-
-        expect(resolveRegionTarget(regions, '1', senderSeq)).toEqual({
-            kind: 'exact',
-            regionIndex: 0,
-            atDocumentStart: true,
-            atDocumentEnd: false,
-        });
-    });
-
-    it('reports atDocumentEnd=true only when the match is at the last region on BOTH sides', () => {
-        const regions = [region('1'), region('2')];
-        // Sender's sequence has more content after '2' -> sender is not at ITS OWN end there.
-        const senderSeqNotAtEnd = ['1', '2', '3'];
-        expect(resolveRegionTarget(regions, '2', senderSeqNotAtEnd)).toEqual({
-            kind: 'exact',
-            regionIndex: 1,
-            atDocumentStart: false,
-            atDocumentEnd: false,
-        });
-
-        const senderSeqAtEnd = ['0', '1', '2'];
-        expect(resolveRegionTarget(regions, '2', senderSeqAtEnd)).toEqual({
-            kind: 'exact',
-            regionIndex: 1,
-            atDocumentStart: false,
-            atDocumentEnd: true,
-        });
-    });
-
-    it('freezes before chapter-1 while the sender is in an unmatched intro section, not interpolating via the leading sentinel (regression)', () => {
-        // Refdoc structure: leading sentinel region, then an unmatched "toc" section (e.g. a table of
-        // contents heading that has no counterpart in the main doc), then "chapter-1" which IS shared.
-        // Before the LEADING_REGION_KEY exclusion, 'toc' would have found LEADING_REGION_KEY as its
-        // "before" bracket (trivially present in both region lists) and interpolated the receiver
-        // forward from its own leading region toward chapter-1 -- then snapped back once the sender
-        // actually reached chapter-1's exact match. That produced the reported
-        // scroll-down-then-back-up jump. The correct behaviour is freeze-before at chapter-1's start:
-        // there is no genuinely shared anchor before it.
-        const regions = [region(LEADING_REGION_KEY), region('chapter-1'), region('chapter-2')];
-        const senderSeq = [LEADING_REGION_KEY, 'toc', 'chapter-1', 'chapter-2'];
-
-        expect(resolveRegionTarget(regions, 'toc', senderSeq, 0.5)).toEqual({
-            kind: 'freeze-before',
-            regionIndex: 1, // chapter-1
-        });
+    it('never moves backwards through reordered sections', () => {
+        // The receiver has 'b' before 'a'; the sender passes 'x' after 'a'
+        const regions = local(['b', 0], ['a', 1000]);
+        const sections = sender(['a', 0], ['x', 0.3], ['b', 0.5]);
+        const path = [0, 0.1, 0.2, 0.3, 0.4, 0.49].map((p) =>
+            target(regions, p < 0.3 ? 'a' : 'x', sections, p, 0.5)!
+        );
+        for (let i = 1; i < path.length; i++) expect(path[i]).toBeGreaterThanOrEqual(path[i - 1]);
+        expect(path[0]).toBe(1000);
     });
 });
 
-describe('shouldBlendTowardScrollProgress', () => {
-    // Regression #1 (found live 2026-07-17): resolveRegionTarget correctly returned 'freeze-before'
-    // for every scroll step while the sender was in tei-book1-outline.xml's unmatched leading
-    // sections, but the main doc still visibly scrolled down and back up before settling. Root cause
-    // was NOT in resolveRegionTarget -- it was that scrollToRegion blended every resolved target
-    // toward the SENDER's overall scrollProgress via blendTowardScrollProgress, unconditionally. That
-    // blend is only meaningful for an 'exact' match (both docs at an equivalent point in shared
-    // structure); for freeze/interpolate outcomes the sender's overall progress has no correspondence
-    // to the receiver's frozen/bracketed position, so blending toward it dragged the "frozen" receiver
-    // up and back down as the sender's progress crossed the extreme-blend band near the document top.
-    //
-    // Regression #2 (found live 2026-07-17, same day): even after fixing #1, scrolling the MAIN doc
-    // (which opens directly on "Chapter 1") still snapped the reference doc to (approximately) its own
-    // document start instead of to its "Chapter 1" region -- 13 regions in. The match WAS 'exact'
-    // (both docs share the "Chapter 1" key), but the sender's overall scrollProgress-near-0 was blended
-    // in anyway, because 'exact' alone was treated as sufficient. It is not: the reference doc's
-    // "Chapter 1" is not at ITS OWN document start, so the sender being at ITS OWN start has no
-    // correspondence to the receiver's position. Fix: 'exact' only blends when the match is ALSO at a
-    // corresponding extreme on both sides (RegionTargetPlan.atDocumentStart / atDocumentEnd).
-    it('blends only for an exact match at a corresponding document start', () => {
-        expect(
-            shouldBlendTowardScrollProgress({
-                kind: 'exact',
-                regionIndex: 0,
-                atDocumentStart: true,
-                atDocumentEnd: false,
-            })
-        ).toBe(true);
+describe('ApacheAnnotatorSyncController region geometry', () => {
+    // jsdom has no layout, so the scroll container and the section tops are stubbed. Each section is
+    // given a fixed position in the content; its viewport top follows from the current scrollTop.
+    // Positions given to and read from the controller below are sync point positions in the content
+    // (see syncPointFraction), not scrollTops.
+    const CLIENT_HEIGHT = 500;
+
+    let root: HTMLElement;
+    let container: HTMLElement;
+    let controller: ApacheAnnotatorSyncController;
+
+    beforeEach(() => {
+        container = document.createElement('div');
+        root = document.createElement('div');
+        container.appendChild(root);
+        document.body.appendChild(container);
+        controller = new ApacheAnnotatorSyncController(root, () => container);
+        // These tests read where a sync puts the viewport right away; the glide is tested below
+        controller.glide = false;
     });
 
-    it('blends only for an exact match at a corresponding document end', () => {
-        expect(
-            shouldBlendTowardScrollProgress({
-                kind: 'exact',
-                regionIndex: 5,
-                atDocumentStart: false,
-                atDocumentEnd: true,
-            })
-        ).toBe(true);
+    afterEach(() => container.remove());
+
+    /** Lay out one region per key, starting at the given content position. */
+    function layout(sections: [string, number][], scrollHeight: number) {
+        Object.defineProperty(container, 'scrollHeight', { value: scrollHeight });
+        Object.defineProperty(container, 'clientHeight', { value: CLIENT_HEIGHT });
+        container.getBoundingClientRect = () => ({ top: 0 }) as DOMRect;
+
+        const regions: SyncRegion[] = sections.map(([key, position], i) => {
+            const element = document.createElement('section');
+            element.getBoundingClientRect = () =>
+                ({ top: position - container.scrollTop }) as DOMRect;
+            root.appendChild(element);
+            return { key, start: i, end: i + 1, startElement: element };
+        });
+
+        const tocRoot = { children: [] } as unknown as TocLevel;
+        controller.setDocumentStructure({
+            sectionSelector: () => 'section',
+            extractKey: () => undefined,
+            tocRoot: () => tocRoot,
+        });
+        const internals = controller as any;
+        internals.regions = regions;
+        internals.regionsTocRoot = tocRoot;
+    }
+
+    /** Where this controller puts its sync point for a sender in the given region and position. */
+    function follow(
+        key: string,
+        sections: SectionTop[],
+        scrollProgress: number,
+        sectionFraction = 0
+    ): number {
+        controller.reset();
+        controller.scrollToViewportPosition({
+            begin: 0,
+            fraction: 0,
+            scrollProgress,
+            sectionKey: key,
+            sectionFraction,
+            sections,
+        });
+        return Math.round((controller as any).syncPointAt(container));
+    }
+
+    /** The section position this controller reports with its sync point at the given position. */
+    function report(syncPoint: number) {
+        container.scrollTop = controller.scrollTopForSyncPoint(container, syncPoint);
+        const pos = { begin: 0, end: 0, fraction: 0 } as ViewportScrollPosition;
+        (controller as any).augmentWithSectionPosition(pos, container);
+        return pos;
+    }
+
+    it('creeps through the end of the region before while the sender crosses a region this document does not have', () => {
+        // The sender has 'x' between 'a' and 'b'; here 'b' follows 'a' directly
+        layout(
+            [
+                ['a', 0],
+                ['b', 1000],
+                ['c', 2000],
+            ],
+            3000
+        );
+        const sections = sender(['a', 0], ['x', 0.3], ['b', 0.5], ['c', 0.8]);
+
+        // The last half viewport (250 px) of 'a' is given to 'x', and 'b' starts where 'x' ends
+        expect(follow('a', sections, 0.3, 1)).toBe(750);
+        expect([0.3, 0.4, 0.5].map((p) => follow('x', sections, p))).toEqual([750, 875, 1000]);
+        expect(follow('b', sections, 0.5, 0)).toBe(1000);
     });
 
-    it('does NOT blend for an exact match that is at neither extreme (interior match)', () => {
-        expect(
-            shouldBlendTowardScrollProgress({
-                kind: 'exact',
-                regionIndex: 2,
-                atDocumentStart: false,
-                atDocumentEnd: false,
-            })
-        ).toBe(false);
+    it('moves through content of its own between the bracketing regions while the sender is in the gap', () => {
+        // 'y' exists only here, between 'a' and 'b'
+        layout(
+            [
+                ['a', 0],
+                ['y', 1000],
+                ['b', 1500],
+                ['c', 2000],
+            ],
+            3000
+        );
+        const sections = sender(['a', 0], ['x', 0.3], ['b', 0.5], ['c', 0.8]);
+
+        expect([0.3, 0.4, 0.5].map((p) => follow('x', sections, p))).toEqual([1000, 1250, 1500]);
     });
 
-    it('does NOT blend for an exact match at THIS document\'s extreme when the sender is not correspondingly at its own extreme (the asymmetric "Chapter 1" case)', () => {
-        // This is the exact shape resolveRegionTarget would never actually produce (atDocumentStart
-        // requires BOTH sides), included here to pin the predicate's own logic independent of how the
-        // plan was built.
+    it('moves at a steady pace across sender regions of very different heights', () => {
+        // The sender has a short and a long region of its own before '1'; here an introduction
+        // without a key in the sender comes first
+        layout(
+            [
+                ['intro', 0],
+                ['1', 1000],
+                ['2', 2000],
+            ],
+            4000
+        );
+        const sections = sender(
+            ['cast', 0],
+            ['heroes', 0.01],
+            ['lore', 0.1],
+            ['1', 0.9],
+            ['2', 0.95]
+        );
+
+        // Counting regions would cover a third of the way in 'heroes', which is only 1% of the gap
         expect(
-            shouldBlendTowardScrollProgress({
-                kind: 'exact',
-                regionIndex: 0,
-                atDocumentStart: false,
-                atDocumentEnd: false,
-            })
-        ).toBe(false);
+            [0.009, 0.45, 0.7].map((p) => follow(p < 0.01 ? 'heroes' : 'lore', sections, p))
+        ).toEqual([10, 500, 778]);
     });
 
-    it('does not blend for freeze-before, freeze-after, or interpolate', () => {
-        expect(shouldBlendTowardScrollProgress({ kind: 'freeze-before', regionIndex: 0 })).toBe(false);
-        expect(shouldBlendTowardScrollProgress({ kind: 'freeze-after', regionIndex: 0 })).toBe(false);
-        expect(
-            shouldBlendTowardScrollProgress({
-                kind: 'interpolate',
-                beforeRegionIndex: 0,
-                afterRegionIndex: 1,
-                progress: 0.5,
-            })
-        ).toBe(false);
+    it('does not snap back to a target it already applied after the user has scrolled by hand', () => {
+        layout(
+            [
+                ['a', 0],
+                ['b', 1000],
+            ],
+            3000
+        );
+        const target: ViewportScrollTarget = {
+            begin: 0,
+            end: 0,
+            fraction: 0,
+            scrollProgress: 0.3,
+            sectionKey: 'a',
+            sectionFraction: 0.5,
+            sections: sender(['a', 0], ['b', 1 / 3]),
+        };
+
+        controller.reset();
+        controller.scrollToViewportPosition(target);
+        const applied = container.scrollTop;
+
+        // The user scrolls on; the same target arrives again (a repeated frame), so it is skipped
+        container.scrollTop = applied + 100;
+        controller.scrollToViewportPosition(target);
+        expect(container.scrollTop).toBe(applied + 100);
+
+        // A target that differs from the last one is applied
+        controller.scrollToViewportPosition({ ...target, sectionFraction: 0.9 });
+        expect(container.scrollTop).not.toBe(applied + 100);
     });
 
-    it('never blends for none (though none never reaches this call in practice)', () => {
-        expect(shouldBlendTowardScrollProgress({ kind: 'none' })).toBe(false);
+    it('reports where every region starts as a fraction of the content height', () => {
+        layout(
+            [
+                ['a', 0],
+                ['b', 1000],
+                ['c', 2000],
+                ['d', 2800],
+            ],
+            3000
+        );
+
+        const tops = report(1250).sections!;
+        expect(tops.map((s) => s.key)).toEqual(['a', 'b', 'c', 'd']);
+        [0, 1000 / 3000, 2000 / 3000, 2800 / 3000].forEach((top, i) =>
+            expect(tops[i].top).toBeCloseTo(top, 9)
+        );
+    });
+
+    it('ends the last region at the bottom of the content, on both sides', () => {
+        layout(
+            [
+                ['a', 0],
+                ['b', 1000],
+                ['c', 2000],
+            ],
+            3000
+        );
+        const sections = sender(['a', 0], ['b', 1 / 3], ['c', 2 / 3]);
+
+        // The sender's fraction reaches 1 at its bottom, and the receiver's bottom is at fraction 1
+        expect(report(3000).sectionFraction).toBe(1);
+        expect(report(3000).sectionKey).toBe('c');
+        expect(report(2500).sectionFraction).toBeCloseTo(0.5, 9);
+        expect(follow('c', sections, 1, 1)).toBe(3000);
+        expect(container.scrollTop).toBe(2500);
+        // Entering the last region continues from the end of the region before, with no jump
+        expect(follow('b', sections, 2 / 3, 1)).toBe(2000);
+        expect(follow('c', sections, 2 / 3, 0)).toBe(2000);
+    });
+
+    it('reaches a region that starts less than a viewport height above the end of the content', () => {
+        layout(
+            [
+                ['a', 0],
+                ['b', 1000],
+                ['c', 2800],
+            ],
+            3000
+        );
+        const sections = sender(['a', 0], ['b', 1 / 3], ['c', 2800 / 3000]);
+
+        expect(report(2900).sectionKey).toBe('c');
+        expect(report(2900).sectionFraction).toBeCloseTo(0.5, 9);
+        expect(follow('c', sections, 2900 / 3000, 0.5)).toBe(2900);
+    });
+
+    it('scrolls through its own sections before the first shared one while the sender is in its leading region', () => {
+        // The sender has an unkeyed prologue before '1'; here a cast list with keys of its own
+        // comes first
+        layout(
+            [
+                ['cast', 0],
+                ['heroes', 1000],
+                ['1', 3000],
+                ['2', 4000],
+            ],
+            6000
+        );
+        const sections = sender([LEADING_REGION_KEY, 0], ['1', 0.4], ['2', 0.7]);
+
+        expect([0, 0.2, 0.4].map((p) => follow(LEADING_REGION_KEY, sections, p))).toEqual([
+            0, 1500, 3000,
+        ]);
+        expect(follow('1', sections, 0.4, 0)).toBe(3000);
+    });
+
+    it('waits at the first shared section when it has nothing before it', () => {
+        layout(
+            [
+                ['1', 0],
+                ['2', 1000],
+            ],
+            3000
+        );
+        const sections = sender([LEADING_REGION_KEY, 0], ['1', 0.4], ['2', 0.7]);
+
+        expect([0, 0.2, 0.4].map((p) => follow(LEADING_REGION_KEY, sections, p))).toEqual([
+            0, 0, 0,
+        ]);
+    });
+
+    it('scrolls through its own sections after the last shared one while the sender is past it', () => {
+        layout(
+            [
+                ['a', 0],
+                ['b', 1000],
+                ['notes', 2000],
+            ],
+            4000
+        );
+        const sections = sender(['a', 0], ['b', 0.3], ['appendix', 0.6]);
+
+        // From the end of 'b' to the bottom of the content
+        expect([0.6, 0.8, 1].map((p) => follow('appendix', sections, p))).toEqual([
+            2000, 3000, 4000,
+        ]);
+    });
+
+    describe('glide', () => {
+        let frames: FrameRequestCallback[];
+
+        beforeEach(() => {
+            frames = [];
+            vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+                frames.push(callback);
+                return frames.length;
+            });
+            vi.stubGlobal('cancelAnimationFrame', () => {
+                frames = [];
+            });
+            controller.glide = true;
+            layout(
+                [
+                    ['a', 0],
+                    ['b', 1000],
+                    ['c', 2000],
+                ],
+                3000
+            );
+        });
+
+        afterEach(() => vi.unstubAllGlobals());
+
+        /** Run the pending animation frames, one frame of 16 ms each, until none are left. */
+        function runFrames(limit = 1000): number {
+            let n = 0;
+            for (let time = 0; frames.length && n < limit; n++, time += 16) {
+                const pending = frames;
+                frames = [];
+                for (const callback of pending) callback(time);
+            }
+            return n;
+        }
+
+        const sections = sender(['a', 0], ['b', 1 / 3], ['c', 2 / 3]);
+        const towards = (key: string, scrollProgress: number) =>
+            controller.scrollToViewportPosition({
+                begin: 0,
+                fraction: 0,
+                scrollProgress,
+                sectionKey: key,
+                sections,
+            });
+
+        it('moves to a distant position over several frames', () => {
+            towards('b', 0.5);
+            expect(container.scrollTop).toBe(0);
+
+            const n = runFrames();
+            expect(n).toBeGreaterThan(5);
+            expect(Math.round((controller as any).syncPointAt(container))).toBe(1500);
+        });
+
+        it('moves to a close position at once', () => {
+            towards('a', 0.02);
+            expect(frames).toEqual([]);
+            expect(Math.round((controller as any).syncPointAt(container))).toBe(60);
+        });
+
+        it('counts the positions it moves through as its own, and stops when something else moves the viewport', () => {
+            towards('b', 0.5);
+            runFrames(3);
+            const reached = container.scrollTop;
+            expect(reached).toBeGreaterThan(0);
+            expect(controller.isApplyingViewportSync()).toBe(true);
+
+            // The user scrolls the pane while it glides: they take over
+            container.scrollTop = reached + 7;
+            expect(controller.isApplyingViewportSync()).toBe(false);
+            runFrames();
+            expect(container.scrollTop).toBe(reached + 7);
+        });
+    });
+
+    it('forgets the position it synced to once the viewport has been anywhere else', () => {
+        // Moved to the top by a sync, scrolled down by the user, and back up to the top: the last
+        // move is the user's, not an echo of the sync
+        layout(
+            [
+                ['a', 0],
+                ['b', 1000],
+            ],
+            3000
+        );
+        controller.scrollToViewportPosition({
+            begin: 0,
+            fraction: 0,
+            scrollProgress: 0,
+            sectionKey: 'a',
+            sections: sender(['a', 0], ['b', 1 / 3]),
+        });
+        expect(controller.isApplyingViewportSync()).toBe(true);
+
+        container.scrollTop = 300;
+        expect(controller.isApplyingViewportSync()).toBe(false);
+        container.scrollTop = 0;
+        expect(controller.isApplyingViewportSync()).toBe(false);
     });
 });
