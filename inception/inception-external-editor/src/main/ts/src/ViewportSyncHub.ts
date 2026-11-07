@@ -18,18 +18,12 @@
 import { type AnnotationEditor } from '@inception-project/inception-js-api';
 
 /**
- * Suppress scroll echoing of recieving peers for this many milliseconds after a scroll event is received to avoid
- * events echoing back and forth between two editors.
- */
-const SUPPRESS_ECHO_MS = 250;
-
-/**
  * A registered editor participating in scroll synchronization.
  */
 type PeerEditor = {
     id: string;
     editor: AnnotationEditor;
-    scrollTarget: EventTarget;
+    scrollTargetDocument: Document;
     listener: (event: Event) => void;
     /**
      * The element whose scrolling moves this editor's viewport, or undefined if the editor scrolls
@@ -37,8 +31,20 @@ type PeerEditor = {
      */
     scope?: Element;
     rafHandle?: number;
-    suppressUntil: number;
+    /**
+     * The scroll position this editor was last moved to by a partner. The scroll event that move
+     * causes reports this position, so it is an echo and is not passed back. Any other position is
+     * a genuine scroll, however soon after the move it happens.
+     */
+    appliedScrollTop?: number;
 };
+
+/** The scroll position of the viewport of the given peer. */
+function scrollTopOf(peer: PeerEditor): number {
+    if (peer.scope) return peer.scope.scrollTop;
+    const doc = peer.scrollTargetDocument;
+    return (doc.scrollingElement ?? doc.documentElement).scrollTop;
+}
 
 /**
  * Host-page hub that mirrors scroll positions between the annotation editors on a page.
@@ -58,16 +64,15 @@ export class ViewportSyncHub {
 
         this.unregister(aId);
 
-        const scrollTarget: EventTarget = aScope?.ownerDocument ?? aScope ?? document;
+        const scrollTargetDocument = aScope?.ownerDocument ?? document;
         const peer: PeerEditor = {
             id: aId,
             editor: aEditor,
-            scrollTarget,
+            scrollTargetDocument,
             scope: aScope,
             listener: (event: Event) => this.onScroll(peer, event),
-            suppressUntil: 0,
         };
-        scrollTarget.addEventListener('scroll', peer.listener, {
+        scrollTargetDocument.addEventListener('scroll', peer.listener, {
             capture: true,
             passive: true,
         });
@@ -79,7 +84,7 @@ export class ViewportSyncHub {
         const peer = this.peers.get(aId);
         if (!peer) return;
 
-        peer.scrollTarget.removeEventListener('scroll', peer.listener, { capture: true });
+        peer.scrollTargetDocument.removeEventListener('scroll', peer.listener, { capture: true });
         if (peer.rafHandle !== undefined) cancelAnimationFrame(peer.rafHandle);
         this.peers.delete(aId);
         console.debug(`[ViewportSyncHub] Unregistered editor [${aId}]`);
@@ -126,7 +131,7 @@ export class ViewportSyncHub {
             // Editors whose viewport is an inner wrapper (brat, Apache Annotator) declare that
             // wrapper via getScrollContainer() and take the scoped branch above instead.
             const target = aEvent.target;
-            const doc = aPeer.scrollTarget as Document;
+            const doc = aPeer.scrollTargetDocument;
             const root = doc.scrollingElement ?? doc.documentElement;
             if (target !== doc && target !== root) return;
         }
@@ -137,7 +142,13 @@ export class ViewportSyncHub {
         aPeer.rafHandle = requestAnimationFrame(() => {
             aPeer.rafHandle = undefined;
 
-            if (performance.now() < aPeer.suppressUntil) return;
+            // Our own move of this editor reports back the position we applied: an echo, not a user
+            // scroll. An editor that can tell, because it moves there over several frames, says so.
+            const echo = aPeer.editor.isApplyingViewportSync
+                ? aPeer.editor.isApplyingViewportSync()
+                : aPeer.appliedScrollTop !== undefined &&
+                  scrollTopOf(aPeer) === aPeer.appliedScrollTop;
+            if (echo) return;
 
             const partnerId = this.links.get(aPeer.id);
             if (partnerId === undefined) return;
@@ -148,7 +159,6 @@ export class ViewportSyncHub {
             const pos = aPeer.editor.getViewportScrollPosition?.();
             if (!pos) return;
 
-            partner.suppressUntil = performance.now() + SUPPRESS_ECHO_MS;
             partner.editor.scrollToViewportPosition({
                 begin: pos.begin,
                 end: pos.end,
@@ -156,8 +166,10 @@ export class ViewportSyncHub {
                 scrollProgress: pos.scrollProgress,
                 sectionKey: pos.sectionKey,
                 sectionFraction: pos.sectionFraction,
-                sectionKeySequence: pos.sectionKeySequence,
+                sections: pos.sections,
+                viewportFraction: pos.viewportFraction,
             });
+            partner.appliedScrollTop = scrollTopOf(partner);
         });
     }
 }

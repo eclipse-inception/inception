@@ -55,6 +55,9 @@ import de.tudarmstadt.ukp.inception.testscenarios.config.InceptionTestScenariosA
  * greatly in length: chapter 1 of the translation is far longer than in the source. An alignment by
  * section therefore lands somewhere else than an alignment by character offset or scroll fraction,
  * which makes the two distinguishable. HTML opens in an unpaged editor.</li>
+ * <li><code>scrollsync-gap.html</code> is the source <b>without chapter 3</b>. Scrolling the source
+ * through chapter 3 must hold the gap document at the start of chapter 4, not send it back into
+ * chapter 2.</li>
  * <li><code>scrollsync-other.html</code> has a <b>different</b> heading structure.</li>
  * <li><code>scrollsync-paged.txt</code> is long plain text, which opens in a paged editor. It has
  * been annotated by <code>scenario-annotator-1</code>, so it can be opened for two data owners side
@@ -74,6 +77,7 @@ public class ScrollSyncScenarioInitializer
 
     private static final String DOC_SOURCE = "scrollsync-source.html";
     private static final String DOC_TRANSLATION = "scrollsync-translation.html";
+    private static final String DOC_GAP = "scrollsync-gap.html";
     private static final String DOC_OTHER = "scrollsync-other.html";
     private static final String DOC_PAGED = "scrollsync-paged.txt";
 
@@ -103,9 +107,10 @@ public class ScrollSyncScenarioInitializer
     @Override
     public Optional<String> getDescription()
     {
-        return Optional.of("Two HTML documents with the same structure, one with a different "
-                + "structure, and a long paged text annotated by another annotator. For scroll "
-                + "sync between the reference document and the editor, or between split panes.");
+        return Optional.of("Two HTML documents with the same structure, one missing a section, "
+                + "one with a different structure, and a long paged text annotated by another "
+                + "annotator. For scroll sync between the reference document and the editor, or "
+                + "between split panes.");
     }
 
     @Override
@@ -136,6 +141,7 @@ public class ScrollSyncScenarioInitializer
 
                 `scrollsync-source.html` and `scrollsync-translation.html` share their heading
                 structure (chapters 1-8), but chapter 1 of the translation is much longer.
+                `scrollsync-gap.html` is the source without chapter 3.
                 `scrollsync-other.html` has a different structure. `scrollsync-paged.txt` is long
                 plain text in a paged editor, annotated by `scenario-annotator-1` (password
                 `admin`).
@@ -146,6 +152,7 @@ public class ScrollSyncScenarioInitializer
 
         importDocument(documentService, project, getClass(), DOC_SOURCE, FORMAT_HTML);
         importDocument(documentService, project, getClass(), DOC_TRANSLATION, FORMAT_HTML);
+        importDocument(documentService, project, getClass(), DOC_GAP, FORMAT_HTML);
         importDocument(documentService, project, getClass(), DOC_OTHER, FORMAT_HTML);
         var paged = importDocument(documentService, project, getClass(), DOC_PAGED);
 

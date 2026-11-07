@@ -20,6 +20,7 @@ export type {
     ViewportSyncPeer,
     ViewportScrollPosition,
     ViewportScrollTarget,
+    SectionTop,
 } from './AnnotationEditor';
 export type { AnnotationEditorFactory } from './AnnotationEditorFactory';
 export type { AnnotationEditorProperties } from './AnnotationEditorProperties';

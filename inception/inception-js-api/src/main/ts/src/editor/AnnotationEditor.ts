@@ -18,27 +18,29 @@
 import type { Offsets } from '../model/Offsets';
 
 /**
- * Vertical scroll position: where the top edge of an editor's viewport currently falls in the
- * document, expressed layout-independently along the one-dimensional character-offset axis (there
- * is no x/y here - only vertical scroll). The position is an anchor element the viewport top cuts
- * through, given as the character-offset interval {@code begin..end}, plus {@code fraction}: how
- * far the viewport top has progressed through that interval. Together they denote a fractional
- * character offset {@code begin + fraction*(end-begin)}.
+ * Vertical scroll position: where an editor's sync point currently falls in the document, expressed
+ * layout-independently along the character-offset axis. The sync point is a horizontal line in the
+ * viewport that the editor chooses: the viewport top, or a line that moves with the scroll position.
+ * The receiver puts the same position at its own sync point. The position is the anchor element the
+ * sync point cuts through, as the interval {@code begin..end}, plus {@code fraction}: how far the
+ * sync point has progressed through it. Together they denote the fractional character offset
+ * {@code begin + fraction*(end-begin)}.
  */
 export type ViewportScrollPosition = {
     /** Document character offset at which the topmost visible anchor element begins. */
     begin: number;
     /** End offset of the anchor element, so a receiver can size the anchor. */
     end: number;
-    /** Progress (0..1) of the viewport top through the anchor element. */
+    /** Progress (0..1) of the sync point through the anchor element. */
     fraction: number;
     /**
-     * The source's overall scroll progress: scrollTop / maxScroll, in [0,1] (0 = at the very top,
-     * 1 = at the very bottom).
+     * The source's overall progress: how far its sync point has got through the range it moves in,
+     * in [0,1] (0 = scrolled to the very top, 1 = scrolled to the very bottom). For a sync point at
+     * the viewport top that is scrollTop / maxScroll.
      */
     scrollProgress?: number;
     /**
-     * Key of the scroll-sync region covering the viewport top, when the two documents share a
+     * Key of the scroll-sync region covering the sync point, when the two documents share a
      * structure (regions are derived from DocumentStructureStrategy section keys). Lets a receiver
      * align by matching region rather than by absolute character offset -- correct even between two
      * different documents. Absent when there is no structure or no covering region; the receiver then
@@ -46,19 +48,42 @@ export type ViewportScrollPosition = {
      */
     sectionKey?: string;
     /**
-     * The viewport top's position within the keyed region as a pixel fraction in [0,1] (paired with
-     * sectionKey). The receiver places its own viewport top at the same fraction of its matching
+     * The sync point's position within the keyed region as a pixel fraction in [0,1] (paired with
+     * sectionKey). The receiver places its own sync point at the same fraction of its matching
      * region's pixel span.
      */
     sectionFraction?: number;
     /**
-     * The source's full ordered list of scroll-sync region keys (document order). Lets a receiver
-     * that has no region for {@code sectionKey} still align sensibly: it looks for the nearest keys
-     * before/after {@code sectionKey} in this sequence that it DOES have a region for, and brackets
-     * between them (interpolating if both are found, freezing at the one found boundary if only one
-     * is, falling back to offset sync if neither is). Absent when the source has no structure.
+     * All of the source's scroll-sync regions in document order, with where each starts. Lets a
+     * receiver without a region for {@code sectionKey} interpolate between the nearest regions
+     * before and after it that it does have, falling back to offset sync if it has neither. Present
+     * whenever {@code sectionKey} is, together with {@code scrollProgress}.
      */
-    sectionKeySequence?: string[];
+    sections?: SectionTop[];
+    /**
+     * The source's viewport height in the unit of {@code scrollProgress}, so a receiver can measure
+     * lengths in the source's viewport heights. Present together with {@code sections}.
+     */
+    viewportFraction?: number;
+};
+
+/**
+ * Where one of the source's scroll-sync regions starts, see {@link ViewportScrollPosition.sections}.
+ */
+export type SectionTop = {
+    /** The region's key. */
+    key: string;
+    /**
+     * Where the region starts, in the same unit as {@code scrollProgress}: the position of the sync
+     * point at which it reaches the region's start, as a fraction of the range the sync point moves
+     * in, in [0,1]. A region starting beyond the end of that range has 1.
+     */
+    top: number;
+    /**
+     * The key of the nearest enclosing region, or undefined when no region encloses it. Lets a
+     * receiver tell subsections it lacks from sections it lacks.
+     */
+    parent?: string;
 };
 
 /**
@@ -73,32 +98,22 @@ export type ViewportScrollTarget = {
     begin: number;
     /** End offset of the anchor element. Defaults to {@code begin} when omitted. */
     end?: number;
-    /** Progress (0..1) of the viewport top through the anchor element. */
+    /** Progress (0..1) of the sync point through the anchor element. */
     fraction: number;
-    /**
-     * The source's overall scroll progress: scrollTop / maxScroll, in [0,1] (0 = at the very top,
-     * 1 = at the very bottom).
-     */
+    /** See {@link ViewportScrollPosition.scrollProgress}. */
     scrollProgress?: number;
     /**
-     * Key of the scroll-sync region to align to, when the source and this receiver share a document
-     * structure. When present and this receiver has a matching region, the receiver scrolls
-     * region-fractionally by {@code sectionFraction} instead of using {@code begin}. Ignored on a key
-     * miss, so a {@link ViewportScrollPosition} remains assignable here and the offset path stays the
-     * default.
+     * Key of the scroll-sync region to align to. When this receiver has a matching region it scrolls
+     * region-fractionally by {@code sectionFraction} instead of using {@code begin}; on a miss it is
+     * ignored.
      */
     sectionKey?: string;
-    /**
-     * The viewport top's pixel fraction in [0,1] within the keyed region (paired with sectionKey).
-     * The receiver places its viewport top at the same fraction of its matching region's pixel span.
-     */
+    /** See {@link ViewportScrollPosition.sectionFraction}. */
     sectionFraction?: number;
-    /**
-     * The source's full ordered list of scroll-sync region keys (document order), used to bracket a
-     * {@code sectionKey} the receiver has no region for. See
-     * {@link ViewportScrollPosition.sectionKeySequence}.
-     */
-    sectionKeySequence?: string[];
+    /** See {@link ViewportScrollPosition.sections}. */
+    sections?: SectionTop[];
+    /** See {@link ViewportScrollPosition.viewportFraction}. */
+    viewportFraction?: number;
 };
 
 /**
@@ -131,21 +146,29 @@ export interface AnnotationEditor {
     scrollTo(args: { offset: number; position?: string; pingRanges?: Offsets[] }): void;
 
     /**
-     * Report the vertical scroll position currently at the top of the viewport. May return null when the
-     * position cannot be determined (e.g. before initialization has completed).
+     * Report the vertical scroll position currently at the editor's sync point (see
+     * {@link ViewportScrollPosition}). May return null when the position cannot be determined (e.g.
+     * before initialization has completed).
      */
     getViewportScrollPosition?(): ViewportScrollPosition | null;
 
     /**
-     * Place the viewport top at the given anchor offset plus intra-anchor fraction. The
+     * Place the editor's sync point at the given anchor offset plus intra-anchor fraction. The
      * editor resolves the offset in its own layout and clamps to its own scroll bounds.
      * <p>
      * The anchor + fraction denote a fractional character offset (begin + fraction*(end-begin)) at
-     * the viewport top. Interpolating in character space rather than pixels keeps the sync stable
+     * the sync point. Interpolating in character space rather than pixels keeps the sync stable
      * when the two editors wrap the same text to different heights - each side converts that offset
      * to a pixel position with its own layout. {@code end} defaults to {@code begin} if omitted.
      */
     scrollToViewportPosition?(pos: ViewportScrollTarget): void;
+
+    /**
+     * Whether the viewport is where {@link scrollToViewportPosition} put it, or is still moving there,
+     * so that the scroll events it causes are not mirrored back. False once anything else has moved
+     * it. Editors without it are judged by their scroll position after the call.
+     */
+    isApplyingViewportSync?(): boolean;
 
     /**
      * Add this editor to the scroll-sync {@code aHub} under {@code aId} (a host-page markup id chosen

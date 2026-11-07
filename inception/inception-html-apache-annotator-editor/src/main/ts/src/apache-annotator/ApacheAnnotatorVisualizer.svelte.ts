@@ -47,6 +47,7 @@ import {
     ApacheAnnotatorSyncController,
     type SyncStructureAccessors,
 } from './ApacheAnnotatorSyncController';
+import { endMarginLostWhenEmptied } from './SectionMaterialization';
 import {
     groupHighlightsByVid,
     removeClassFromAncestors,
@@ -260,6 +261,11 @@ export class ApacheAnnotatorVisualizer {
 
             this.materializeWidthAndHeight(this.root, this.sectionSelector);
 
+            // Nothing is secluded until the tracker below reports, so the scroll sync can record
+            // where everything is now. Absent on the first call, from the constructor; the sync
+            // controller records once it gets the document structure instead.
+            this.syncController?.recordLayout();
+
             this.sectionTracker = this.sectionSeclusionTracker(this.root, this.sectionSelector);
             this.rootResizeTracker = new ResizeObserver((entries) => {
                 if (this.optimizingLayout || entries.length === 0) return;
@@ -361,6 +367,10 @@ export class ApacheAnnotatorVisualizer {
                 // Fallbacks
                 if (!height || height === 0) height = n.offsetHeight || n.scrollHeight || 0;
                 if (!width || width === 0) width = n.offsetWidth || n.scrollWidth || 0;
+
+                // Keep the margin that collapses out of the section, which the height leaves out,
+                // when its nested sections are secluded (see endMarginLostWhenEmptied)
+                if (height > 0) height += endMarginLostWhenEmptied(n);
 
                 // Store the node and its new dimensions
                 if (height > 0 || width > 0) {
@@ -1101,6 +1111,10 @@ export class ApacheAnnotatorVisualizer {
 
     scrollToViewportPosition(pos: ViewportScrollTarget): void {
         this.syncController.scrollToViewportPosition(pos);
+    }
+
+    isApplyingViewportSync(): boolean {
+        return this.syncController.isApplyingViewportSync();
     }
 
     connectToHub(aHub: ViewportSyncPeer, aId: string, aEditor: AnnotationEditor): void {
