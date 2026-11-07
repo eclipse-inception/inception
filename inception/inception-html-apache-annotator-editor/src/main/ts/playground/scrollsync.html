@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<!--
+  Licensed to the Technische Universität Darmstadt under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The Technische Universität Darmstadt
+  licenses this file to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!--
+  Driver page for the scroll-sync playground, served by serve.mjs. Everything below the controls
+  is the real code: ExternalEditor loads each document into an iframe the way INCEpTION does,
+  injects the Apache Annotator editor and the HTML document structure into it, and registers the
+  editor with its ViewportSyncHub. This page only stubs DIAM and links the two panes, which is what
+  ViewportSyncLink does in INCEpTION.
+
+  Each pane shows a document generated from a spec (see generate() in serve.mjs for the syntax), or
+  a scenario document given as file:<name>. The presets below are just pairs of specs.
+
+  Query parameters: a, b (pane specs), wa, wb (pane widths in px; default: half the window each),
+  link (0 to start unlinked), overlay (0 to hide the section overlay), syncpoint (0 to hide the
+  sync point hairline), rs, re (sync point ramp lengths at the start and end, in viewport heights),
+  band (viewport heights of the shared section before a section only one side has that are given
+  to it; 0 to hold instead), glide (0 to jump instead of gliding), gms, gth (glide time constant in
+  ms and threshold in viewport heights).
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<title>Scroll-sync playground</title>
+<style>
+  html, body { margin: 0; height: 100%; font: 13px sans-serif; }
+  body { display: flex; flex-direction: column; }
+  header { display: flex; flex-wrap: wrap; gap: 4px 1em; align-items: center; padding: 4px 8px;
+           background: #eee; }
+  header input[type=text] { width: 22em; font: 12px monospace; }
+  main { flex: 1; display: flex; gap: 6px; min-height: 0; padding: 6px; }
+  /* Half the window each (minus half the gap) until dragged; dragging sets a px width */
+  .pane { display: flex; flex-direction: column; flex: none; width: calc(50% - 3px);
+          min-width: 150px; resize: horizontal;
+          overflow: hidden; border: 1px solid #999; }
+  .view { flex: 1; position: relative; min-height: 0; }
+  .view iframe { position: absolute; inset: 0; border: 0; width: 100%; height: 100%; }
+  /* Drawn over the iframe, never into it: anything added to the editor's DOM would shift the
+     character offsets and the layout that the sync measures */
+  .overlay { position: absolute; overflow: hidden; pointer-events: none; }
+  .overlay div { position: absolute; left: 0; right: 0; }
+  .overlay .band { opacity: 0.08; }
+  .overlay .band.current { opacity: 0.22; }
+  .overlay .region { border-top: 2px solid; }
+  .overlay .region span { position: absolute; right: 2px; top: 0; font: 11px monospace;
+                          padding: 0 3px; color: #fff; }
+  .overlay .section { border-top: 1px dashed #888; }
+  .overlay .syncpoint { border-top: 1px solid #d0f; }
+  .overlay .syncpoint.target { border-top-style: dashed; }
+  .overlay .syncpoint span { position: absolute; left: 50%; top: 1px; font: 11px monospace;
+                             padding: 0 3px; background: #d0f; color: #fff; white-space: nowrap; }
+  .overlay .section span { position: absolute; left: 2px; top: 0; font: 10px monospace;
+                           padding: 0 3px; background: rgba(255,255,255,0.85); color: #555; }
+  .pane output { font: 11px monospace; padding: 2px 4px; background: #f6f6f6; white-space: pre; }
+</style>
+<script src="/dist/ExternalEditor.js"></script>
+</head>
+<body>
+<header>
+  <label>Scenario <select id="preset"><option value="">(custom)</option></select></label>
+  <label>Left <input type="text" id="spec-a"></label>
+  <label>Right <input type="text" id="spec-b"></label>
+  <label><input type="checkbox" id="link"> linked</label>
+  <label title="Solid lines and bands: the controller's sync regions (key, [start, end) character offsets). Dashed lines: section elements of the document structure (id, and key if any). Same key, same colour in both panes. Darker band: the region the current position is in.">
+    <input type="checkbox" id="overlay"> sections</label>
+  <label title="Hairline at the sync point: where the controller measures (sender) and places (receiver) the synced position. Taken from the controller's syncPointOffset(container) if it has one, else assumed to be the viewport top. Dashed: where the receiver tried to put it, if the scroll could not get there.">
+    <input type="checkbox" id="syncpoint"> sync point</label>
+  <label title="How many viewport heights of scrolling the sync point takes to move from the viewport top to its middle at the start of the document, and from the middle to the bottom at the end (syncPointRamps). Applies live to both panes.">
+    ramps <input type="number" id="ramp-start" min="0.1" step="0.1" style="width: 4em">
+    / <input type="number" id="ramp-end" min="0.1" step="0.1" style="width: 4em"></label>
+  <label title="How many viewport heights of the shared section before it a section only one side has is given (segmentBand): the side without the section creeps through that band while the other passes the section. 0: hold while the other passes it, and stretch over it the other way round. Applies live to both panes.">
+    band <input type="number" id="band" min="0" step="0.1" style="width: 4em"> vh</label>
+  <label title="Glide to a synced position over several frames instead of jumping there (glide), when it is at least the threshold (in viewport heights) away or a glide is under way. The time constant (ms) is how quickly it closes the remaining distance. Applies live to both panes.">
+    <input type="checkbox" id="glide"> glide
+    <input type="number" id="glide-ms" min="10" step="10" style="width: 4.5em"> ms
+    &ge; <input type="number" id="glide-threshold" min="0" step="0.05" style="width: 4em"> vh</label>
+  <span title="N[:p] section chN with p paragraphs | N.M subsection | N=L force heading level L | ~N heading without id | @lead[:p] / @tail[:p] unsectioned paragraphs | xF scale paragraph length | file:name scenario document">Spec syntax &#9432;</span>
+  <span>Enter applies a spec. Drag a pane's bottom-right corner to change its width.</span>
+</header>
+<main>
+  <div class="pane" id="pane-a"><div class="view"><iframe id="a"></iframe><div class="overlay"></div></div><output></output></div>
+  <div class="pane" id="pane-b"><div class="view"><iframe id="b"></iframe><div class="overlay"></div></div><output></output></div>
+</main>
+<script>
+  const params = new URLSearchParams(location.search);
+
+  // DIAM stub: no server, so default preferences and no annotations. loadAnnotations never
+  // resolves, which leaves the document unhighlighted instead of failing to unpack a fake result.
+  const ajax = new Proxy(
+    {
+      loadPreferences: async () => ({}),
+      savePreferences: async () => {},
+      loadAnnotations: () => new Promise(() => {}),
+    },
+    {
+      get: (target, name) =>
+        target[name] ?? ((...args) => console.debug(`[DIAM stub] ${String(name)}`, ...args)),
+    }
+  );
+  const diam = {
+    createAjaxClient: () => ajax,
+    createWebsocketClient: () => ({ connect() {}, disconnect() {}, subscribeToViewport() {} }),
+  };
+
+  // What ExternalAnnotationEditorBase and ApacheAnnotatorHtmlAnnotationEditor send for an HTML
+  // document (HtmlFormatSupportImplBase)
+  const props = {
+    editorFactory: 'ApacheAnnotatorEditor.factory()',
+    documentStructureFactory: 'HtmlDocumentStructure.factory()',
+    scriptSources: ['/dist/HtmlDocumentStructure.js', '/dist/ApacheAnnotatorEditor.js'],
+    stylesheetSources: ['/dist/ApacheAnnotatorEditor.css'],
+    sectionElements: ['p'],
+    protectedElements: ['{http://www.w3.org/1998/Math/MathML}math', '{http://www.w3.org/2000/svg}svg'],
+    userPreferencesKey: 'playground',
+    diamAjaxCallbackUrl: 'playground',
+    loadingIndicatorDisabled: true,
+  };
+
+  const PRESET_GROUPS = [
+    ['Basics', [
+      ['Identical', '1 2 3 4 5', '1 2 3 4 5'],
+      ['Wordier right side', '1 2 3 4 5', 'x1.5 1 2 3 4 5'],
+    ]],
+    ['Leading and trailing content', [
+      ['Leading content left only', '@lead 1 2 3 4', '1 2 3 4'],
+      ['Leading content both, different length', '@lead 1 2 3 4', '@lead:6 1 2 3 4'],
+      ['Trailing section left only', '1 2 3 4 5', '1 2 3 4'],
+      ['Unsectioned tail left only', '1 2 3 4 @tail', '1 2 3 4'],
+      ['Unsectioned tail both, different length', '1 2 3 4 @tail', '1 2 3 4 @tail:6'],
+      ['Leading and trailing left only', '@lead 1 2 3 4 5 @tail', '1 2 3 4'],
+    ]],
+    ['Missing and reordered sections', [
+      ['Missing middle section right', '1 2 3 4 5', '1 2 4 5'],
+      ['Missing first section right', '1 2 3 4 5', '2 3 4 5'],
+      ['Swapped sections', '1 2 3 4', '1 3 2 4'],
+      ['Reversed sections', '1 2 3 4', '4 3 2 1'],
+      ['Rotated sections', '1 2 3 4 5', '3 4 5 1 2'],
+      ['No shared sections', '1 2 3', '4 5 6'],
+    ]],
+    ['Subsections', [
+      ['Same subsections both sides', '1 1.1 1.2 2 2.1 2.2', '1 1.1 1.2 2 2.1 2.2'],
+      ['Subsections left only', '1 1.1 1.2 2 2.1 2.2', '1:12 2:12'],
+      ['Subsections differ', '1 1.1 1.2 2 2.1 3', '1 1.1 2 2.1 2.2 3'],
+      ['Subsections interleaved across parents', '1 1.1 1.2 2 2.1 2.2', '1 2.1 1.1 2 1.2 2.2'],
+      ['Subsection moved to another parent', '1 1.1 2 3', '1 2 1.1 3'],
+      ['Subsections reversed within their parent', '1 1.1 1.2 1.3 2', '1 1.3 1.2 1.1 2'],
+      ['Parent sections reversed, subsections kept', '1 1.1 1.2 2 2.1 2.2', '2 2.1 2.2 1 1.1 1.2'],
+      ['Subsection promoted to a section', '1 1.1 1.2 2', '1 1.1=2 1.2 2'],
+      ['Section demoted to a subsection', '1 2 3', '1 2=3 3'],
+      ['Deep nesting differs', '1 1.1 1.1.1 1.1.2 1.2 2', '1 1.1 1.2 1.2.1 2'],
+      ['Parents without text of their own', '1:0 1.1 1.2 2:0 2.1 2.2', '1 1.1 1.2 2 2.1 2.2'],
+      ['Subsections without their parent', '1 1.1 1.2 2', '1.1 1.2 2'],
+      ['Unkeyed subsection', '1 ~1.1 1.2 2', '1 1.1 1.2 2'],
+    ]],
+    ['Keys and structure', [
+      ['Headings without ids', '~1 ~2 ~3 ~4', '~1 ~2 ~3 ~4'],
+      ['Mixed keyed and unkeyed', '1 ~2 3 4', '1 2 ~3 4'],
+      ['No structure either side', '@lead:20', 'x1.5 @lead:20'],
+      ['Structure left, none right', '1 2 3 4', '@lead:16'],
+    ]],
+    ['Scenario files', [
+      ['Source / translation', 'file:scrollsync-source.html', 'file:scrollsync-translation.html'],
+      ['Source / gap', 'file:scrollsync-source.html', 'file:scrollsync-gap.html'],
+      ['Source / other', 'file:scrollsync-source.html', 'file:scrollsync-other.html'],
+    ]],
+  ];
+  const PRESETS = PRESET_GROUPS.flatMap(([, presets]) => presets);
+
+  function srcFor(id, spec) {
+    if (spec.startsWith('file:')) return `/docs/${encodeURIComponent(spec.slice(5))}`;
+    return `/gen?${new URLSearchParams({ spec, label: id.toUpperCase() })}`;
+  }
+
+  const editors = {};
+
+  function describe(pos) {
+    if (!pos) return 'no position';
+    const f = (x) => (x === undefined ? '-' : x.toFixed(3));
+    return `begin ${pos.begin}  fraction ${f(pos.fraction)}  progress ${f(pos.scrollProgress)}\n` +
+      `section ${pos.sectionKey ?? '-'}  sectionFraction ${f(pos.sectionFraction)}`;
+  }
+
+  // The overlay reads the sync controller's private state; TypeScript private is not enforced at
+  // runtime. If these names change, the overlay says so instead of drawing something made up.
+  function internals(editor) {
+    const controller = editor?.vis?.syncController;
+    if (!controller?.syncRegions || !controller?.regionTopScrollPos) return undefined;
+    return { controller, container: controller.getScrollContainer() };
+  }
+
+  function hue(key) {
+    let h = 0;
+    for (const c of key) h = (h * 31 + c.charCodeAt(0)) % 360;
+    return h;
+  }
+
+  function line(overlay, cls, y, label, color) {
+    const div = document.createElement('div');
+    div.className = cls;
+    div.style.top = `${y}px`;
+    if (color) div.style.borderColor = color;
+    if (label) {
+      const span = document.createElement('span');
+      span.textContent = label;
+      if (color) span.style.background = color;
+      div.appendChild(span);
+    }
+    overlay.appendChild(div);
+    return div;
+  }
+
+  // Records of what each pane received over the hub, filled by instrument()
+  const received = {};
+  let lastReceiver;
+
+  /**
+   * Wrap, on the instances only, what the hub calls on a receiving pane, so the overlay can show
+   * what arrived, which path the controller took and which scrollTop it asked for. Nothing in the
+   * bundles is changed.
+   */
+  function instrument(id, editor, controller, container) {
+    const record = { pos: undefined, path: undefined, target: undefined };
+    received[id] = record;
+
+    const win = container.ownerDocument.defaultView;
+    const native = Object.getOwnPropertyDescriptor(win.Element.prototype, 'scrollTop');
+    let applying = false;
+    Object.defineProperty(container, 'scrollTop', {
+      configurable: true,
+      get() { return native.get.call(this); },
+      set(v) {
+        if (applying) record.target = v;
+        native.set.call(this, v);
+      },
+    });
+
+    const scrollToRegion = controller.scrollToRegion;
+    controller.scrollToRegion = function (...args) {
+      const byKey = scrollToRegion.apply(this, args);
+      record.path = byKey ? 'region' : 'offset';
+      return byKey;
+    };
+
+    const scrollToViewportPosition = editor.scrollToViewportPosition;
+    editor.scrollToViewportPosition = function (pos) {
+      Object.assign(record, { pos, path: undefined, target: undefined });
+      lastReceiver = id;
+      applying = true;
+      try {
+        return scrollToViewportPosition.call(this, pos);
+      } finally {
+        applying = false;
+      }
+    };
+  }
+
+  /** The ramp lengths from the header, ignoring values the controller would not accept. */
+  function ramps() {
+    const value = (id) => {
+      const v = Number(document.getElementById(id).value);
+      return v > 0 ? v : 0.5;
+    };
+    return { start: value('ramp-start'), end: value('ramp-end') };
+  }
+
+  function describePos(pos) {
+    if (!pos) return 'nothing';
+    if (pos.sectionKey !== undefined) {
+      const key = pos.sectionKey.startsWith('@@') ? 'leading' : pos.sectionKey;
+      return `${key} @ ${(pos.sectionFraction ?? 0).toFixed(3)}`;
+    }
+    return `offset ${pos.begin} + ${pos.fraction.toFixed(2)}`;
+  }
+
+  function drawSyncPoint(id, overlay, controller, container) {
+    // The controller's sync point, once it has one; until then it syncs at the viewport top
+    const offset = controller.syncPointOffset?.(container);
+    const y = offset ?? 0;
+    const where = offset === undefined ? 'top (assumed)' : `+${Math.round(y)}px`;
+
+    const linked = document.getElementById('link').checked;
+    const record = received[id];
+    if (!linked || !lastReceiver) {
+      line(overlay, 'syncpoint', y, `sync point ${where} | ${describePos(editors[id].getViewportScrollPosition?.())}`);
+    } else if (lastReceiver !== id) {
+      line(overlay, 'syncpoint', y, `sender, sync point ${where} | sends ${describePos(editors[id].getViewportScrollPosition?.())}`);
+    } else {
+      let label = `receiver, sync point ${where} | got ${describePos(record.pos)} via ${record.path ?? '-'}`;
+      if (record.target !== undefined) {
+        const actual = container.scrollTop;
+        const miss = record.target - actual;
+        label += ` | target ${Math.round(record.target)}`;
+        if (Math.abs(miss) >= 1) {
+          label += ` actual ${Math.round(actual)}`;
+          line(overlay, 'syncpoint target', y + miss, 'target');
+        }
+      }
+      line(overlay, 'syncpoint', y, label);
+    }
+  }
+
+  function drawOverlay(id) {
+    const overlay = document.querySelector(`#pane-${id} .overlay`);
+    overlay.replaceChildren();
+    const showSections = document.getElementById('overlay').checked;
+    const showSyncPoint = document.getElementById('syncpoint').checked;
+    if (!showSections && !showSyncPoint) return;
+
+    const sync = internals(editors[id]);
+    if (!sync?.container) {
+      overlay.style.inset = '0';
+      line(overlay, 'section', 0, 'overlay: sync controller internals not available (yet)');
+      return;
+    }
+    const { controller, container } = sync;
+    if (!received[id]) instrument(id, editors[id], controller, container);
+
+    // Clip to the scroll container (the document structure sidebar sits beside it)
+    const rect = container.getBoundingClientRect();
+    Object.assign(overlay.style, {
+      inset: '', left: `${rect.left}px`, top: `${rect.top}px`,
+      width: `${container.clientWidth}px`, height: `${container.clientHeight}px`,
+    });
+    const toY = (scrollPos) => scrollPos - container.scrollTop;
+
+    if (showSyncPoint) drawSyncPoint(id, overlay, controller, container);
+    if (!showSections) return;
+
+    // Every section element the document structure produced, keyed or not
+    const doc = container.ownerDocument;
+    const selector = controller.structure?.sectionSelector();
+    if (selector) {
+      for (const section of container.querySelectorAll(selector)) {
+        const key = controller.structure.extractKey(section);
+        const top = section.getBoundingClientRect().top - rect.top + container.scrollTop;
+        const label = key && key !== section.id ? `${section.id} key=${key}` : section.id || '(no id)';
+        // Indent by heading level so the nesting shows (HtmlDocumentStructure sets data-level)
+        const level = Number(section.getAttribute('data-level')) || 0;
+        const div = line(overlay, 'section', toY(top), level ? `h${level} ${label}` : label);
+        if (level > 2) div.firstChild.style.left = `${2 + (level - 2) * 16}px`;
+      }
+    }
+
+    // The controller's own regions: what by-key sync actually aligns
+    const regions = controller.syncRegions() ?? [];
+    const current = editors[id].getViewportScrollPosition?.()?.sectionKey;
+    const tops = regions.map((r) => controller.regionTopScrollPos(container, r));
+    regions.forEach((region, i) => {
+      const color = region.startElement ? `hsl(${hue(region.key)} 70% 40%)` : '#666';
+      const bottom = i + 1 < tops.length ? tops[i + 1] : container.scrollHeight;
+      const band = line(overlay, `band${region.key === current ? ' current' : ''}`, toY(tops[i]));
+      band.style.height = `${bottom - tops[i]}px`;
+      band.style.background = color;
+      const name = region.startElement ? region.key : 'leading';
+      line(overlay, 'region', toY(tops[i]), `${name} [${region.start}, ${region.end})`, color);
+    });
+    if (!regions.length) line(overlay, 'section', 0, 'no sync regions: offset anchoring only');
+  }
+
+  function reload() {
+    const query = new URLSearchParams({
+      a: document.getElementById('spec-a').value,
+      b: document.getElementById('spec-b').value,
+      link: document.getElementById('link').checked ? 1 : 0,
+      overlay: document.getElementById('overlay').checked ? 1 : 0,
+      syncpoint: document.getElementById('syncpoint').checked ? 1 : 0,
+      rs: document.getElementById('ramp-start').value,
+      re: document.getElementById('ramp-end').value,
+      glide: document.getElementById('glide').checked ? 1 : 0,
+      gms: document.getElementById('glide-ms').value,
+      gth: document.getElementById('glide-threshold').value,
+      band: document.getElementById('band').value,
+    });
+    // Keep only widths that were set explicitly (by dragging or the URL), so the default stays
+    // relative to the window
+    for (const id of ['a', 'b']) {
+      const width = document.getElementById(`pane-${id}`).style.width;
+      if (width.endsWith('px')) query.set(`w${id}`, parseInt(width));
+    }
+    location.search = query.toString();
+  }
+
+  async function init() {
+    const choice = { a: params.get('a') ?? PRESETS[0][1], b: params.get('b') ?? PRESETS[0][2] };
+
+    const preset = document.getElementById('preset');
+    let index = 0;
+    for (const [group, presets] of PRESET_GROUPS) {
+      const optgroup = document.createElement('optgroup');
+      optgroup.label = group;
+      for (const [name, a, b] of presets) {
+        optgroup.appendChild(new Option(name, index++, false, a === choice.a && b === choice.b));
+      }
+      preset.appendChild(optgroup);
+    }
+    preset.addEventListener('change', () => {
+      if (preset.value === '') return;
+      const [, a, b] = PRESETS[preset.value];
+      document.getElementById('spec-a').value = a;
+      document.getElementById('spec-b').value = b;
+      reload();
+    });
+
+    for (const id of ['a', 'b']) {
+      const input = document.getElementById(`spec-${id}`);
+      input.value = choice[id];
+      input.addEventListener('change', reload);
+
+      const pane = document.getElementById(`pane-${id}`);
+      if (params.has(`w${id}`)) pane.style.width = `${params.get(`w${id}`)}px`;
+
+      const iframe = document.getElementById(id);
+      iframe.src = srcFor(id, choice[id]);
+      editors[id] = await ExternalEditor.getOrInitialize(iframe, diam, props);
+    }
+
+    const link = document.getElementById('link');
+    link.checked = params.get('link') !== '0';
+    const applyLink = () =>
+      link.checked ? ExternalEditor.viewportSync.link('a', 'b') : ExternalEditor.viewportSync.unlink('a');
+    link.addEventListener('change', applyLink);
+    applyLink();
+
+    document.getElementById('overlay').checked = params.get('overlay') !== '0';
+    document.getElementById('syncpoint').checked = params.get('syncpoint') !== '0';
+    document.getElementById('ramp-start').value = params.get('rs') ?? 0.5;
+    document.getElementById('ramp-end').value = params.get('re') ?? 0.5;
+    document.getElementById('glide').checked = params.get('glide') !== '0';
+    document.getElementById('glide-ms').value = params.get('gms') ?? 200;
+    document.getElementById('glide-threshold').value = params.get('gth') ?? 0.25;
+    document.getElementById('band').value = params.get('band') ?? 0.5;
+    const frame = () => {
+      for (const id of ['a', 'b']) {
+        const controller = internals(editors[id])?.controller;
+        if (controller && 'syncPointRamps' in controller) controller.syncPointRamps = ramps();
+        if (controller && 'glide' in controller) {
+          controller.glide = document.getElementById('glide').checked;
+          const ms = Number(document.getElementById('glide-ms').value);
+          const threshold = Number(document.getElementById('glide-threshold').value);
+          if (ms > 0) controller.glideTimeConstantMs = ms;
+          if (threshold >= 0) controller.glideThreshold = threshold;
+        }
+        if (controller && 'segmentBand' in controller) {
+          const band = Number(document.getElementById('band').value);
+          controller.segmentBand = band > 0 ? band : 0;
+        }
+      }
+      drawOverlay('a');
+      drawOverlay('b');
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+
+    // Also available from the console: editors.a.getViewportScrollPosition() etc.
+    window.editors = editors;
+    setInterval(() => {
+      for (const id of ['a', 'b']) {
+        document.querySelector(`#pane-${id} output`).textContent =
+          describe(editors[id].getViewportScrollPosition?.());
+      }
+    }, 200);
+  }
+
+  init();
+</script>
+</body>
+</html>

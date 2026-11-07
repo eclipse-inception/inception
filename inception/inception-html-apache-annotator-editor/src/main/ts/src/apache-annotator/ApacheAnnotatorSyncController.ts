@@ -17,6 +17,7 @@
  */
 import {
     type AnnotationEditor,
+    type SectionTop,
     type TocLevel,
     type ViewportScrollPosition,
     type ViewportScrollTarget,
@@ -29,10 +30,10 @@ import {
 import { removeClassFromAncestors } from './Utilities';
 
 /**
- * Optional document-structure inputs the controller uses for by-key scroll sync (Rule 2)   . All are
- * read lazily so the controller sees the current document's structure without being reconstructed.
- * When absent (or when they yield no key), the controller uses only offset/fraction anchoring, so
- * behaviour is identical to an editor with no structure.
+ * Optional document-structure inputs the controller uses for by-key scroll sync. All are read
+ * lazily so the controller sees the current document's structure without being reconstructed.
+ * When absent (or when they yield no key), the controller uses only offset/fraction anchoring,
+ * so behaviour is identical to an editor with no structure.
  */
 export interface SyncStructureAccessors {
     /** Selector matching section elements (empty string when the document has no structure). */
@@ -44,7 +45,7 @@ export interface SyncStructureAccessors {
 }
 
 /**
- * The document as a flat list of non-overlapping "scroll-sync regions" for by-key sync (Rule 2).
+ * The document as a flat list of non-overlapping "scroll-sync regions" for by-key sync.
  *
  * The document is partitioned by the START offsets of its keyed sections: a region runs from one
  * section start to the NEXT section start (never back up to an enclosing section), so regions never
@@ -54,7 +55,8 @@ export interface SyncStructureAccessors {
  * Each region is identified by the key of the section that opens it, so two documents sharing a
  * structure produce the same ordered region keys and align region-by-region. The leading region
  * (document start up to the first keyed section) has no opening section and gets a fixed sentinel
- * key so both documents still match it.
+ * key. The sentinel is not a key: every document has it, whatever its leading region contains, so
+ * it never matches the other document's leading region (see resolveSegmentTarget).
  */
 export const LEADING_REGION_KEY = '@@sync-leading-region';
 
@@ -69,6 +71,11 @@ export interface SyncRegion {
      * against; the region ends where the next region's element begins.
      */
     startElement?: Element;
+    /**
+     * The key of the nearest enclosing section that is itself a region, or undefined when there is
+     * none. Regions do not nest, but the sections that open them do.
+     */
+    parentKey?: string;
 }
 
 /**
@@ -103,6 +110,7 @@ export function buildSyncRegions(root: Element, tocRoot: TocLevel, docEnd: numbe
         if (s.start === prev.start) continue; // same offset -> first key wins
         boundaries.push(s);
     }
+
     // If a keyed section starts exactly at 0, it owns the leading region instead of the sentinel.
     const zeroStart = starts.find((s) => s.start === 0);
     if (zeroStart) boundaries[0] = zeroStart;
@@ -119,165 +127,176 @@ export function buildSyncRegions(root: Element, tocRoot: TocLevel, docEnd: numbe
             startElement: boundaries[i].element,
         });
     }
+
+    // The nearest enclosing section that opens a region. byKey holds the first section per key, so
+    // an ancestor only counts if it is that section, not a later one sharing its key.
+    const regionKeys = new Set(regions.map((r) => r.key));
+    for (const region of regions) {
+        for (let p = byKey[region.key]?.parent; p; p = p.parent) {
+            if (p.key !== undefined && regionKeys.has(p.key) && byKey[p.key] === p) {
+                region.parentKey = p.key;
+                break;
+            }
+        }
+    }
+
     return regions;
 }
 
-/**
- * How to place the receiver's viewport for an incoming by-key sync position, once the receiver's
- * own regions are compared against the sender's key sequence.
- */
-export type RegionTargetPlan =
-    /**
-     * The receiver has a region for `pos.sectionKey` directly: place at that region's own fraction.
-     *
-     * `atDocumentStart`/`atDocumentEnd` say whether this match sits at THIS document's first/last
-     * region AND (when the sender's sequence is available) at the SENDER's first/last region too --
-     * i.e. whether the two documents' overall extremes genuinely correspond here. A matched key can
-     * be common to both documents while sitting at wildly different overall positions (e.g. a shared
-     * "Chapter 1" that opens the main document but is the 13th region of a reference document with 12
-     * unmatched front-matter sections first) -- there, the sender being at overall scrollProgress 0
-     * does NOT mean this document's matching region is anywhere near ITS OWN top. Both flags default
-     * true when the sender sent no sequence (nothing to disprove correspondence with).
-     */
-    | { kind: 'exact'; regionIndex: number; atDocumentStart: boolean; atDocumentEnd: boolean }
-    /**
-     * Neither `pos.sectionKey` nor any bracketing key before/after it (in the sender's sequence) has
-     * a region here: no shared structure to align on at all.
-     */
-    | { kind: 'none' }
-    /**
-     * The sender's current region has no local match, but a shared key exists on both sides of it in
-     * the sender's sequence. Interpolate the receiver's viewport between the two bracketing regions,
-     * scaled by how far the sender has progressed from the "before" key to the "after" key.
-     */
-    | { kind: 'interpolate'; beforeRegionIndex: number; afterRegionIndex: number; progress: number }
-    /**
-     * Only a "before" key matches (the sender is past the last key it shares with the receiver, e.g.
-     * a trailing document-only section): freeze at that region's end.
-     */
-    | { kind: 'freeze-after'; regionIndex: number }
-    /**
-     * Only an "after" key matches (the sender is before the first key it shares with the receiver):
-     * freeze at that region's start.
-     */
-    | { kind: 'freeze-before'; regionIndex: number };
+/** The default {@code band} of {@link resolveSegmentTarget}, in viewport heights. */
+export const DEFAULT_SEGMENT_BAND = 0.5;
+
+/** A receiver region for {@link resolveSegmentTarget}: its key, parent and pixel top. */
+export type SegmentRegion = { key: string; parentKey?: string; top: number };
 
 /**
- * Decide how to place the receiver's viewport for a by-key sync position, given the receiver's own
- * regions and the sender's full ordered key sequence.
+ * Where the receiver's sync point goes for a by-key sync position, aligning the two documents
+ * segment by segment between the keys they share, or undefined when there is no shared key around
+ * the sender's position (the caller then falls back).
  *
- * The sender's sequence is required to bracket a miss: the receiver alone has no notion of "where in
- * the sender's document" an unmatched key sits, only the sender's own region order tells us that. See
- * {@link RegionTargetPlan} for the five outcomes.
+ * Between a shared key K and the next shared key, each side's content splits into two parts:
+ * <ul>
+ * <li>the <b>K part</b>: K's own region plus the regions nested in K that the other side does not
+ * have (subsections only one side has), and</li>
+ * <li>the <b>gap</b>: regions the other side does not have that are not nested in K (sections only
+ * one side has).</li>
+ * </ul>
+ * The sender's K part maps linearly onto the receiver's K part, and the sender's gap onto the
+ * receiver's gap. Where only one side has a gap, the other side gives it the last {@code band}
+ * viewport heights of its K part, at most half of it, and creeps through that band while the gap
+ * is passed. The band is measured in the viewport of the side that gives it, whichever side leads
+ * (which is why the sender reports its viewport height as {@code senderViewportFraction}), so the
+ * mapping is the same in both directions and a change of the leading side never makes the other
+ * side jump. Before the first shared key there is only a gap, from the document start, and after
+ * the last one the gap runs to the document end.
+ * <p>
+ * Without a band, the side without a gap holds at the next shared key while the other passes its
+ * gap, or stretches its K part over the gap when it is the receiver. That does not map back: a held
+ * position corresponds to the whole gap on the other side, so the other side jumps when the
+ * leading side changes.
+ * <p>
+ * {@link LEADING_REGION_KEY} is never a shared key: every document with a leading region has the
+ * sentinel, whatever its leading region contains, so it would be trivially "shared" even when the
+ * two documents' leading content is unrelated. Two leading regions that do correspond, each
+ * directly followed by the same first shared key, still line up: before the first shared key there
+ * is only the gap, which is then exactly the two leading regions.
  *
- * {@link LEADING_REGION_KEY} is never accepted as a BRACKET (only ever as an exact match): it is a
- * fixed sentinel every document's region list starts with, so it is trivially "shared" even when the
- * two documents' actual leading content is unrelated (e.g. a title page here, a different preface
- * there). Treating it as a real bracket anchor would interpolate the receiver toward its own leading
- * region while the sender is still in an unmatched section before the first real heading, then snap
- * back once the sender reaches a genuinely shared key -- a scroll-down-then-back-up jump.
+ * @param regions
+ *            the receiver's regions in document order, with tops in content pixels
+ * @param end
+ *            the end of the receiver's sync point range in content pixels
+ * @param band
+ *            the band in viewport heights, or 0 to hold and stretch instead
+ * @param senderViewportFraction
+ *            the sender's viewport height in its scroll progress
+ * @param receiverViewportHeight
+ *            the receiver's viewport height in content pixels
  */
-export function resolveRegionTarget(
-    regions: SyncRegion[],
+export function resolveSegmentTarget(
+    regions: SegmentRegion[],
+    end: number,
     sectionKey: string,
-    sectionKeySequence: string[] | undefined,
-    sectionFraction = 0
-): RegionTargetPlan {
-    const exactIdx = regions.findIndex((r) => r.key === sectionKey);
-    if (exactIdx >= 0) {
-        const senderIdx = sectionKeySequence?.indexOf(sectionKey) ?? -1;
-        const senderKnown = sectionKeySequence !== undefined && senderIdx >= 0;
-        return {
-            kind: 'exact',
-            regionIndex: exactIdx,
-            atDocumentStart: exactIdx === 0 && (!senderKnown || senderIdx === 0),
-            atDocumentEnd:
-                exactIdx === regions.length - 1 &&
-                (!senderKnown || senderIdx === (sectionKeySequence as string[]).length - 1),
-        };
-    }
+    sections: SectionTop[] | undefined,
+    scrollProgress: number | undefined,
+    band = DEFAULT_SEGMENT_BAND,
+    senderViewportFraction?: number,
+    receiverViewportHeight = 0
+): number | undefined {
+    if (!sections || scrollProgress === undefined) return undefined;
 
-    if (!sectionKeySequence || sectionKeySequence.length === 0) return { kind: 'none' };
+    const s = sections.findIndex((x) => x.key === sectionKey);
+    if (s < 0) return undefined;
 
-    const senderIdx = sectionKeySequence.indexOf(sectionKey);
-    if (senderIdx < 0) return { kind: 'none' };
+    const localIndex = new Map(regions.map((r, i) => [r.key, i]));
+    const senderKeys = new Set(sections.map((x) => x.key));
+    senderKeys.delete(LEADING_REGION_KEY);
+    const shared = (key: string) => key !== LEADING_REGION_KEY && localIndex.has(key);
 
-    const localIndexOf = new Map(regions.map((r, i) => [r.key, i]));
-
-    let beforeSenderIdx = -1;
-    let beforeRegionIndex = -1;
-    for (let i = senderIdx - 1; i >= 0; i--) {
-        const key = sectionKeySequence[i];
-        if (key === LEADING_REGION_KEY) continue;
-        const idx = localIndexOf.get(key);
-        if (idx !== undefined) {
-            beforeSenderIdx = i;
-            beforeRegionIndex = idx;
-            break;
+    const senderParents = new Map(sections.map((x) => [x.key, x.parent]));
+    const localParents = new Map(regions.map((r) => [r.key, r.parentKey]));
+    const nestedUnder = (
+        parents: Map<string, string | undefined>,
+        key: string,
+        ancestor: string
+    ) => {
+        for (let p = parents.get(key); p !== undefined; p = parents.get(p)) {
+            if (p === ancestor) return true;
         }
-    }
-
-    let afterSenderIdx = -1;
-    let afterRegionIndex = -1;
-    for (let i = senderIdx + 1; i < sectionKeySequence.length; i++) {
-        const key = sectionKeySequence[i];
-        if (key === LEADING_REGION_KEY) continue;
-        const idx = localIndexOf.get(key);
-        if (idx !== undefined) {
-            afterSenderIdx = i;
-            afterRegionIndex = idx;
-            break;
-        }
-    }
-
-    if (beforeRegionIndex < 0 && afterRegionIndex < 0) return { kind: 'none' };
-    if (beforeRegionIndex < 0) return { kind: 'freeze-before', regionIndex: afterRegionIndex };
-    if (afterRegionIndex < 0) return { kind: 'freeze-after', regionIndex: beforeRegionIndex };
-
-    // Both found: the sender's progress from the "before" key to the "after" key, in sender-key-index
-    // space, is the fraction to place the receiver between the two bracketing regions. The sender's
-    // current position is `senderIdx` keys past `beforeSenderIdx`, plus its fractional progress
-    // through its own current region (so movement is smooth within a single unmatched region rather
-    // than stepping only at key boundaries), out of the `afterSenderIdx - beforeSenderIdx` keys
-    // between the two bracketing keys.
-    const span = afterSenderIdx - beforeSenderIdx;
-    const progress = span > 0 ? (senderIdx - beforeSenderIdx + sectionFraction) / span : 0;
-    return {
-        kind: 'interpolate',
-        beforeRegionIndex,
-        afterRegionIndex,
-        progress: Math.min(1, Math.max(0, progress)),
+        return false;
     };
-}
 
-/**
- * @return whether a resolved {@link RegionTargetPlan} should be placed via
- * {@link blendTowardScrollProgress} (blending the computed pixel target toward the sender's overall
- * scroll progress near a document extreme) rather than applied as-is.
- *
- * Only `'exact'` can qualify, and even then only when the matched region sits at BOTH documents'
- * corresponding overall extreme (`atDocumentStart`/`atDocumentEnd` -- see {@link RegionTargetPlan}).
- * There, the sender's overall progress is a meaningful stand-in for "how close to MY OWN top/bottom
- * should I be", which is exactly what the blend is for.
- *
- * For `'freeze-before'`/`'freeze-after'`/`'interpolate'` the sender is partly or wholly in content this
- * document does not have, so its overall progress has no such correspondence: blending toward it pulls
- * the receiver away from the resolved target as the sender's progress climbs, then back as the blend's
- * near-extreme weighting fades -- a scroll-down-then-back-up wobble instead of a hold (found live
- * 2026-07-17, reference doc `tei-book1-outline.xml` scrolling through its unmatched leading sections
- * before "Chapter 1"). Applying `target` directly for those three kinds is what makes a freeze an
- * actual freeze and an interpolation a straight line.
- *
- * The `atDocumentStart`/`atDocumentEnd` guard is what makes an `'exact'` match qualify only at
- * genuinely corresponding extremes: a shared key can sit at very different overall positions in the
- * two documents (the front-matter case in {@link RegionTargetPlan}), and without the guard blending
- * snapped the receiver toward its own document start instead of the matched region -- found live
- * 2026-07-17, scrolling the MAIN doc (which starts at "Chapter 1") while linked to a reference
- * document that reaches "Chapter 1" only after 12 unmatched front-matter sections.
- */
-export function shouldBlendTowardScrollProgress(plan: RegionTargetPlan): boolean {
-    if (plan.kind !== 'exact') return false;
-    return plan.atDocumentStart || plan.atDocumentEnd;
+    // Sender, in scroll progress: K part [a, b), gap [b, c)
+    const senderTop = (i: number) => (i < sections.length ? sections[i].top : 1);
+    let k = s;
+    while (k >= 0 && !shared(sections[k].key)) k--;
+    let kEnd = k + 1;
+    if (k >= 0) {
+        while (
+            kEnd < sections.length &&
+            !shared(sections[kEnd].key) &&
+            nestedUnder(senderParents, sections[kEnd].key, sections[k].key)
+        ) {
+            kEnd++;
+        }
+    }
+    let l = kEnd;
+    while (l < sections.length && !shared(sections[l].key)) l++;
+    if (k < 0 && l >= sections.length) return undefined;
+
+    const a = k >= 0 ? sections[k].top : 0;
+    const b = k >= 0 ? senderTop(kEnd) : 0;
+    const c = senderTop(l);
+
+    // Receiver, in content pixels: K part [ra, rb), gap [rb, rc). The gap ends at the receiver's
+    // next region the sender also has; with reordered sections that need not be the sender's next
+    // shared key, but it is never above the K part, so the receiver never runs backwards.
+    const localTop = (j: number) => (j < regions.length ? regions[j].top : end);
+    const rk = k >= 0 ? localIndex.get(sections[k].key)! : -1;
+    let rkEnd = rk + 1;
+    if (rk >= 0) {
+        while (
+            rkEnd < regions.length &&
+            !senderKeys.has(regions[rkEnd].key) &&
+            nestedUnder(localParents, regions[rkEnd].key, regions[rk].key)
+        ) {
+            rkEnd++;
+        }
+    }
+    let rl = rkEnd;
+    while (rl < regions.length && !senderKeys.has(regions[rl].key)) rl++;
+
+    const ra = rk >= 0 ? regions[rk].top : 0;
+    const rc = localTop(rl);
+    const rkPartEnd = rk >= 0 ? localTop(rkEnd) : 0;
+
+    const lerp = (from: number, to: number, rFrom: number, rTo: number) =>
+        to > from
+            ? rFrom +
+              Math.min(1, Math.max(0, (scrollProgress - from) / (to - from))) * (rTo - rFrom)
+            : rFrom;
+
+    const senderGap = c > b;
+    const receiverGap = rc > rkPartEnd;
+    const inKPart = k >= 0 && s < kEnd;
+
+    if (band > 0 && k >= 0 && senderGap && !receiverGap && receiverViewportHeight > 0) {
+        // The receiver gives the end of its K part to the sender's gap
+        const split = rkPartEnd - Math.min(band * receiverViewportHeight, (rkPartEnd - ra) / 2);
+        return inKPart ? lerp(a, b, ra, split) : lerp(b, c, split, rkPartEnd);
+    }
+
+    if (band > 0 && k >= 0 && !senderGap && receiverGap && senderViewportFraction) {
+        // The sender gave the end of its K part to the receiver's gap: the inverse of the above
+        const split = b - Math.min(band * senderViewportFraction, (b - a) / 2);
+        return scrollProgress < split
+            ? lerp(a, split, ra, rkPartEnd)
+            : lerp(split, b, rkPartEnd, rc);
+    }
+
+    // No sender gap to pass the receiver's gap during: stretch the K part over it
+    const rb = senderGap ? rkPartEnd : rc;
+    if (inKPart) return lerp(a, b, ra, rb);
+    return lerp(b, c, rb, rc);
 }
 
 // CSS `display` values whose boxes are block-level; an element with one of these owns a
@@ -299,27 +318,110 @@ const OVERLAY_SELECTOR =
     ' iaa-visible-annotations-panel, iaa-visible-annotations-panel-spacer';
 
 /**
- * Fraction of the scroll range over which to blend toward whole-container progress at each end.
+ * How long the two transitions of the sync point are, in viewport heights of scrolling: from the
+ * viewport top to its middle at the start of the document, and from the middle to the bottom at the
+ * end. Each must be greater than 0.
+ */
+export type SyncPointRamps = { start: number; end: number };
+
+export const DEFAULT_SYNC_POINT_RAMPS: SyncPointRamps = { start: 0.5, end: 0.5 };
+
+/**
+ * The two ramps in pixels of scrolling. When together they are longer than the scroll range, both
+ * shrink in proportion so that they meet, and the sync point moves from top to bottom across the
+ * whole range.
+ */
+function rampLengths(
+    maxScroll: number,
+    viewportHeight: number,
+    ramps: SyncPointRamps
+): { start: number; end: number } {
+    const start = ramps.start * viewportHeight;
+    const end = ramps.end * viewportHeight;
+    const scale = Math.min(1, maxScroll / (start + end));
+    return { start: start * scale, end: end * scale };
+}
+
+/**
+ * Where the sync point lies in the viewport, as a fraction of the viewport height, when the
+ * container is scrolled to {@code scrollTop}: at the top at the start of the document, in the middle
+ * once {@code ramps.start} viewport heights have been scrolled, and at the bottom at the end, having
+ * left the middle {@code ramps.end} viewport heights before it, moving linearly in between.
+ *
+ * The sync point, {@code scrollTop + fraction * viewportHeight}, thereby runs from the top of the
+ * content to its bottom as the viewport scrolls from one end to the other, and only ever forward,
+ * so every position in the document can be synced and {@link scrollTopForSyncPointAt} can invert it.
+ * The middle is where the reader is most likely looking; the ramps let the ends of the document,
+ * which the middle of the viewport never reaches, still be synced.
+ */
+export function syncPointFraction(
+    scrollTop: number,
+    maxScroll: number,
+    viewportHeight: number,
+    ramps: SyncPointRamps = DEFAULT_SYNC_POINT_RAMPS
+): number {
+    if (maxScroll <= 0 || viewportHeight <= 0) return 0;
+
+    const ramp = rampLengths(maxScroll, viewportHeight, ramps);
+    const t = Math.min(maxScroll, Math.max(0, scrollTop));
+    return (
+        0.5 * Math.min(1, t / ramp.start) +
+        0.5 * Math.max(0, (t - (maxScroll - ramp.end)) / ramp.end)
+    );
+}
+
+/**
+ * The scrollTop at which the sync point lies at {@code syncPoint} in the scrolled content: the
+ * inverse of {@code scrollTop + syncPointFraction(scrollTop, ...) * viewportHeight}. The sync point
+ * is piecewise linear in scrollTop (ramp, plateau, ramp), so each piece inverts directly. Values
+ * outside the content are clamped to its ends.
+ */
+export function scrollTopForSyncPointAt(
+    syncPoint: number,
+    maxScroll: number,
+    viewportHeight: number,
+    ramps: SyncPointRamps = DEFAULT_SYNC_POINT_RAMPS
+): number {
+    if (maxScroll <= 0) return 0;
+    if (viewportHeight <= 0) return Math.min(maxScroll, Math.max(0, syncPoint));
+
+    const ramp = rampLengths(maxScroll, viewportHeight, ramps);
+    const half = 0.5 * viewportHeight;
+    // On a ramp the sync point moves this much per pixel scrolled
+    const startSlope = 1 + half / ramp.start;
+    const endSlope = 1 + half / ramp.end;
+    const p = Math.min(maxScroll + viewportHeight, Math.max(0, syncPoint));
+    const plateauStart = ramp.start + half; // the sync point at scrollTop = ramp.start
+    const plateauEnd = maxScroll - ramp.end + half; // ... at maxScroll - ramp.end
+
+    if (p <= plateauStart) return p / startSlope;
+    if (p <= plateauEnd) return p - half;
+    return maxScroll - ramp.end + (p - plateauEnd) / endSlope;
+}
+
+/**
+ * Fraction of the sync point's range over which to blend toward overall progress at each end.
  */
 const EXTREME_BLEND_BAND = 0.15;
 
 /**
- * Blend an offset-anchored scrollTop toward whole-container scroll progress near the extremes.
+ * Blend an offset-anchored sync point position toward the sender's overall progress near the
+ * extremes. {@code range} is the length of the range the position moves in, so that progress 0
+ * maps to 0 and progress 1 to {@code range}.
  *
- * Offset-anchoring aligns viewport top positions, so near a scroll extreme it lands short of this editor's
- * own extreme (the two editors have different amounts of content below the shared top block). A
- * pure progress mapping hits the extremes exactly but drifts in the interior. Weighting toward
- * progress only within a band next to each extreme makes the extremes exact AND keeps the interior
- * offset-accurate, with no snap at the boundary between the two regimes.
+ * Offset-anchoring lands short of this editor's own extreme when the two editors have different
+ * amounts of content beyond the shared block, while a pure progress mapping drifts in the interior.
+ * Weighting toward progress only within a band next to each extreme makes the extremes exact and
+ * keeps the interior offset-accurate, without a snap between the two.
  */
 export function blendTowardScrollProgress(
     anchoredTop: number,
     scrollProgress: number | undefined,
-    maxScroll: number
+    range: number
 ): number {
-    if (scrollProgress === undefined || maxScroll <= 0) return anchoredTop;
+    if (scrollProgress === undefined || range <= 0) return anchoredTop;
 
-    const progressTop = scrollProgress * maxScroll;
+    const progressTop = scrollProgress * range;
     const p = scrollProgress;
     // 1 at an extreme -> 0 by EXTREME_BLEND_BAND in from it.
     const nearness = Math.max(0, 1 - Math.min(p, 1 - p) / EXTREME_BLEND_BAND);
@@ -342,15 +444,14 @@ export function sameScrollProgress(a: number | undefined, b: number | undefined)
 /**
  * Editor-to-editor viewport synchronization for the Apache Annotator visualizer. Implements the
  * {@code AnnotationEditor} viewport-sync protocol: {@link getViewportScrollPosition} reports the
- * document offset currently at the viewport top (plus how far the top has scrolled into it), and
- * {@link scrollToViewportPosition} places a given offset+fraction back at the viewport top.
+ * document offset currently at the sync point (plus how far the sync point is into it), and
+ * {@link scrollToViewportPosition} places a given offset+fraction back at the sync point. Where in
+ * the viewport the sync point lies depends on the scroll position, see {@link syncPointFraction}.
  * Interpolating in character space rather than pixels keeps two editors in sync even when they wrap
  * the same text to different heights.
  *
- * The controller is deliberately decoupled from the visualizer: it depends only on the editor root
- * element and a lazily-read scroll container (the container is assigned after the visualizer is
- * constructed, so it is passed as a getter). It touches DOM/geometry only — no tracker, rendering,
- * or paging state — which keeps this measurement-heavy anchor-finding logic isolated and testable.
+ * The controller depends only on the editor root and a lazily-read scroll container (assigned after
+ * the visualizer is constructed, hence the getter), and touches only DOM geometry.
  */
 export class ApacheAnnotatorSyncController {
     private readonly root: Element;
@@ -359,16 +460,10 @@ export class ApacheAnnotatorSyncController {
     /**
      * Last viewport position applied by {@link scrollToViewportPosition}, for per-frame dedup.
      *
-     * {@code scrollProgress} is part of the key because it independently moves the applied
-     * scrollTop via the extreme blend: two positions agreeing on begin/fraction can still target
-     * different pixels near an extreme, and dropping progress from the key would dedup those away.
-     *
-     * Dedup is per-regime, never across the two: the by-key path ({@link scrollToRegion}) and the
-     * offset path ({@link scrollToOffset}) compute different pixel targets from the same
-     * begin/fraction (region-fractional vs. block-anchored), so a value applied by one regime must
-     * not suppress a re-apply by the other. Each guard therefore also checks {@code sectionKey}:
-     * {@link scrollToRegion} requires the last apply to have been by-key ({@code sectionFraction}
-     * present), {@link scrollToOffset} requires it to have been offset ({@code sectionKey} absent).
+     * {@code scrollProgress} is part of the key because it moves the target near an extreme even
+     * when begin/fraction agree. Dedup never crosses the by-key ({@link scrollToRegion}) and offset
+     * ({@link scrollToOffset}) paths, which compute different pixel targets from the same position:
+     * each guard also checks that the last apply came from its own path.
      */
     private lastAppliedViewportScrollPosition:
         | {
@@ -379,6 +474,35 @@ export class ApacheAnnotatorSyncController {
               sectionFraction?: number;
           }
         | undefined = undefined;
+
+    /** How long the sync point's transitions at the document ends are, see {@link syncPointFraction}. */
+    syncPointRamps: SyncPointRamps = DEFAULT_SYNC_POINT_RAMPS;
+
+    /**
+     * How many viewport heights of the shared section before it a section only the other side has
+     * is given, see {@link resolveSegmentTarget}. 0 to hold and stretch instead.
+     */
+    segmentBand = DEFAULT_SEGMENT_BAND;
+
+    /**
+     * Move to a synced position over several frames instead of at once, when it is at least
+     * {@link glideThreshold} viewport heights away or a glide is already under way. Each frame
+     * closes the remaining distance with time constant {@link glideTimeConstantMs}. Smooths the
+     * jumps that remain where the two documents order their sections differently.
+     */
+    glide = true;
+    glideTimeConstantMs = 200;
+    glideThreshold = 0.25;
+
+    private glideTarget?: number;
+    private glideFrame?: number;
+    private glideLastTime?: number;
+
+    /**
+     * The scrollTop this controller last set for a sync, while the viewport is still there; see
+     * {@link isApplyingViewportSync}.
+     */
+    private appliedScrollTop?: number;
 
     /** The hub this controller has registered its editor with, and the id it used. */
     private hub?: ViewportSyncPeer;
@@ -394,9 +518,15 @@ export class ApacheAnnotatorSyncController {
      */
     private regions?: SyncRegion[];
     private regionsTocRoot?: TocLevel;
-    /** The keys of {@link regions} in order, memoized alongside it so the per-frame producer path
-     * (see {@link augmentWithSectionPosition}) reuses one array instead of remapping every frame. */
-    private regionKeys?: string[];
+
+    /**
+     * Where each region start element was last seen while laid out, as a position in the scrolled
+     * content. Inside a secluded section the live position is wrong: nested secluded sections are
+     * display: none, so they have no box and everything after them in that section moves up. Such
+     * elements use the position recorded here instead (see {@link regionTopScrollPos}). Content
+     * that changes later (e.g. annotations rendering) can make it drift a little, which is accepted.
+     */
+    private recordedTops = new WeakMap<Element, number>();
 
     constructor(root: Element, getScrollContainer: () => Element | undefined) {
         this.root = root;
@@ -413,14 +543,28 @@ export class ApacheAnnotatorSyncController {
         // Drop any memoized regions; they will be rebuilt lazily from the new structure's tocRoot.
         this.regions = undefined;
         this.regionsTocRoot = undefined;
+        this.recordLayout();
+    }
+
+    /**
+     * Record where the region start elements are, for those inside a secluded section to use
+     * later. Call while the document is fully laid out: the visualizer calls it right after lifting
+     * the seclusion and materializing the section sizes, before the sections are secluded again.
+     * Elements already inside a secluded section keep what was recorded for them before.
+     */
+    recordLayout(): void {
+        const container = this.getScrollContainer();
+        const regions = this.syncRegions();
+        if (!container || !regions) return;
+
+        const containerTop = container.getBoundingClientRect().top;
+        for (const region of regions) this.regionTopScrollPos(container, region, containerTop);
     }
 
     /**
      * Register {@code aEditor} with the scroll-sync {@code aHub} under {@code aId}, scoped to the
-     * editor's current scroll container. This controller owns viewport-sync for the editor, so it is
-     * the natural place to hand the container to the hub - the container getter it already holds is
-     * exactly the scope the hub needs. The caller (the editor) is responsible for calling this only
-     * once its viewport exists. Re-registers if called again (e.g. after the container is rebuilt).
+     * editor's current scroll container. Call only once the viewport exists. Re-registers if called
+     * again (e.g. after the container is rebuilt).
      */
     connectToHub(aHub: ViewportSyncPeer, aId: string, aEditor: AnnotationEditor): void {
         this.hub = aHub;
@@ -430,6 +574,7 @@ export class ApacheAnnotatorSyncController {
 
     /** Remove the editor from the hub it was registered with via {@link connectToHub}. */
     disconnectFromHub(): void {
+        this.stopGlide();
         if (this.hub && this.hubPeerId) {
             this.hub.unregister(this.hubPeerId);
         }
@@ -438,8 +583,54 @@ export class ApacheAnnotatorSyncController {
     }
 
     /**
-     * @return the scroll position of the block element currently at the top of the scroll viewport as document offsets
-     * plus the fraction of it that has already been scrolled past.
+     * How far below the top of the scroll viewport the sync point lies, in pixels, when the container
+     * is scrolled to {@code scrollTop}. The sync point is where this controller measures the position
+     * it reports ({@link getViewportScrollPosition}) and where it places a position it receives
+     * ({@link scrollToViewportPosition}). See {@link syncPointFraction} for the rule.
+     *
+     * {@link scrollTopForSyncPoint} must stay the inverse of this.
+     */
+    syncPointOffset(container: Element, scrollTop = container.scrollTop): number {
+        const viewportHeight = container.clientHeight;
+        const maxScroll = Math.max(0, container.scrollHeight - viewportHeight);
+        return (
+            syncPointFraction(scrollTop, maxScroll, viewportHeight, this.syncPointRamps) *
+            viewportHeight
+        );
+    }
+
+    /**
+     * The sync point as a position in the scrolled content (0 = content top) when the container is
+     * scrolled to {@code scrollTop}.
+     */
+    private syncPointAt(container: Element, scrollTop = container.scrollTop): number {
+        return scrollTop + this.syncPointOffset(container, scrollTop);
+    }
+
+    /**
+     * Where the sync point lies when scrolled to the bottom: the end of the range it moves in, which
+     * starts at 0. With the ramps of {@link syncPointFraction} that is the bottom of the content.
+     */
+    private syncPointEnd(container: Element): number {
+        return this.syncPointAt(
+            container,
+            Math.max(0, container.scrollHeight - container.clientHeight)
+        );
+    }
+
+    /**
+     * The scrollTop at which the sync point lies at {@code syncPoint} in the scrolled content: the
+     * inverse of {@link syncPointAt}.
+     */
+    scrollTopForSyncPoint(container: Element, syncPoint: number): number {
+        const viewportHeight = container.clientHeight;
+        const maxScroll = Math.max(0, container.scrollHeight - viewportHeight);
+        return scrollTopForSyncPointAt(syncPoint, maxScroll, viewportHeight, this.syncPointRamps);
+    }
+
+    /**
+     * @return the scroll position of the block element currently at the sync point as document
+     * offsets plus the fraction of it that lies above the sync point.
      * @see {@link scrollToViewportPosition}.
      */
     getViewportScrollPosition(): ViewportScrollPosition | null {
@@ -447,7 +638,8 @@ export class ApacheAnnotatorSyncController {
         if (!container) return null;
 
         const containerRect = container.getBoundingClientRect();
-        const anchor = this.findViewportTopAnchor(containerRect);
+        const seamY = containerRect.top + this.syncPointOffset(container);
+        const anchor = this.findAnchorAtSeam(containerRect, seamY);
         if (!anchor) return null;
 
         const anchorRect = anchor.getBoundingClientRect();
@@ -455,20 +647,18 @@ export class ApacheAnnotatorSyncController {
         const end = calculateEndOffset(this.root, anchor);
         const fraction =
             anchorRect.height > 0
-                ? Math.min(1, Math.max(0, (containerRect.top - anchorRect.top) / anchorRect.height))
+                ? Math.min(1, Math.max(0, (seamY - anchorRect.top) / anchorRect.height))
                 : 0;
 
-        // Overall scroll progress lets the receiver blend toward its own extreme near the top/bottom
-        // (see ViewportScrollPosition.scrollProgress), so scrolling just off an extreme no longer snaps.
-        const maxScroll = container.scrollHeight - container.clientHeight;
-        const scrollProgress = maxScroll > 0 ? container.scrollTop / maxScroll : 0;
+        // Overall progress lets the receiver blend toward its own extreme (see
+        // ViewportScrollPosition.scrollProgress)
+        const syncPointEnd = this.syncPointEnd(container);
+        const scrollProgress = syncPointEnd > 0 ? this.syncPointAt(container) / syncPointEnd : 0;
 
         const pos: ViewportScrollPosition = { begin, end, fraction, scrollProgress };
 
-        // Additive by-key augmentation (Rule 2). Leaves the offset result above untouched; only
-        // attaches a region key + intra-region fraction when the viewport top falls in a keyed region.
-        // Any missing step (no structure, no region) leaves the fields unset, and the receiver falls
-        // back to offset anchoring.
+        // Attaches a region key and fraction if the sync point is in a keyed region; otherwise the
+        // receiver falls back to offset anchoring
         this.augmentWithSectionPosition(pos, container);
 
         return pos;
@@ -476,63 +666,110 @@ export class ApacheAnnotatorSyncController {
 
     /**
      * Attach {@code sectionKey} / {@code sectionFraction} to {@code pos} for by-key sync, using the
-     * flat scroll-sync region containing the viewport top. Pure follow-on: it never alters the offset
-     * fields, so a receiver without matching regions still has the offset path to fall back on.
+     * flat scroll-sync region containing the sync point. The offset fields are left untouched.
      *
-     * The fraction is in PIXEL space, not character space: characters are not evenly distributed down
-     * a region (a heading is few characters but many pixels tall), so a char fraction would advance
-     * unevenly against a smooth scroll. The viewport-top scroll position is monotonic with scrolling,
-     * and the receiver works in the same pixel space as its exact inverse.
+     * The fraction is in pixel space, not character space: a heading is few characters but many
+     * pixels tall, so a character fraction would advance unevenly against a smooth scroll.
      */
     private augmentWithSectionPosition(pos: ViewportScrollPosition, container: Element): void {
         const regions = this.syncRegions();
         if (!regions) return; // no structure/outline -> offset anchoring only
 
-        // The viewport top expressed as a scroll position (0 = document top). Region tops are in the
-        // same coordinate (see regionTopScrollPos), so bracketing is a direct comparison.
-        const viewportTop = container.scrollTop;
-        const containerTop = container.getBoundingClientRect().top;
+        const maxScroll = Math.max(0, container.scrollHeight - container.clientHeight);
+        if (maxScroll <= 0) return; // nothing to scroll, nothing to follow
+
+        // The sync point as a position in the scrolled content (0 = content top). Region tops are in
+        // the same coordinate (see regionSpans), so bracketing is a direct comparison.
+        const syncPoint = this.syncPointAt(container);
+        const syncPointEnd = this.syncPointEnd(container);
+        const spans = this.regionSpans(container, regions);
 
         for (let i = 0; i < regions.length; i++) {
-            const topPx = this.regionTopScrollPos(container, regions[i], containerTop);
-            const bottomPx =
-                i + 1 < regions.length
-                    ? this.regionTopScrollPos(container, regions[i + 1], containerTop)
-                    : container.scrollHeight;
-            // Bracket the viewport top; the last region also catches anything at/after its bottom.
-            const isLast = i === regions.length - 1;
-            if (viewportTop < topPx) break; // regions are sorted; nothing earlier can match
-            if (viewportTop < bottomPx || isLast) {
-                const height = bottomPx - topPx;
+            const { top, bottom } = spans[i];
+            if (syncPoint < top) break; // regions are sorted; nothing earlier can match
+            // Bracket the sync point; the last region also catches the sync point at the very end.
+            if (syncPoint < bottom || i === regions.length - 1) {
+                const height = bottom - top;
                 if (height <= 0) return;
                 pos.sectionKey = regions[i].key;
-                pos.sectionFraction = Math.min(1, Math.max(0, (viewportTop - topPx) / height));
-                pos.sectionKeySequence = this.regionKeys;
+                pos.sectionFraction = Math.min(1, Math.max(0, (syncPoint - top) / height));
+                // In the unit of scrollProgress, so the receiver can tell how far the sync point
+                // has got between any two of them
+                pos.sections = regions.map((region, j) => ({
+                    key: region.key,
+                    top: spans[j].top / syncPointEnd,
+                    parent: region.parentKey,
+                }));
+                pos.viewportFraction = container.clientHeight / syncPointEnd;
                 return;
             }
         }
     }
 
     /**
-     * The scroll position (0 = document top) at which a region's top reaches the viewport top. For
-     * the leading region (no start element) that is 0; otherwise it is the section element's top
-     * translated into scroll-position space. Shared by the producer's region lookup and the receiver's
-     * placement so both sides agree on region boundaries exactly.
+     * The regions' tops and bottoms as positions in the scrolled content, within the range the
+     * sync point moves in. Shared by the producer's region lookup and the receiver's placement so
+     * both sides agree on region boundaries exactly.
+     *
+     * The sync point reaches the bottom of the content when scrolled to the bottom (see
+     * {@link syncPointFraction}), so the last region ends there: its fraction reaches 1 exactly when
+     * the sender reaches its bottom, and placing at fraction 1 takes the receiver to its own bottom.
+     */
+    private regionSpans(
+        container: Element,
+        regions: SyncRegion[]
+    ): { top: number; bottom: number }[] {
+        const end = this.syncPointEnd(container);
+        const containerTop = container.getBoundingClientRect().top;
+        const tops = regions.map((region) =>
+            Math.min(this.regionTopScrollPos(container, region, containerTop), end)
+        );
+        return tops.map((top, i) => ({
+            top,
+            bottom: i + 1 < tops.length ? tops[i + 1] : end,
+        }));
+    }
+
+    /**
+     * A region's top as a position in the scrolled content (0 = content top). For the leading region
+     * (no start element) that is 0; otherwise it is the section element's top: measured where it can
+     * be, else as recorded (see {@link recordedTops}). Unclamped; see {@link regionSpans}.
      */
     private regionTopScrollPos(
         container: Element,
         region: SyncRegion,
         containerTop = container.getBoundingClientRect().top
     ): number {
-        if (!region.startElement) return 0;
-        return container.scrollTop + (this.elementTop(region.startElement) - containerTop);
+        const element = region.startElement;
+        if (!element) return 0;
+
+        if (this.isInSecludedSection(element)) {
+            const recorded = this.recordedTops.get(element);
+            // Nothing recorded (yet): the live position is the best there is
+            if (recorded !== undefined) return recorded;
+            return container.scrollTop + (this.elementTop(element) - containerTop);
+        }
+
+        const top = container.scrollTop + (this.elementTop(element) - containerTop);
+        this.recordedTops.set(element, top);
+        return top;
+    }
+
+    /**
+     * Whether a secluded section encloses {@code element}, which then cannot be measured live. A
+     * secluded section of its own is fine: it is only visibility: hidden and keeps its box, and its
+     * materialized minimum height keeps everything after it in place.
+     */
+    private isInSecludedSection(element: Element): boolean {
+        const secluded = element.parentElement?.closest('.iaa-secluded');
+        return !!secluded && this.root.contains(secluded);
     }
 
     scrollToViewportPosition(pos: ViewportScrollTarget): void {
         const container = this.getScrollContainer();
         if (!container) return;
 
-        // By-key sync (Rule 2): if the source tagged a region key this document also has, scroll
+        // By-key sync: if the source tagged a region key this document also has, scroll
         // region-fractionally (the inverse of the producer). Otherwise fall back to offset anchoring.
         if (pos.sectionKey !== undefined && this.scrollToRegion(container, pos)) return;
 
@@ -540,71 +777,31 @@ export class ApacheAnnotatorSyncController {
     }
 
     /**
-     * Region-fractional scroll. Resolves `pos.sectionKey` against this document's own regions via
-     * {@link resolveRegionTarget}:
-     * - an exact region match scrolls to `region.start + fraction*(regionHeight)`, the inverse of the
-     *   producer (unchanged from before bracketing existed);
-     * - a miss that brackets between two shared keys interpolates the viewport between those regions'
-     *   boundaries;
-     * - a miss with only a "before" or only an "after" bracketing key freezes at that region's
-     *   boundary (the sender is past the last, or before the first, key shared with this document);
-     * - no bracket at all (`kind: 'none'`) returns false so the caller falls back to offset anchoring.
+     * By-key scroll: places the sync point as {@link resolveSegmentTarget} says, or returns false
+     * when it finds no shared key around the sender's position, so the caller falls back to offset
+     * anchoring. Unlike the offset path, this one does not blend toward the sender's scroll
+     * progress: {@link regionSpans} already makes both sides reach their ends together.
      */
     private scrollToRegion(container: Element, pos: ViewportScrollTarget): boolean {
         const regions = this.syncRegions();
         if (!regions || pos.sectionKey === undefined) return false;
 
-        const plan = resolveRegionTarget(
-            regions,
-            pos.sectionKey,
-            pos.sectionKeySequence,
-            pos.sectionFraction ?? 0
-        );
-        if (plan.kind === 'none') return false;
-
         // Region top/bottom as scroll positions, via the SAME helper the producer uses so both sides
-        // agree on the boundary exactly. Bottom = the next region's top, or the document bottom for
-        // the last region.
-        const regionBoundary = (index: number): number => {
-            const next = regions[index + 1];
-            return next ? this.regionTopScrollPos(container, next) : container.scrollHeight;
-        };
+        // agree on the boundary exactly.
+        const spans = this.regionSpans(container, regions);
+        const target = resolveSegmentTarget(
+            regions.map((r, i) => ({ key: r.key, parentKey: r.parentKey, top: spans[i].top })),
+            this.syncPointEnd(container),
+            pos.sectionKey,
+            pos.sections,
+            pos.scrollProgress,
+            this.segmentBand,
+            pos.viewportFraction,
+            container.clientHeight
+        );
+        if (target === undefined) return false;
 
-        let target: number;
-        switch (plan.kind) {
-            case 'exact': {
-                const topPx = this.regionTopScrollPos(container, regions[plan.regionIndex]);
-                const bottomPx = regionBoundary(plan.regionIndex);
-                const height = bottomPx - topPx;
-                if (height <= 0) return false;
-                const frac = Math.min(1, Math.max(0, pos.sectionFraction ?? 0));
-                target = topPx + frac * height;
-                break;
-            }
-            case 'freeze-after': {
-                // Past the last shared key: hold at that region's own end (its boundary with
-                // whatever unmatched content follows it here), rather than following the sender
-                // further into content this document doesn't have.
-                target = regionBoundary(plan.regionIndex);
-                break;
-            }
-            case 'freeze-before': {
-                // Before the first shared key: hold at that region's start.
-                target = this.regionTopScrollPos(container, regions[plan.regionIndex]);
-                break;
-            }
-            case 'interpolate': {
-                const topPx = this.regionTopScrollPos(container, regions[plan.beforeRegionIndex]);
-                const bottomPx = this.regionTopScrollPos(container, regions[plan.afterRegionIndex]);
-                target = topPx + plan.progress * (bottomPx - topPx);
-                break;
-            }
-        }
-
-        // Dedup identical re-applies (per-frame), same axis as the offset path. For 'freeze-before'/
-        // 'freeze-after' this under-dedups (the sender's sectionFraction keeps changing while frozen,
-        // so the comparison below never matches and scrollTop is reassigned every frame) -- harmless
-        // since the reassigned value is the same pixel target each time, just not free.
+        // Dedup identical re-applies (per-frame)
         const frac = Math.min(1, Math.max(0, pos.sectionFraction ?? 0));
         const last = this.lastAppliedViewportScrollPosition;
         if (
@@ -624,27 +821,94 @@ export class ApacheAnnotatorSyncController {
             sectionFraction: frac,
         };
 
-        // See shouldBlendTowardScrollProgress for why only an 'exact' match AT A CORRESPONDING
-        // DOCUMENT EXTREME blends toward the sender's overall scrollProgress; everything else applies
-        // `target` as-is.
-        if (shouldBlendTowardScrollProgress(plan)) {
-            const maxScroll = container.scrollHeight - container.clientHeight;
-            container.scrollTop = blendTowardScrollProgress(target, pos.scrollProgress, maxScroll);
-        } else {
-            container.scrollTop = target;
-        }
+        // target is where the sync point goes, not the viewport top
+        this.applyScrollTop(container, this.scrollTopForSyncPoint(container, target));
         return true;
     }
 
     /**
-     * Read a region start element's viewport-top. Pure measurement: this runs on the read/measure
-     * path ({@link getViewportScrollPosition} via {@link regionTopScrollPos}, every scroll frame),
-     * so it must never write to the DOM. Un-secluding here would strip {@code iaa-secluded} off
-     * sections merely being measured, permanently defeating the seclusion/windowing optimization for
-     * large documents. It is also unnecessary: a top-level secluded section is {@code visibility:
-     * hidden}, which keeps its layout box, so its top measures correctly while still hidden. (The
-     * offset scroll path in {@link scrollToOffset} legitimately unhides its target -- it is about to
-     * scroll to that block, not just measure it.)
+     * Whether the viewport is where a sync put it, or is still gliding there. Forgets the applied
+     * position once the viewport is found anywhere else, so a later scroll that happens to end
+     * there again counts as the user's.
+     */
+    isApplyingViewportSync(): boolean {
+        const container = this.getScrollContainer();
+        if (container && this.appliedScrollTop === container.scrollTop) return true;
+        this.appliedScrollTop = undefined;
+        return false;
+    }
+
+    /** Move the viewport to {@code scrollTop} for a sync, at once or gliding (see {@link glide}). */
+    private applyScrollTop(container: Element, scrollTop: number): void {
+        const maxScroll = Math.max(0, container.scrollHeight - container.clientHeight);
+        const target = Math.min(maxScroll, Math.max(0, scrollTop));
+        const gliding = this.glideFrame !== undefined;
+
+        if (
+            !this.glide ||
+            (!gliding &&
+                Math.abs(target - container.scrollTop) <
+                    this.glideThreshold * container.clientHeight)
+        ) {
+            this.stopGlide();
+            container.scrollTop = target;
+            this.appliedScrollTop = container.scrollTop;
+            return;
+        }
+
+        this.glideTarget = target;
+        if (!gliding) {
+            this.appliedScrollTop = container.scrollTop;
+            this.glideLastTime = undefined;
+            this.glideFrame = requestAnimationFrame((t) => this.glideStep(container, t));
+        }
+    }
+
+    private glideStep(container: Element, time: number): void {
+        this.glideFrame = undefined;
+        const target = this.glideTarget;
+        if (target === undefined) return;
+
+        // Something else moved the viewport, most likely the user: they take over
+        if (this.appliedScrollTop === undefined || container.scrollTop !== this.appliedScrollTop) {
+            this.stopGlide();
+            return;
+        }
+
+        const dt = this.glideLastTime === undefined ? 16 : time - this.glideLastTime;
+        this.glideLastTime = time;
+
+        const current = container.scrollTop;
+        const remaining = target - current;
+        // At least a pixel per frame, so rounding of scrollTop cannot stall the glide
+        const step = remaining * (1 - Math.exp(-dt / this.glideTimeConstantMs));
+        const next =
+            Math.abs(remaining) <= 1
+                ? target
+                : current + Math.sign(remaining) * Math.max(1, Math.abs(step));
+        container.scrollTop = next;
+        this.appliedScrollTop = container.scrollTop;
+
+        // Arrived, or could not move any further (e.g. the content shrank under the target)
+        if (Math.abs(target - container.scrollTop) <= 1 || container.scrollTop === current) {
+            this.glideTarget = undefined;
+            return;
+        }
+        this.glideFrame = requestAnimationFrame((t) => this.glideStep(container, t));
+    }
+
+    private stopGlide(): void {
+        if (this.glideFrame !== undefined) cancelAnimationFrame(this.glideFrame);
+        this.glideFrame = undefined;
+        this.glideTarget = undefined;
+    }
+
+    /**
+     * Read a region start element's viewport-top. This runs on every scroll frame and must never
+     * write to the DOM: un-secluding sections merely being measured would defeat the
+     * seclusion/windowing optimization for large documents. A top-level secluded section is
+     * {@code visibility: hidden} and keeps its box; elements inside a secluded section are not
+     * measured here (see {@link regionTopScrollPos}).
      */
     private elementTop(element: Element): number {
         return element.getBoundingClientRect().top;
@@ -685,11 +949,16 @@ export class ApacheAnnotatorSyncController {
 
         const containerRect = container.getBoundingClientRect();
         const blockRect = block.getBoundingClientRect();
-        const anchoredTop =
+        // The anchor point in the scrolled content, blended toward the sender's progress near the
+        // ends, then the scrollTop that puts the sync point there
+        const anchorPoint =
             container.scrollTop + (blockRect.top - containerRect.top) + fraction * blockRect.height;
-
-        const maxScroll = container.scrollHeight - container.clientHeight;
-        container.scrollTop = blendTowardScrollProgress(anchoredTop, pos.scrollProgress, maxScroll);
+        const syncPoint = blendTowardScrollProgress(
+            anchorPoint,
+            pos.scrollProgress,
+            this.syncPointEnd(container)
+        );
+        this.applyScrollTop(container, this.scrollTopForSyncPoint(container, syncPoint));
     }
 
     /**
@@ -703,7 +972,6 @@ export class ApacheAnnotatorSyncController {
         if (this.regions === undefined || this.regionsTocRoot !== tocRoot) {
             const docEnd = calculateEndOffset(this.root, this.root);
             this.regions = buildSyncRegions(this.root, tocRoot, docEnd);
-            this.regionKeys = this.regions.map((r) => r.key);
             this.regionsTocRoot = tocRoot;
         }
         return this.regions.length ? this.regions : undefined;
@@ -718,22 +986,25 @@ export class ApacheAnnotatorSyncController {
     }
 
     /**
-     * Try locating the block-level element that straddles the top of the scroll viewport.
+     * Try locating the block-level element that straddles {@code seamY}, the sync point in client
+     * coordinates.
      */
-    private findViewportTopAnchor(containerRect: DOMRect): Element | null {
+    private findAnchorAtSeam(containerRect: DOMRect, seamY: number): Element | null {
         const doc = this.root.ownerDocument;
         const rootRect = this.root.getBoundingClientRect();
         const left = Math.max(containerRect.left, rootRect.left);
         const right = Math.min(containerRect.right, rootRect.right);
         if (right <= left) return null;
 
-        const seamY = containerRect.top;
         const width = right - left;
-        // x offsets guard against a probe column falling in a gutter/float; y offsets step past the
-        // seam's top-margin gap (see method doc). Neither needs to land on the target block - any
-        // in-root node lets blockAtSeam() resolve the anchor by structure.
+        // x offsets guard against a probe column falling in a gutter/float; y offsets step past
+        // margin gaps. Any in-root node lets blockAtSeam() resolve the anchor by structure. Probe on
+        // both sides of the seam, below first, and only inside the viewport: at the bottom of the
+        // document the seam is the viewport's bottom edge.
         const entryX = [left + width * 0.5, left + width * 0.25, left + width * 0.75];
-        const entryY = [seamY + 8, seamY + 24, seamY + 48, seamY + 96];
+        const entryY = [8, 24, 48, 96]
+            .flatMap((d) => [seamY + d, seamY - d])
+            .filter((y) => y >= containerRect.top && y < containerRect.bottom);
 
         for (const y of entryY) {
             for (const x of entryX) {
@@ -753,17 +1024,14 @@ export class ApacheAnnotatorSyncController {
     }
 
     /**
-     * From an entry node near the viewport top, return the block-level element with text that
-     * straddles {@code seamY} (its box spans the seam line), searching in document order. If the
-     * entry node's own block sits entirely above the seam (its content has scrolled past), we
-     * advance to the following blocks; if it sits entirely below, we accept it as the first block
-     * at or after the seam. Straddling is preferred because {@link getViewportScrollPosition}
-     * measures how far the viewport top has scrolled <em>into</em> the anchor, which is only
-     * meaningful for a block the seam actually crosses.
+     * From an entry node near the seam, return the block-level element with text that straddles
+     * {@code seamY}, searching in document order. If the entry node's block sits entirely above the
+     * seam, advance to the following blocks; if entirely below, accept it as the first block after
+     * the seam. Straddling is preferred because the fraction in {@link getViewportScrollPosition} is
+     * only meaningful for a block the seam actually crosses.
      * <p>
-     * When straddling blocks nest (e.g. a section and a paragraph inside it both cross the seam) we
-     * return the <em>innermost</em> one: the deepest block gives the finest-grained height for the
-     * scroll fraction, matching the granularity the previous ancestor-only anchor produced.
+     * When straddling blocks nest, return the <em>innermost</em> one: it gives the finest-grained
+     * height for the scroll fraction.
      */
     private blockAtSeam(entry: Element, seamY: number): Element | null {
         let start = this.closestBlockWithText(entry);
@@ -775,9 +1043,8 @@ export class ApacheAnnotatorSyncController {
         };
 
         // The entry probe can land on a block just below the seam (e.g. the table row under the one
-        // that crosses it). The straddling block is then earlier in document order, which the
-        // forward walk below never revisits - so back up while the start block sits entirely below
-        // the seam and the previous block reaches up to or across it.
+        // that crosses it). Back up while the start block sits entirely below the seam and the
+        // previous block reaches up to or across it, since the forward walk never revisits it.
         while (start.getBoundingClientRect().top > seamY) {
             const prev = this.prevBlockWithText(start);
             if (!prev || prev.getBoundingClientRect().top > seamY) break;
@@ -797,7 +1064,10 @@ export class ApacheAnnotatorSyncController {
                     break;
                 }
             } else if (innermostStraddler) {
-                break; // left the straddling run; keep the innermost we found
+                // Blocks above the seam inside the straddler (its heading, say) are followed by the
+                // paragraph that does straddle it, so keep walking while inside its subtree. Leaving
+                // the subtree ends the straddling run; keep the innermost we found.
+                if (!innermostStraddler.contains(current)) break;
             } else if (!firstBelow) {
                 const rect = current.getBoundingClientRect();
                 if (rect.top > seamY) {
@@ -841,10 +1111,8 @@ export class ApacheAnnotatorSyncController {
     }
 
     private isBlockWithText(element: Element): boolean {
-        // The editor root/scroll container itself is never a content anchor: it spans the whole
-        // viewport, so accepting it would yield a meaningless full-height fraction denominator. It
-        // can otherwise slip through here as block-with-text, e.g. when the document's first block
-        // is at the seam and the back-up walk steps past it to the container.
+        // The editor root is never a content anchor: it spans the whole viewport, so its height is a
+        // meaningless fraction denominator
         if (element === this.root) return false;
         if (!element.textContent) return false;
         if (element.closest('svg')) return false;

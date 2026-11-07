@@ -531,6 +531,10 @@ export class ApacheAnnotatorEditor implements AnnotationEditor {
         this.vis?.scrollToViewportPosition(pos);
     }
 
+    isApplyingViewportSync(): boolean {
+        return this.vis?.isApplyingViewportSync() ?? false;
+    }
+
     connectViewportSync(aHub: ViewportSyncPeer, aId: string): void {
         this.viewportSyncHub = aHub;
         this.viewportSyncId = aId;
