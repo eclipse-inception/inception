@@ -22,7 +22,7 @@
   <parent>
     <groupId>de.tudarmstadt.ukp.inception.app</groupId>
     <artifactId>inception-app</artifactId>
-    <version>42.3</version>
+    <version>42.4-SNAPSHOT</version>
   </parent>
   <artifactId>inception-kb-lucene-sail</artifactId>
   <name>RDF4J: Lucene Sail Index</name>
