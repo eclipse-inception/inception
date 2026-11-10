@@ -35,7 +35,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 class InceptionMySql_LTS_Oldest_IntegrationTest
 {
     @SuppressWarnings("resource")
-    static final MySQLContainer<?> dbContainer = new MySQLContainer<>("mysql:8.4.11") //
+    static final MySQLContainer<?> dbContainer = new MySQLContainer<>("mysql:8.4.13") //
             .withDatabaseName("testdb") //
             .withUsername("test") //
             .withPassword("test");

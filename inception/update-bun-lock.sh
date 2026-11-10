@@ -43,6 +43,27 @@ TS_MODULES="
 ./inception-workload/src/main/ts
 "
 
+# Lock update mode:
+#   --keep  keep the existing bun.lock: bun re-resolves only the packages whose range in
+#           package.json no longer matches, everything else stays at its locked version.
+#   --full  delete bun.lock and resolve everything anew, which moves every package (including
+#           transitive ones) to the newest version its ranges allow.
+# Without an option, the mode follows the branch: full on main, keep everywhere else, so that a
+# maintenance branch never floats by accident.
+MODE=""
+case "$1" in
+  --keep) MODE=keep; shift ;;
+  --full) MODE=full; shift ;;
+esac
+if [ -z "$MODE" ]; then
+  if [ "$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" = "main" ]; then
+    MODE=full
+  else
+    MODE=keep
+  fi
+fi
+echo "ℹ️ Lock update mode: $MODE"
+
 TARGET_MODULE="$1"
 
 if [ -n "$TARGET_MODULE" ]; then
@@ -59,13 +80,19 @@ for module in $TS_MODULES ; do
     MATCHED=1
   fi
 
-  echo "🧹 Cleaning up generated files in $module"
   pushd "$module" >/dev/null 2>&1
-  rm -f ../ts_template/bun.lock
-  rm -f bun.lock
-  rm -f package-lock.json
-  rm -f package.json
-  rm -Rf node_modules
+  # A module without a lock is always resolved in full
+  if [ "$MODE" = full ] || [ ! -f ../ts_template/bun.lock ]; then
+    echo "🧹 Cleaning up generated files in $module"
+    rm -f ../ts_template/bun.lock
+    rm -f bun.lock
+    rm -f package-lock.json
+    rm -f package.json
+    rm -Rf node_modules
+  else
+    # The build copies the template lock into place, and bun starts from it
+    echo "📌 Keeping the existing lock in $module"
+  fi
 
   rm -f .eslintrc.yml
   cp ../../../../inception-build/src/main/resources/inception/eslint.config.mjs eslint.config.mjs
