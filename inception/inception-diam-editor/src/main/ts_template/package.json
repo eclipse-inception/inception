@@ -18,7 +18,6 @@
     "url": "https://github.com/inception-project/issues"
   },
   "overrides": {
-    "minimatch": "${minimatch.version}",
     "immutable": "${immutable.version}",
     "undici": "${undici.version}"
   },

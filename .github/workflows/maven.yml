@@ -29,8 +29,8 @@ jobs:
     - name: Harden Runner
       uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
       with:
-        egress-policy: audit
-        # egress-policy: block
+        # egress-policy: audit
+        egress-policy: block
         # sudo is left available so the "Allocate swap space" step below can work
         disable-sudo: false
         allowed-endpoints: >
@@ -49,8 +49,11 @@ jobs:
           objects.githubusercontent.com:443
           raw.githubusercontent.com:443
           release-assets.githubusercontent.com:443
+          hosted-compute-request-orchestrator-gccus02-01.githubapp.com:443
           hosted-compute-request-orchestrator-prod-eus-01.githubapp.com:443
+          hosted-compute-request-orchestrator-prod-eus-02.githubapp.com:443
           hosted-compute-request-orchestrator-prod-iad-01.githubapp.com:443
+          hosted-compute-watchdog-gccus02-01.githubapp.com:443
           hosted-compute-watchdog-prod-eus-01.githubapp.com:443
           hosted-compute-watchdog-prod-eus-02.githubapp.com:443
           hosted-compute-watchdog-prod-iad-01.githubapp.com:443
@@ -59,6 +62,7 @@ jobs:
           mcr.microsoft.com:443
           nodejs.org:443
           oss.sonatype.org:443
+          playwright.download.prss.microsoft.com:443
           production.cloudflare.docker.com:443
           production.cloudfront.docker.com:443
           quay.io:443

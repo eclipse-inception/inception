@@ -72,6 +72,23 @@ fi
 
 MATCHED=0
 
+# Prints the value of a Maven expression for the project in the current directory. The value is
+# read through a file because -DforceStdout prints nothing under mvnd, which only forwards its
+# own warnings to stdout.
+evaluate() {
+  EVAL_FILE=$(mktemp)
+  ${MVN} help:evaluate -Dexpression="$1" -q -Doutput="$EVAL_FILE" >/dev/null 2>&1 || true
+  EVAL_VALUE=$(cat "$EVAL_FILE")
+  rm -f "$EVAL_FILE"
+  case "$EVAL_VALUE" in
+    ''|*[[:space:]]*|*'['*|*'$'*)
+      echo "ERROR: could not evaluate $1 in $(pwd), got: '$EVAL_VALUE'" >&2
+      exit 3
+      ;;
+  esac
+  echo "$EVAL_VALUE"
+}
+
 for module in $TS_MODULES ; do
   if [ -n "$TARGET_MODULE" ]; then
     if ! echo "$module" | grep -q "$TARGET_MODULE"; then
@@ -104,11 +121,11 @@ for module in $TS_MODULES ; do
   pushd "$module/../../.." >/dev/null 2>&1
   ${MVN} clean generate-resources -q -Dnpm-install-command=install -Dts-link-phase=generate-resources
 
-  ORIG_VERSION=$(${MVN} help:evaluate -Dexpression=project.version -q -DforceStdout)
+  ORIG_VERSION=$(evaluate project.version)
   SEMVER="$(echo "$ORIG_VERSION" | cut -d'-' -f1).0-SNAPSHOT"
   echo "ℹ️ Setting version $ORIG_VERSION -> $SEMVER"
 
-  ARTIFACT_ID=$(${MVN} help:evaluate -Dexpression=project.artifactId -q -DforceStdout)
+  ARTIFACT_ID=$(evaluate project.artifactId)
   popd >/dev/null 2>&1
 
   echo "🔎 Auditing module $module"

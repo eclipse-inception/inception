@@ -258,7 +258,6 @@
     <jquery-ui.version>1.14.2+1</jquery-ui.version>
     <license-checker.version>^25.0.1</license-checker.version>
     <marked.version>~18.0.14</marked.version>
-    <minimatch.version>^10.2.6</minimatch.version>
     <pdfjs.version>5.4.449</pdfjs.version>
     <neostandard.version>^0.13.0</neostandard.version>
     <playwright.version>1.65.0</playwright.version>
@@ -285,7 +284,7 @@
     <types-jquery.version>^3.5.34</types-jquery.version>
     <types-stompjs.version>^2.3.10</types-stompjs.version>
     <types-urijs.version>^1.19.26</types-urijs.version>
-    <undici.version>~7.29.0</undici.version>
+    <undici.version>~7.30.1</undici.version>
     <uuid.version>^14.0.3</uuid.version>
     <urijs.version>^1.19.11</urijs.version>
     <vite.version>^8.3.7</vite.version>
