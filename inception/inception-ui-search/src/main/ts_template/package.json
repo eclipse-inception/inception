@@ -13,7 +13,6 @@
   },
   "external": {},
   "overrides": {
-    "minimatch": "${minimatch.version}",
     "immutable": "${immutable.version}",
     "undici": "${undici.version}"
   },

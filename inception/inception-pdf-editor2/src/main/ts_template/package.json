@@ -20,7 +20,6 @@
     "format:check": "prettier --check \"**/*.{js,ts,svelte,css,scss,json}\""
   },
   "overrides": {
-    "minimatch": "${minimatch.version}",
     "immutable": "${immutable.version}",
     "undici": "${undici.version}"
   },

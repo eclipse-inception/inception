@@ -20,7 +20,6 @@
     "url": "git+https://github.com/inception-project/inception.git"
   },
   "overrides": {
-    "minimatch": "${minimatch.version}",
     "immutable": "${immutable.version}",
     "undici": "${undici.version}"
   },
