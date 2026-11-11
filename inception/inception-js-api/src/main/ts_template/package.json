@@ -19,11 +19,6 @@
     "format": "prettier --write \"**/*.{js,ts,svelte,css,scss,json}\"",
     "format:check": "prettier --check \"**/*.{js,ts,svelte,css,scss,json}\""
   },
-  "overrides": {
-    "minimatch": "${minimatch.version}",
-    "immutable": "${immutable.version}",
-    "undici": "${undici.version}"
-  },
   "dependencies": {
     "@stomp/stompjs": "${stomp-stompjs.version}",
     "@types/stompjs": "${types-stompjs.version}",

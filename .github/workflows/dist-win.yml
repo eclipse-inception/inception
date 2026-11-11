@@ -21,7 +21,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+      uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
       with:
         egress-policy: audit
 
@@ -41,7 +41,7 @@ jobs:
     - name: Set up Maven
       uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
       with:
-        maven-version: 3.9.14
+        maven-version: 3.9.16
 
     - name: Verify build prerequisites
       shell: bash
@@ -62,7 +62,7 @@ jobs:
           clean package
 
     - name: Upload MSI artifact
-      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: inception-msi-x86_64
         path: inception/inception-dist-win/target/jpackage-x86_64/*.msi

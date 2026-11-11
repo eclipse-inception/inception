@@ -38,7 +38,7 @@ class InceptionPostgresql_Oldest_IntegrationTest
     // .asCompatibleSubstituteFor("postgres");
     @SuppressWarnings("resource")
     static final PostgreSQLContainer<?> dbContainer = new PostgreSQLContainer<>(
-            "postgres:16.14-alpine") //
+            "postgres:16.15-alpine") //
                     .withDatabaseName("testdb") //
                     .withUsername("test") //
                     .withPassword("test");

@@ -12,11 +12,6 @@
     "format:check": "prettier --check \"**/*.{js,ts,svelte,css,scss,json}\""
   },
   "external": {},
-  "overrides": {
-    "minimatch": "${minimatch.version}",
-    "immutable": "${immutable.version}",
-    "undici": "${undici.version}"
-  },
   "devDependencies": {
     "license-checker": "${license-checker.version}",
     "eslint": "${eslint.version}",

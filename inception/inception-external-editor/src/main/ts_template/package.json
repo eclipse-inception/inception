@@ -9,11 +9,6 @@
     "format": "prettier --write \"**/*.{js,ts,json,css,scss,md,html}\"",
     "format:check": "prettier --check \"**/*.{js,ts,json,css,scss,md,html}\""
   },
-  "overrides": {
-    "minimatch": "${minimatch.version}",
-    "immutable": "${immutable.version}",
-    "undici": "${undici.version}"
-  },
   "dependencies": {
     "@inception-project/inception-js-api": "file:../../../../inception-js-api/src/main/ts",
     "@inception-project/inception-diam": "file:../../../../inception-diam/src/main/ts"

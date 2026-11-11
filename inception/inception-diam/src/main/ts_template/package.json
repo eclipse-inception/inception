@@ -19,11 +19,6 @@
     "format": "prettier --write \"**/*.{js,ts,svelte,css,scss,json}\"",
     "format:check": "prettier --check \"**/*.{js,ts,svelte,css,scss,json}\""
   },
-  "overrides": {
-    "minimatch": "${minimatch.version}",
-    "immutable": "${immutable.version}",
-    "undici": "${undici.version}"
-  },
   "dependencies": {
     "@inception-project/inception-js-api": "file:../../../../inception-js-api/src/main/ts",
     "@stomp/stompjs": "${stomp-stompjs.version}",

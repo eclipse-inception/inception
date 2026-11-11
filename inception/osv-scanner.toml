@@ -14,6 +14,14 @@
 #   [[IgnoredVulns]]
 #   id = "GHSA-xxxx-yyyy-zzzz"
 #   reason = "Transitive dev-only dep; tracked in #1234"
-#   ignoreUntil = "2026-09-01"
+#   ignoreUntil = 2026-09-01
 
-# (no ignored vulnerabilities at this time)
+[[IgnoredVulns]]
+id = "GHSA-g3hv-75wg-m249"
+reason = "minimatch 10.2.6, dev-only: reached only through @typescript-eslint/typescript-estree 8.72.2, which requires ^10.2.2 and so cannot take the fix in 11.0.1. Its 8.72.3 canary accepts ^11.0.1; drop this entry once that is released and the locks are regenerated."
+ignoreUntil = 2026-12-09
+
+[[IgnoredVulns]]
+id = "GHSA-gcqx-w48m-w2h4"
+reason = "deepmerge 4.3.1, dev-only: reached only through @sveltejs/vite-plugin-svelte, which merges build configuration with it. No fixed release exists (4.3.1 is the last affected version)."
+ignoreUntil = 2027-02-11
