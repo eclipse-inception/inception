@@ -62,7 +62,7 @@ public class GraphDbRepositoryTest
 {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private static final String GRAPHDB_IMAGE = "ontotext/graphdb:11.3.0";
+    private static final String GRAPHDB_IMAGE = "ontotext/graphdb:11.5.2";
     private static final int GRAPHDB_PORT = 7200;
 
     @Container

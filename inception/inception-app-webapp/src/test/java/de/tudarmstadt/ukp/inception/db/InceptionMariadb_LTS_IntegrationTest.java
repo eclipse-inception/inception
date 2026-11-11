@@ -35,7 +35,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 class InceptionMariadb_LTS_IntegrationTest
 {
     @SuppressWarnings("resource")
-    static final MariaDBContainer<?> dbContainer = new MariaDBContainer<>("mariadb:12.3.2") //
+    static final MariaDBContainer<?> dbContainer = new MariaDBContainer<>("mariadb:12.3.3") //
             .withDatabaseName("testdb") //
             .withUsername("test") //
             .withPassword("test");

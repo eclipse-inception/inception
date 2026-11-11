@@ -73,7 +73,7 @@ public class AllegroGraphRepositoryTest
 
     @Container
     private static final GenericContainer<?> ALLEGRO_GRAPH = new GenericContainer<>(
-            "franzinc/agraph:v8.4.3") //
+            "franzinc/agraph:v8.5.3") //
                     .withSharedMemorySize(1_000_000_000l) //
                     .withEnv("AGRAPH_SUPER_USER", USER) //
                     .withEnv("AGRAPH_SUPER_PASSWORD", PASSWORD) //

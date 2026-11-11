@@ -91,7 +91,7 @@ class OAuth2AdapterImplKeycloakTest
     private static final String CLIENT_SECRET = "test-secret";
 
     @Container
-    static KeycloakContainer keycloak = new KeycloakContainer("keycloak/keycloak:26.6") //
+    static KeycloakContainer keycloak = new KeycloakContainer("keycloak/keycloak:26.8") //
             .withRealmImportFile("keycloak/inception-security-test-realm.json");
 
     @Autowired

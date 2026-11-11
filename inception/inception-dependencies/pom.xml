@@ -308,6 +308,16 @@
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-serialization-json-jvm</artifactId>
           </exclusion>
+          <!--
+            The Netty BOM (imported through Spring Boot) manages netty-codec-native-quic with
+            runtime scope, which overrides the test scope it would inherit from here. That
+            pulled Netty's QUIC support, and since Netty 4.2.19 Netty's core jars, into the
+            application. The tests do not use HTTP/3, so the native QUIC libraries can go.
+          -->
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-native-quic</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -1240,6 +1250,32 @@
         <groupId>org.xerial.snappy</groupId>
         <artifactId>snappy-java</artifactId>
         <version>${snappy.version}</version>
+      </dependency>
+      <!--
+        lz4-java arrives transitively: at.yawk.lz4 through kafka-clients, and the old
+        org.lz4 coordinates through rdf4j-collection-factory-mapdb3. Both jars contain the
+        same net.jpountz.lz4 classes. org.lz4:lz4-java 1.8.1 is a relocation to at.yawk.lz4,
+        so managing it collapses the two onto one jar. The version is managed for the fixes
+        of GHSA-mcr4-qmvw-px4g, GHSA-gm45-99xc-r7wv and GHSA-343h-94h5-c4wr.
+      -->
+      <dependency>
+        <groupId>at.yawk.lz4</groupId>
+        <artifactId>lz4-java</artifactId>
+        <version>${lz4-java.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.lz4</groupId>
+        <artifactId>lz4-java</artifactId>
+        <version>1.8.1</version>
+      </dependency>
+      <!--
+        Guava is otherwise managed by the imported Jena BOM. Overridden for the fix of
+        GHSA-xxph-c9ww-hj94.
+      -->
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
       </dependency>
 
       <dependency>
