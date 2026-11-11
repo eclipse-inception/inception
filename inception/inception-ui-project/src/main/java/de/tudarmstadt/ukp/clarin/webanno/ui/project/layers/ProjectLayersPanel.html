@@ -154,6 +154,12 @@
                     <strong><span wicket:id="name"/></strong>
                   </div>
                 </div>
+                <div class="form-row form-floating">
+                  <input wicket:id="shortName" class="form-control" wicket:message="placeholder:shortName"/>
+                  <label wicket:for="shortName">
+                    <wicket:label key="shortName"/>
+                  </label>
+                </div>
                 <div class="form-row form-floating" wicket:enclosure="type">
                   <select wicket:id="type" class="form-select" wicket:message="placeholder:type"/>
                   <label wicket:for="type">

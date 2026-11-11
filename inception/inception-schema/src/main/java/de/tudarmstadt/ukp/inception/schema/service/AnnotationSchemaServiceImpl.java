@@ -439,6 +439,23 @@ public class AnnotationSchemaServiceImpl
 
     @Override
     @Transactional(noRollbackFor = NoResultException.class, readOnly = true)
+    public boolean existsLayerWithShortName(String aShortName, Project aProject)
+    {
+        try {
+            entityManager.createQuery(
+                    "FROM AnnotationLayer WHERE shortName = :shortName AND project = :project",
+                    AnnotationLayer.class).setParameter("shortName", aShortName) //
+                    .setParameter("project", aProject) //
+                    .getSingleResult();
+            return true;
+        }
+        catch (NoResultException e) {
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional(noRollbackFor = NoResultException.class, readOnly = true)
     public boolean existsLayer(String aName, String aType, Project aProject)
     {
         try {

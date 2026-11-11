@@ -183,6 +183,17 @@ public interface AnnotationSchemaService
     boolean existsLayer(String name, Project project);
 
     /**
+     * Check if an {@link AnnotationLayer} exists with this short name in the given {@link Project}.
+     * 
+     * @param shortName
+     *            the layer name.
+     * @param project
+     *            the project.
+     * @return if the layer exists.
+     */
+    boolean existsLayerWithShortName(String shortName, Project project);
+
+    /**
      * check if an {@link AnnotationLayer} exists with this name and type in this {@link Project}
      * 
      * @param name

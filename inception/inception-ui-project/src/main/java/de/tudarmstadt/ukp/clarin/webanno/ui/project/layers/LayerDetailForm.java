@@ -100,6 +100,7 @@ public class LayerDetailForm
     private DropDownChoice<AnnotationLayer> attachTypeSelect;
     private Label effectiveAttachType;
     private TextField<String> uiName;
+    private TextField<String> shortName;
 
     private FeatureSelectionForm featureSelectionForm;
     private FeatureDetailForm featureDetailForm;
@@ -127,6 +128,11 @@ public class LayerDetailForm
         uiName.setOutputMarkupId(true);
         uiName.setRequired(true);
         add(uiName);
+
+        shortName = new TextField<String>("shortName");
+        shortName.setOutputMarkupId(true);
+        add(shortName);
+
         add(new TextArea<String>("description").setOutputMarkupPlaceholderTag(true));
 
         add(new Label("name").add(visibleWhen(() -> isNotBlank(getModelObject().getName()))));
@@ -373,6 +379,13 @@ public class LayerDetailForm
                 return;
             }
 
+            if (annotationService.existsLayerWithShortName(shortLayerName, project)) {
+                error("A layer with the short name [" + shortLayerName
+                        + "] already exists in this project.");
+                return;
+            }
+
+            layer.setShortName(shortLayerName);
             layer.setName(layerName);
         }
 

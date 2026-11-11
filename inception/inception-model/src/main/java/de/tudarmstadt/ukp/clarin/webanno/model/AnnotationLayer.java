@@ -19,6 +19,8 @@ package de.tudarmstadt.ukp.clarin.webanno.model;
 
 import static jakarta.persistence.ConstraintMode.NO_CONSTRAINT;
 import static java.util.Arrays.asList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.substringAfterLast;
 
 import java.io.Serializable;
 
@@ -63,8 +65,14 @@ public class AnnotationLayer
     @Column(name = "id")
     private Long id;
 
+    @Column(name = "name", nullable = false)
+    private String name;
+
     @Column(nullable = false)
     private String uiName;
+
+    @Column(name = "short_name", nullable = true)
+    private String shortName;
 
     @Column(nullable = false)
     private String type;
@@ -81,9 +89,6 @@ public class AnnotationLayer
 
     @Column(length = 64000)
     private String onClickJavascriptAction;
-
-    @Column(name = "name", nullable = false)
-    private String name;
 
     @ManyToOne
     // @ForeignKey(ConstraintMode.NO_CONSTRAINT)
@@ -148,6 +153,7 @@ public class AnnotationLayer
     {
         this.id = builder.id;
         this.uiName = builder.uiName;
+        this.shortName = builder.shortName;
         this.type = builder.type;
         this.description = builder.description;
         this.enabled = builder.enabled;
@@ -221,6 +227,29 @@ public class AnnotationLayer
     public void setDescription(String aDescription)
     {
         description = aDescription;
+    }
+
+    /**
+     * The name under which the layer should be accessible when searching
+     * 
+     * @param aShortName
+     */
+    public void setShortName(String aShortName)
+    {
+        shortName = aShortName;
+    }
+
+    public String getShortName()
+    {
+        if (isBlank(shortName)) {
+            if (name != null && name.contains(".")) {
+                return substringAfterLast(name, ".");
+            }
+
+            return name;
+        }
+
+        return shortName;
     }
 
     /**
@@ -588,14 +617,15 @@ public class AnnotationLayer
     public static final class Builder
     {
         private Long id;
+        private String name;
         private String uiName;
+        private String shortName;
         private String type;
         private String description;
         private boolean enabled = true;
         private boolean builtIn = false;
         private boolean readonly = false;
         private String onClickJavascriptAction;
-        private String name;
         private AnnotationLayer attachType;
         private AnnotationFeature attachFeature;
         private Project project;
@@ -635,6 +665,12 @@ public class AnnotationLayer
         public Builder withUiName(String aUiName)
         {
             uiName = aUiName;
+            return this;
+        }
+
+        public Builder withShortName(String aShortName)
+        {
+            shortName = aShortName;
             return this;
         }
 
