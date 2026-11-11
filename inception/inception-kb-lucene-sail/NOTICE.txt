@@ -1,7 +1,0 @@
-= RDF4J Lucene SAIL
-
-Source:  https://github.com/eclipse-rdf4j/rdf4j/tree/4.3.13
-License: Eclipse Distribution License v1.0
-         https://eclipse.org/org/documents/edl-v10.php
-         
-Adapted version that builds against Lucene 9.
