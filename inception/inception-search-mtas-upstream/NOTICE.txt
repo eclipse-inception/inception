@@ -13,8 +13,8 @@ integrate with the build of INCEpTION.
 
 == Apache Solr
 
-The file 'org.apache.solr.legacy.LegacyNumericUtils' was obtained from Apache Solre 9.6.0
+The file 'org.apache.solr.legacy.LegacyNumericUtils' was obtained from Apache Solr 10.1.0
 licensed under the Apache License 2.0
 
 Original source: https://github.com/apache/solr
-Commit:          501aa0228619b06ba9f962168b584b1c6d8ee4b5
+Commit:          749712b71940c9f96d824c533f32f5c56dcd3924

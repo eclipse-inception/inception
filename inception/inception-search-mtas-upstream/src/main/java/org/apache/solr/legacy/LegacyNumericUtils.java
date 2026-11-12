@@ -52,7 +52,7 @@ import org.apache.lucene.util.BytesRefBuilder;
  * @deprecated Please use {@link org.apache.lucene.index.PointValues} instead.
  * @since 2.9, API changed non backwards-compliant in 4.0
  */
-@Deprecated
+@Deprecated(since = "6.0")
 public final class LegacyNumericUtils
 {
 

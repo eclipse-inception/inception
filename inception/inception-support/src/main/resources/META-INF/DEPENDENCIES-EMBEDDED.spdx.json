@@ -12,6 +12,18 @@
       "hasFiles": [
         "de/tudarmstadt/ukp/clarin/webanno/support/wicket/AjaxDownloadBehavior.java"
       ]
+    },
+    {
+      "name": "wicket-jquery-focus-patch.js",
+      "description": "The file wicket-jquery-focus-patch.js is a stripped-down version of Apache Wicket's wicket-ajax-jquery.js which is licensed under the Apache License 2.0.",
+      "versionInfo": "10.12.0",
+      "supplier": "INCEpTION Team",
+      "originator": "Apache Software Foundation",
+      "homepage": "https://wicket.apache.org",
+      "licenseDeclared": "Apache-2.0",
+      "hasFiles": [
+        "de/tudarmstadt/ukp/inception/support/kendo/wicket-jquery-focus-patch.js"
+      ]
     }
   ]
 }

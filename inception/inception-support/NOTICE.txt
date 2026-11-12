@@ -11,6 +11,12 @@ been released.
   License: according to source, same as Wicket, so assuming Apache License 2.0
 
 
+== wicket-jquery-focus-patch.js
+
+The file wicket-jquery-focus-patch.js is a stripped-down version of Apache Wicket's
+wicket-ajax-jquery.js which is licensed under the Apache License 2.0.
+
+
 == Vue3 Single File Component loader 0.2.21
 
 Source: https://github.com/FranckFreiburger/vue3-sfc-loader
