@@ -5,6 +5,11 @@
     "target": "esnext", // Esbuild will then transpile this down to the target configured in our esbuild scripts
     "module": "esnext", // Avoid legacy module resolution stuff
     "moduleResolution": "bundler", // Match how esbuild resolves modules
-    "lib": ["DOM", "DOM.Iterable", "ES2019"]
+    "lib": ["DOM", "DOM.Iterable", "ES2022"], // keep in line with the esbuild target in build.mjs
+    // TypeScript 6 changed the defaults of the following options. They are set to the old defaults
+    // to keep the behaviour of TypeScript 5. esbuild also reads "strict", so it affects the output.
+    "strict": false,
+    "types": ["*"], // all installed @types packages; the modules need different ones
+    "noUncheckedSideEffectImports": false // esbuild resolves the side-effect imports of .scss files
   }
 }

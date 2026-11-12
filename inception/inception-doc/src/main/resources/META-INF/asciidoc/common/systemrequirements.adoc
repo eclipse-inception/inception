@@ -20,11 +20,11 @@
 [cols="2*"]
 |===
 | Browser
-| Chrome or Safari (latest versions)
+| Chrome, Firefox or Safari (latest versions)
 |===
 
 [.small]
-You should also be able to use {product-name} with other browsers such as Firefox, Brave, etc. However, those are less regularly tested by the developers. It is recommended to always use the latest version of any browser product you may be using to ensure best compatibility.
+You should also be able to use {product-name} with other browsers such as Edge, Brave, etc. However, those are less regularly tested by the developers. It is recommended to always use the latest version of any browser product you may be using to ensure best compatibility.
 
 .Requirements to run the standalone version
 [cols="2*"]

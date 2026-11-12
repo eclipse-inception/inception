@@ -268,7 +268,11 @@
     <svgdotjs-svg-filter-js.version>^3.0.10</svgdotjs-svg-filter-js.version>
     <temp-write.version>^6.0.1</temp-write.version>
     <testing-library-svelte.version>^5.4.2</testing-library-svelte.version>
-    <typescript.version>^5.8.3</typescript.version>
+    <!--
+     - ~ because typescript-eslint only accepts TypeScript < 6.1.0, and TypeScript 7 drops the
+     - compiler API that svelte-preprocess needs
+     -->
+    <typescript.version>~6.0.3</typescript.version>
     <types-events.version>^3.0.3</types-events.version>
     <types-jquery.version>^4.0.1</types-jquery.version>
     <types-stompjs.version>^2.3.10</types-stompjs.version>
