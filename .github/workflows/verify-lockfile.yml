@@ -1,0 +1,64 @@
+# Fails when .github/workflows/actions.lock is out of sync with the workflows, when a workflow is
+# not covered by the lockfile at all, or when a locked pin no longer verifies upstream.
+#
+# The runner itself only checks workflows that are already in the lockfile, and only when they run.
+# This check also covers workflows that don't run on pull requests (dist-win.yml) and new workflows
+# that were never locked, which would otherwise run on their mutable tags without any warning.
+#
+# After changing any "uses:", run "gh actions-lock" and commit the updated lockfile.
+# See https://github.com/github/gh-actions-lock
+
+name: Verify actions lockfile
+
+on:
+  push:
+    branches: [ "main" ]
+    paths: [ ".github/workflows/**" ]
+  pull_request:
+    branches: [ "main" ]
+    paths: [ ".github/workflows/**" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+    - name: Harden Runner
+      uses: step-security/harden-runner@v2.22.4
+      with:
+        egress-policy: block
+        disable-sudo: true
+        allowed-endpoints: >
+          api.github.com:443
+          github.com:443
+          objects.githubusercontent.com:443
+          release-assets.githubusercontent.com:443
+          hosted-compute-request-orchestrator-gccus02-01.githubapp.com:443
+          hosted-compute-request-orchestrator-prod-eus-01.githubapp.com:443
+          hosted-compute-request-orchestrator-prod-eus-02.githubapp.com:443
+          hosted-compute-request-orchestrator-prod-iad-01.githubapp.com:443
+          hosted-compute-watchdog-gccus02-01.githubapp.com:443
+          hosted-compute-watchdog-prod-eus-01.githubapp.com:443
+          hosted-compute-watchdog-prod-eus-02.githubapp.com:443
+          hosted-compute-watchdog-prod-iad-01.githubapp.com:443
+          hosted-compute-watchdog-prod-iad-02.githubapp.com:443
+
+    - uses: actions/checkout@v7.0.1
+      with:
+        persist-credentials: false
+
+    - name: Install gh-actions-lock
+      # Pinned by release tag, bumped by hand. A binary extension can't be pinned by commit, and
+      # the release is immutable on GitHub, so neither the tag nor its assets can be replaced.
+      # The actions above need no SHAs: actions.lock pins them like those of every workflow.
+      run: gh extension install github/gh-actions-lock --pin v0.4.1
+
+    - name: Verify lockfile
+      run: gh actions-lock --verify
