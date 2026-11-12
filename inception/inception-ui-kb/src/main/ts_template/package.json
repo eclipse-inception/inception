@@ -6,8 +6,8 @@
   "description": "INCEpTION Knowledge Base UI",
   "keywords": [],
   "scripts": {
-    "build": "sass scss/inception-ui-kbp.scss ../../../target/js/de/tudarmstadt/ukp/inception/ui/kb/sass/inception-ui-kbp.css",
-    "build:minified": "sass scss/inception-ui-kbp.scss ../../../target/js/de/tudarmstadt/ukp/inception/ui/kb/sass/inception-ui-kbp.min.css --style compressed",
+    "build": "sass --load-path=node_modules scss/inception-ui-kbp.scss ../../../target/js/de/tudarmstadt/ukp/inception/ui/kb/sass/inception-ui-kbp.css",
+    "build:minified": "sass --load-path=node_modules scss/inception-ui-kbp.scss ../../../target/js/de/tudarmstadt/ukp/inception/ui/kb/sass/inception-ui-kbp.min.css --style compressed",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,ts,svelte,css,scss,json}\"",
     "format:check": "prettier --check \"**/*.{js,ts,svelte,css,scss,json}\""

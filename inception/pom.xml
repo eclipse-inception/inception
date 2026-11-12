@@ -45,7 +45,7 @@
     <dkpro.core.testCachePath>${session.executionRootDirectory}/inception/cache/dkpro-core-datasets</dkpro.core.testCachePath>
     <excludedTestCategories>slow</excludedTestCategories>
     <npm-install-command>install --frozen-lockfile</npm-install-command>
-    <bun.version>1.2.23</bun.version>
+    <bun.version>1.4.4</bun.version>
   </properties>
 
   <dependencyManagement>
