@@ -31,6 +31,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.time.Duration;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -46,7 +47,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -81,12 +81,13 @@ import de.tudarmstadt.ukp.inception.kb.querybuilder.SPARQLQueryBuilderLocalTestS
  * </ol>
  */
 @Testcontainers(disabledWithoutDocker = true)
-@EnabledOnOs(architectures = { "amd64", "x86_64" })
 public class MarkLogicRepositoryTest
 {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private static final String MARKLOGIC_IMAGE = "progressofficial/marklogic-db:11.3.5-ubi9-2.2.5";
+    private static final String MARKLOGIC_IMAGE_AMD64 = "progressofficial/marklogic-db:11.3.7-ubi9-2.3.1";
+    private static final String MARKLOGIC_IMAGE_ARM64 = "progressofficial/marklogic-db:11.3.7-ubi9-arm-2.3.1";
+    private static final String MARKLOGIC_IMAGE = markLogicImage();
 
     private static final String ADMIN_USER = "admin";
     private static final String ADMIN_PASSWORD = "admin";
@@ -114,6 +115,17 @@ public class MarkLogicRepositoryTest
 
     private Repository repository;
     private KnowledgeBase kb;
+
+    /**
+     * MarkLogic publishes the amd64 and arm64 builds under separate tags instead of one
+     * multi-architecture tag, so pick the one matching the host to run natively.
+     */
+    private static String markLogicImage()
+    {
+        var arch = System.getProperty("os.arch");
+        return Set.of("aarch64", "arm64").contains(arch) ? MARKLOGIC_IMAGE_ARM64
+                : MARKLOGIC_IMAGE_AMD64;
+    }
 
     @BeforeAll
     static void setUpClass() throws Exception

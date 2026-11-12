@@ -45,7 +45,7 @@
     <dkpro.core.testCachePath>${session.executionRootDirectory}/inception/cache/dkpro-core-datasets</dkpro.core.testCachePath>
     <excludedTestCategories>slow</excludedTestCategories>
     <npm-install-command>install --frozen-lockfile</npm-install-command>
-    <bun.version>1.2.23</bun.version>
+    <bun.version>1.4.4</bun.version>
   </properties>
 
   <dependencyManagement>
@@ -981,6 +981,11 @@
         <ts-link-dependency-phase>generate-sources</ts-link-dependency-phase>
         <ts-link-phase>package</ts-link-phase>
         <ts-pack-phase>package</ts-pack-phase>
+        <!--
+          ESLint and Prettier only report for now, until the findings that piled up while they did
+          not run are cleared. Set to false to make them fail the build.
+        -->
+        <ts-lint-failure-ignore>true</ts-lint-failure-ignore>
       </properties>
       <build>
         <plugins>
@@ -1107,6 +1112,32 @@
                 <phase>${ts-pack-phase}</phase>
                 <configuration>
                   <arguments>pm pack --destination=../../../target</arguments>
+                </configuration>
+              </execution>
+              <!--
+                The checks are bound to the test phase because testFailureIgnore only takes effect
+                there. As a consequence, -DskipTests also skips them.
+              -->
+              <execution>
+                <id>bun lint</id>
+                <goals>
+                  <goal>bun</goal>
+                </goals>
+                <phase>test</phase>
+                <configuration>
+                  <testFailureIgnore>${ts-lint-failure-ignore}</testFailureIgnore>
+                  <arguments>run lint</arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>bun format check</id>
+                <goals>
+                  <goal>bun</goal>
+                </goals>
+                <phase>test</phase>
+                <configuration>
+                  <testFailureIgnore>${ts-lint-failure-ignore}</testFailureIgnore>
+                  <arguments>run format:check</arguments>
                 </configuration>
               </execution>
             </executions>

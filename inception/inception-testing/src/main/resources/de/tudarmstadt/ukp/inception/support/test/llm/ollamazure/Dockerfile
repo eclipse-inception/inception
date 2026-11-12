@@ -2,7 +2,7 @@
 # the Azure OpenAI wire protocol that forwards to an Ollama backend. Built on-the-fly by
 # Testcontainers (see OllamazureContainer); ollamazure is a pure-JS npm package, so this is a small,
 # quick-to-build layer on top of a Node base image.
-FROM node:20-alpine
+FROM node:26-alpine
 
 # Pin the version so test behavior is reproducible; bump deliberately.
 RUN npm install -g ollamazure@1.4.1

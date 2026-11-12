@@ -42,7 +42,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -56,9 +55,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import de.tudarmstadt.ukp.inception.kb.RepositoryType;
 import de.tudarmstadt.ukp.inception.kb.model.KnowledgeBase;
 import de.tudarmstadt.ukp.inception.kb.querybuilder.SPARQLQueryBuilderLocalTestScenarios.Scenario;
+import de.tudarmstadt.ukp.inception.support.test.docker.EnabledIfAmd64ImagesCanRun;
 
 @Testcontainers(disabledWithoutDocker = true)
-@EnabledOnOs(architectures = { "amd64", "x86_64" })
+@EnabledIfAmd64ImagesCanRun
 public class AllegroGraphRepositoryTest
 {
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

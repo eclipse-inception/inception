@@ -6,6 +6,7 @@
   "scripts": {
     "build": "esbuild src/main.ts --target=es6 --bundle --sourcemap --global-name=ExternalEditor --outfile=../../../target/js/de/tudarmstadt/ukp/inception/externaleditor/resources/ExternalEditor.js",
     "build-minified": "esbuild src/main.ts --minify --target=es6 --bundle --sourcemap --global-name=ExternalEditor --outfile=../../../target/js/de/tudarmstadt/ukp/inception/externaleditor/resources/ExternalEditor.min.js",
+    "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,ts,json,css,scss,md,html}\"",
     "format:check": "prettier --check \"**/*.{js,ts,json,css,scss,md,html}\""
   },
@@ -20,12 +21,7 @@
     "esbuild-sass-plugin": "${esbuild-sass-plugin.version}",
     "eslint": "${eslint.version}",
     "neostandard": "${neostandard.version}",
-    "eslint-plugin-import-x": "${eslint-plugin-import-x.version}",
-    "eslint-plugin-n": "${eslint-plugin-n.version}",
-    "eslint-plugin-promise": "${eslint-plugin-promise.version}",
     "typescript": "${typescript.version}",
-    "@typescript-eslint/eslint-plugin": "${typescript-eslint-eslint-plugin.version}",
-    "@typescript-eslint/parser": "${typescript-eslint-parser.version}",
     "fs-extra": "${fs-extra.version}",
     "prettier": "${prettier.version}",
     "prettier-plugin-svelte": "${prettier-plugin-svelte.version}",

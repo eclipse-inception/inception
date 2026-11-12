@@ -52,7 +52,7 @@ const common = {
     bundle: true,
     sourcemap: true,
     minify: false,
-    target: 'es2020',
+    target: 'es2022',
     format: 'iife',
     logLevel: 'info',
     // The sibling modules' sources resolve their packages from their own node_modules first; this

@@ -22,6 +22,8 @@ The {product-name} Team
 
 This guide covers handling {product-name} from an administrator's perspective.
 
+The examples in this guide are based on a recent Debian Linux. Most of them should apply quite directly to Debian-based distributions like e.g. Ubuntu. {product-name} will run on other distributions as well, but you may have to use different commands for managing users, installing software, etc.
+
 
 include::{include-dir}installation.adoc[]
 

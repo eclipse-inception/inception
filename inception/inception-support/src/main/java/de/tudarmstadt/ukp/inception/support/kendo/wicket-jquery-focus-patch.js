@@ -38,7 +38,7 @@ Wicket.Focus.requestFocus = function() {
     var toFocus = Wicket.$(WF.lastFocusId);
 
     if (toFocus) {
-      Wicket.Log.info("Calling focus on " + WF.lastFocusId);
+      Wicket.Log.info("Calling focus on '%s'", WF.lastFocusId);
 
       var safeFocus = function() {
         try {
@@ -75,7 +75,7 @@ Wicket.Focus.requestFocus = function() {
       }
     } else {
       WF.lastFocusId = "";
-      Wicket.Log.info("Couldn't set focus on element with id '" + WF.lastFocusId + "' because it is not in the page anymore");
+      Wicket.Log.info("Couldn't set focus on element with id '%s' because it is not in the page anymore", WF.lastFocusId);
     }
   } else if (WF.refocusLastFocusedComponentAfterResponse) {
     Wicket.Log.info("last focus id was not set");
@@ -112,7 +112,7 @@ Wicket.Focus.focusin = function (event) {
     // END WEBANNO - #722
     var id = target.id;
     WF.lastFocusId = id;
-    Wicket.Log.info("focus set on " + id);
+    Wicket.Log.info("focus set on '%s'", id);
   }
 }
 

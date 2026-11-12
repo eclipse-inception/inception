@@ -376,11 +376,6 @@
       </dependency>
       <dependency>
         <groupId>org.wicketstuff</groupId>
-        <artifactId>wicketstuff-htmlcompressor</artifactId>
-        <version>${wicketstuff.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.wicketstuff</groupId>
         <artifactId>wicketstuff-select2</artifactId>
         <version>${wicketstuff.version}</version>
       </dependency>
@@ -517,11 +512,6 @@
         <groupId>com.giffing.wicket.spring.boot.starter</groupId>
         <artifactId>wicket-spring-boot-context</artifactId>
         <version>${wicket-spring-boot.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.mozilla</groupId>
-        <artifactId>rhino-runtime</artifactId>
-        <version>${rhino.version}</version>
       </dependency>
 
       <dependency>

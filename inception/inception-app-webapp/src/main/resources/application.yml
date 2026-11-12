@@ -70,6 +70,8 @@ wicket:
     settings:
       markup:
         default-markup-encoding: UTF-8
+        strip-comments: true
+        compress-whitespace: true
   web:
     servlet:
       dispatcher-types: request, error, async, forward
@@ -78,15 +80,6 @@ wicket:
   verifier:
     dependencies:
       throw-exception-on-dependency-version-mismatch: false
-  stuff:
-    htmlcompressor:
-      enabled: true
-      features:
-        removeComments: true
-        removeIntertagSpaces: true
-        preserveLineBreaks: true
-        compressJavaScript: false
-        compressCss: false
 
 springdoc:
   # Tie the OpenAPI/Swagger endpoints to the remote API: when remote-api is on,

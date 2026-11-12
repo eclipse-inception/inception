@@ -18,7 +18,7 @@
     },
     {
       "name": "Apache Solr",
-      "versionInfo": "9.6.0",
+      "versionInfo": "10.1.0",
       "originator": "Apache Foundation",
       "homepage": "https://solr.apache.org",
       "licenseDeclared": "Apache-2.0",

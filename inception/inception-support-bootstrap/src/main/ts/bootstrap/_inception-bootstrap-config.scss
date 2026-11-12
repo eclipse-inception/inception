@@ -18,7 +18,7 @@
 
 // Loads bootstrap with our overrides applied. Downstream partials pull bootstrap
 // symbols from here via `@use 'inception-bootstrap-config' as *;`.
-@forward '../node_modules/bootstrap/scss/bootstrap' with (
+@forward 'bootstrap/scss/bootstrap' with (
     $card-spacer-y: 0.25rem,
     // Original: .75rem
     $card-spacer-x: 0.75rem,

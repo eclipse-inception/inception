@@ -385,6 +385,17 @@
               <arguments>run build</arguments>
             </configuration>
           </execution>
+          <execution>
+            <id>bun test</id>
+            <goals>
+              <goal>bun</goal>
+            </goals>
+            <phase>${ts-test-phase}</phase>
+            <configuration>
+              <skip>${skipTests}</skip>
+              <arguments>run test</arguments>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>

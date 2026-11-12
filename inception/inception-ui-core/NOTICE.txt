@@ -7,8 +7,3 @@ File: src/main/java/de/tudarmstadt/ukp/inception/ui/core/footer/resources/enjoyh
 The file is from xbsoftware and is licensed under the MIT.
 
 Original source: https://github.com/xbsoftware/enjoyhint
-
-== wicket-jquery-focus-patch.js
-
-The file wicket-jquery-focus-patch.js is a stripped-down version of Apache Wicket's 
-wicket-ajax-jquery.js which is licensed under the Apache License 2.0.

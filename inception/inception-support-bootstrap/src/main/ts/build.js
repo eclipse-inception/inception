@@ -25,6 +25,7 @@ if (!fs.existsSync(target)) {
 }
 
 const compressedResult = sass.compile('bootstrap/bootstrap.scss', {
+  loadPaths: ['node_modules'],
   sourceMap: true,
   style: 'compressed',
 });
@@ -34,7 +35,9 @@ fs.writeFileSync(
   JSON.stringify(compressedResult.sourceMap)
 );
 
-const result = sass.compile('bootstrap/bootstrap.scss');
+const result = sass.compile('bootstrap/bootstrap.scss', {
+  loadPaths: ['node_modules'],
+});
 fs.writeFileSync(target + '/inception-bootstrap.css', result.css);
 
 fs.copyFileSync(

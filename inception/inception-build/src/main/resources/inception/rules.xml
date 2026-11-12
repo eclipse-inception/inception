@@ -39,15 +39,6 @@
       </ignoreVersions>
     </rule>
     <!--
-      RDF4J is pinned to <= 6.0.0. The 5444 workarounds in inception-kb make 5.1.4+ usable;
-      major-version bumps beyond 6.0.0 need explicit review.
-    -->
-    <rule groupId="org.eclipse.rdf4j" comparisonMethod="maven">
-      <ignoreVersions>
-        <ignoreVersion type="range">(6.0.0,)</ignoreVersion>
-      </ignoreVersions>
-    </rule>
-    <!--
       The com.sun.xml.bind jaxb-impl/jaxb-core artifacts must remain on the 2.3.x line:
       it is the last release providing the legacy javax.xml.bind implementation. Newer
       4.x releases switched to the jakarta.xml.bind namespace and break code that still
