@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "node build.js",
+    "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,ts,css,scss,json,md,html}\"",
     "format:check": "prettier --check \"**/*.{js,ts,css,scss,json,md,html}\""
   },
@@ -19,9 +20,11 @@
     "cross-env": "${cross-env.version}",
     "esbuild": "${esbuild.version}",
     "esbuild-sass-plugin": "${esbuild-sass-plugin.version}",
-    "eslint-config-prettier": "${eslint-config-prettier.version}",
     "prettier": "${prettier.version}",
     "prettier-plugin-svelte": "${prettier-plugin-svelte.version}",
-    "sass": "${sass.version}"
+    "sass": "${sass.version}",
+    "eslint": "${eslint.version}",
+    "neostandard": "${neostandard.version}",
+    "typescript": "${typescript.version}"
   }
 }

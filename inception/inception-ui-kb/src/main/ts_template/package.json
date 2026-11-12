@@ -8,6 +8,7 @@
   "scripts": {
     "build": "sass scss/inception-ui-kbp.scss ../../../target/js/de/tudarmstadt/ukp/inception/ui/kb/sass/inception-ui-kbp.css",
     "build:minified": "sass scss/inception-ui-kbp.scss ../../../target/js/de/tudarmstadt/ukp/inception/ui/kb/sass/inception-ui-kbp.min.css --style compressed",
+    "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,ts,svelte,css,scss,json}\"",
     "format:check": "prettier --check \"**/*.{js,ts,svelte,css,scss,json}\""
   },
@@ -17,14 +18,10 @@
     "@inception-project/inception-support-bootstrap": "file:../../../../inception-support-bootstrap/src/main/ts",
     "bootstrap": "${bootstrap.version}",
     "eslint": "${eslint.version}",
-    "eslint-config-prettier": "${eslint-config-prettier.version}",
-    "eslint-plugin-import-x": "${eslint-plugin-import-x.version}",
-    "eslint-plugin-n": "${eslint-plugin-n.version}",
-    "eslint-plugin-promise": "${eslint-plugin-promise.version}",
-    "eslint-plugin-svelte": "${eslint-plugin-svelte.version}",
     "neostandard": "${neostandard.version}",
     "prettier": "${prettier.version}",
     "prettier-plugin-svelte": "${prettier-plugin-svelte.version}",
-    "sass": "${sass.version}"
+    "sass": "${sass.version}",
+    "typescript": "${typescript.version}"
   }
 }

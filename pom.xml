@@ -240,11 +240,7 @@
     <esbuild-sass-plugin.version>^3.7.0</esbuild-sass-plugin.version>
     <esbuild-svelte.version>^0.9.5</esbuild-svelte.version>
     <echarts.version>^6.0.0</echarts.version>
-    <eslint.version>^9.39.5</eslint.version>
-    <eslint-config-prettier.version>^9.1.2</eslint-config-prettier.version>
-    <eslint-plugin-import-x.version>^4.18.1</eslint-plugin-import-x.version>
-    <eslint-plugin-n.version>^17.24.0</eslint-plugin-n.version>
-    <eslint-plugin-promise.version>^7.3.0</eslint-plugin-promise.version>
+    <eslint.version>^10.14.0</eslint.version>
     <eslint-plugin-svelte.version>^3.24.1</eslint-plugin-svelte.version>
     <events.version>^3.3.0</events.version>
     <fast-json-patch.version>^3.1.1</fast-json-patch.version>
@@ -257,7 +253,7 @@
     <license-checker.version>^25.0.1</license-checker.version>
     <marked.version>~18.2.0</marked.version>
     <pdfjs.version>5.4.449</pdfjs.version>
-    <neostandard.version>^0.13.0</neostandard.version>
+    <neostandard.version>^0.14.1</neostandard.version>
     <playwright.version>1.65.0</playwright.version>
     <popperjs.version>^2.11.8</popperjs.version>
     <prettier.version>^3.9.10</prettier.version>
@@ -273,8 +269,6 @@
     <temp-write.version>^6.0.1</temp-write.version>
     <testing-library-svelte.version>^5.4.2</testing-library-svelte.version>
     <typescript.version>^5.8.3</typescript.version>
-    <typescript-eslint-eslint-plugin.version>^8.72.2</typescript-eslint-eslint-plugin.version>
-    <typescript-eslint-parser.version>^8.72.2</typescript-eslint-parser.version>
     <types-events.version>^3.0.3</types-events.version>
     <types-jquery.version>^3.5.34</types-jquery.version>
     <types-stompjs.version>^2.3.10</types-stompjs.version>
