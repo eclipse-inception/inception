@@ -135,7 +135,7 @@ jobs:
     - name: Set up Maven
       uses: stCarolas/setup-maven@v5.1
       with:
-        maven-version: 3.9.16
+        maven-version: 3.10.0
 
 #    - name: Cache Docker layers
 #      uses: actions/cache@v6.1.0
