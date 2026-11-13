@@ -150,7 +150,14 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-    
+      <dependency>
+        <groupId>org.eclipse.jetty.ee11</groupId>
+        <artifactId>jetty-ee11-bom</artifactId>
+        <version>${jetty.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
       <dependency>
         <groupId>org.apache.uima</groupId>
         <artifactId>uimaj-io-json</artifactId>
@@ -715,27 +722,107 @@
         <version>${commons-logging.version}</version>
       </dependency>
 
-      <!-- Jena -->
+      <!--
+        The Jena modules are managed one by one instead of importing jena-bom. That BOM
+        inherits from the Jena parent POM, so importing it also imports the parent's
+        dependency management (Jetty EE11, Shiro with its parent, micrometer, protobuf,
+        jakarta.json, ...), which overrides the versions from BOMs imported later, such as
+        Spring Boot's. The list covers the Jena modules we declare and those they depend on.
+      -->
       <dependency>
         <groupId>org.apache.jena</groupId>
-        <artifactId>jena-bom</artifactId>
+        <artifactId>jena-base</artifactId>
         <version>${jena.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-        <exclusions>
-          <exclusion>
-            <groupId>org.junit</groupId>
-            <artifactId>*</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>*</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.junitplatform</groupId>
-            <artifactId>*</artifactId>
-          </exclusion>
-        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-cmds</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-core</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-dboe-base</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-dboe-index</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-dboe-storage</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-dboe-trans-data</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-dboe-transaction</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-fuseki-access</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-fuseki-core</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-iri3986</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-langtag</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-rdfconnection</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-rdfpatch</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-shacl</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-shex</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-tdb1</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-tdb2</artifactId>
+        <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-text</artifactId>
+        <version>${jena.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.jena</groupId>
@@ -947,6 +1034,22 @@
         <groupId>org.apache.httpcomponents.client5</groupId>
         <artifactId>httpclient5</artifactId>
         <version>${httpclient5.version}</version>
+      </dependency>
+      <!-- Spring Boot manages httpcore 4, but not httpclient 4 -->
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>${httpclient.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient-cache</artifactId>
+        <version>${httpclient.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpmime</artifactId>
+        <version>${httpclient.version}</version>
       </dependency>
 
       <dependency>
@@ -1321,44 +1424,66 @@
         <version>${dkpro.version}</version>
       </dependency>
 
+      <!--
+        The RDF4J modules are managed one by one instead of importing rdf4j-bom. That BOM
+        inherits from the RDF4J parent POM, so importing it also imports the parent's
+        dependency management (the Jackson, Jetty, Netty, OpenTelemetry and JUnit BOMs,
+        httpclient, bouncycastle, Elasticsearch, spatial4j, test libraries, ...), which
+        overrides the versions from BOMs imported later, such as Spring Boot's.
+        The list covers the RDF4J modules we declare and those we get transitively. A module
+        that is missing here can resolve to the older RDF4J version that other libraries
+        (e.g. OWL API) depend on, so check the RDF4J versions in the dependency tree after an
+        RDF4J upgrade.
+      -->
       <dependency>
         <groupId>org.eclipse.rdf4j</groupId>
-        <artifactId>rdf4j-bom</artifactId>
+        <artifactId>rdf4j-collection-factory-api</artifactId>
         <version>${rdf4j.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-        <exclusions>
-          <exclusion>
-            <groupId>com.fasterxml.jackson</groupId>
-            <artifactId>*</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>*</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.eclipse.rdf4j</groupId>
-        <artifactId>rdf4j-sail-lucene</artifactId>
+        <artifactId>rdf4j-collection-factory-mapdb3</artifactId>
         <version>${rdf4j.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.locationtech.spatial4j</groupId>
-            <artifactId>spatial4j</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.eclipse.rdf4j</groupId>
-        <artifactId>rdf4j-rio-jsonld</artifactId>
+        <artifactId>rdf4j-common-annotation</artifactId>
         <version>${rdf4j.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-          </exclusion>
-        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-common-exception</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-common-io</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-common-iterator</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-common-order</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-common-text</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-common-transaction</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-common-xml</artifactId>
+        <version>${rdf4j.version}</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.rdf4j</groupId>
@@ -1373,7 +1498,117 @@
       </dependency>
       <dependency>
         <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-http-client-apache5</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
         <artifactId>rdf4j-http-client-api</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-http-client-jdk</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-http-protocol</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-model</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-model-api</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-model-vocabulary</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-query</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-queryalgebra-evaluation</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-queryalgebra-geosparql</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-queryalgebra-model</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-queryparser-api</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-queryparser-sparql</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-queryrender</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-queryresultio-api</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-queryresultio-binary</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-queryresultio-sparqlxml</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-repository-api</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-repository-event</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-repository-http</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-repository-manager</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-repository-sail</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-repository-sparql</artifactId>
         <version>${rdf4j.version}</version>
       </dependency>
       <dependency>
@@ -1386,6 +1621,133 @@
             <artifactId>jcl-over-slf4j</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-rio-binary</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-rio-datatypes</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-rio-hdt</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-rio-jsonld</artifactId>
+        <version>${rdf4j.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-rio-languages</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-rio-n3</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-rio-nquads</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-rio-ntriples</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-rio-rdfjson</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-rio-rdfxml</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-rio-trig</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-rio-trix</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-rio-turtle</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-sail-api</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-sail-base</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-sail-inferencer</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-sail-lucene</artifactId>
+        <version>${rdf4j.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.locationtech.spatial4j</groupId>
+            <artifactId>spatial4j</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.locationtech.spatial4j</groupId>
+        <artifactId>spatial4j</artifactId>
+        <version>${spatial4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-sail-lucene-api</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-sail-memory</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-sail-model</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-sail-nativerdf</artifactId>
+        <version>${rdf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.rdf4j</groupId>
+        <artifactId>rdf4j-sparqlbuilder</artifactId>
+        <version>${rdf4j.version}</version>
       </dependency>
 
       <dependency>
@@ -1605,12 +1967,61 @@
         <scope>import</scope>
       </dependency>
 
+      <!--
+        The Wicket modules are managed one by one instead of importing wicket-parent. Wicket
+        publishes no BOM, and its parent POM manages third-party libraries as well (Jetty,
+        dropwizard metrics, jakarta.annotation, hamcrest in provided scope, ...), which
+        overrides the versions from BOMs imported later, such as Spring Boot's.
+      -->
       <dependency>
         <groupId>org.apache.wicket</groupId>
-        <artifactId>wicket-parent</artifactId>
+        <artifactId>wicket-auth-roles</artifactId>
         <version>${wicket.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.wicket</groupId>
+        <artifactId>wicket-core</artifactId>
+        <version>${wicket.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.wicket</groupId>
+        <artifactId>wicket-devutils</artifactId>
+        <version>${wicket.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.wicket</groupId>
+        <artifactId>wicket-extensions</artifactId>
+        <version>${wicket.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.wicket</groupId>
+        <artifactId>wicket-ioc</artifactId>
+        <version>${wicket.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.wicket</groupId>
+        <artifactId>wicket-request</artifactId>
+        <version>${wicket.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.wicket</groupId>
+        <artifactId>wicket-spring</artifactId>
+        <version>${wicket.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.wicket</groupId>
+        <artifactId>wicket-tester</artifactId>
+        <version>${wicket.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.wicket</groupId>
+        <artifactId>wicket-util</artifactId>
+        <version>${wicket.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.danekja</groupId>
+        <artifactId>jdk-serializable-functional</artifactId>
+        <version>${jdk-serializable-functional.version}</version>
       </dependency>
 
       <dependency>
@@ -1678,7 +2089,16 @@
           </exclusion>
         </exclusions>
       </dependency>
-      
+
+      <!--
+        The OpenSAML BOM inherits xmlsec 3.0.x from the Shibboleth parent POM. Managed to
+        stay on xmlsec 4, which we shipped while the RDF4J BOM was still imported.
+      -->
+      <dependency>
+        <groupId>org.apache.santuario</groupId>
+        <artifactId>xmlsec</artifactId>
+        <version>${xmlsec.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.opensaml</groupId>
         <artifactId>opensaml-bom</artifactId>

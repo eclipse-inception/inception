@@ -226,6 +226,10 @@
     <jtokkit.version>1.1.0</jtokkit.version>
     <httpcore5.version>5.4.4</httpcore5.version>
     <httpclient5.version>5.6.5</httpclient5.version>
+    <httpclient.version>4.5.14</httpclient.version>
+    <spatial4j.version>0.8</spatial4j.version>
+    <xmlsec.version>4.0.4</xmlsec.version>
+    <jdk-serializable-functional.version>1.9.0</jdk-serializable-functional.version>
     <omtd-share-annotations.version>3.0.2.7</omtd-share-annotations.version>
     <webstomp-client.version>1.2.6</webstomp-client.version>
 
