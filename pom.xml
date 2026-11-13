@@ -118,11 +118,11 @@
     <liquibase.version>4.33.0</liquibase.version>
     <liquibase-slf4j.version>5.1.0</liquibase-slf4j.version>
 
-    <wicket.version>10.12.0</wicket.version>
-    <wicketstuff.version>10.12.0</wicketstuff.version>
-    <wicket-bootstrap.version>7.0.16</wicket-bootstrap.version>
-    <wicket-jquery-selectors.version>4.0.16</wicket-jquery-selectors.version>
-    <wicket-webjars.version>4.0.16</wicket-webjars.version>
+    <wicket.version>11.0.0</wicket.version>
+    <wicketstuff.version>11.0.0</wicketstuff.version>
+    <wicket-bootstrap.version>8.0.0</wicket-bootstrap.version>
+    <wicket-jquery-selectors.version>5.0.0</wicket-jquery-selectors.version>
+    <wicket-webjars.version>5.0.0</wicket-webjars.version>
     <wicket-spring-boot.version>5.0.0</wicket-spring-boot.version>
 
     <!--
@@ -217,6 +217,7 @@
     <mime4j.version>0.8.15</mime4j.version>
     <hsqldb.version>2.7.4</hsqldb.version>
     <opensaml.version>5.2.3</opensaml.version>
+    <shib-shared.version>9.2.3</shib-shared.version>
     <oauth2-oidc-sdk.version>11.39</oauth2-oidc-sdk.version>
     <javassist.version>3.33.0-GA</javassist.version>
     <openjson.version>1.0.13</openjson.version>

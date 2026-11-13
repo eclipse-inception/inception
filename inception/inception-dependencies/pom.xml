@@ -95,7 +95,7 @@
         <scope>import</scope>
       </dependency>
 
-      <!-- Jackson (has to come before OpenSAML/Spring Boot to avoid them picking an older Jackson) -->
+      <!-- Jackson (has to come before Spring Boot to avoid it picking an older Jackson) -->
       <dependency>
         <groupId>com.fasterxml.jackson</groupId>
         <artifactId>jackson-bom</artifactId>
@@ -384,11 +384,6 @@
       <dependency>
         <groupId>org.wicketstuff</groupId>
         <artifactId>wicketstuff-select2</artifactId>
-        <version>${wicketstuff.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.wicketstuff</groupId>
-        <artifactId>wicket-datetime</artifactId>
         <version>${wicketstuff.version}</version>
       </dependency>
       <dependency>
@@ -1024,7 +1019,7 @@
         <version>${spring.data.version}</version>
       </dependency>
       
-      <!-- httpcomponents needs to come before OpenSAML to avoid OpenSAML picking an older version -->
+      <!-- httpcomponents -->
       <dependency>
         <groupId>org.apache.httpcomponents.core5</groupId>
         <artifactId>httpcore5</artifactId>
@@ -2091,30 +2086,107 @@
       </dependency>
 
       <!--
-        The OpenSAML BOM inherits xmlsec 3.0.x from the Shibboleth parent POM. Managed to
-        stay on xmlsec 4, which we shipped while the RDF4J BOM was still imported.
+        The OpenSAML and Shibboleth modules are managed one by one instead of importing
+        opensaml-bom. That BOM inherits from the OpenSAML parent POM and, through it, from the
+        Shibboleth parent POM, so importing it also imports their dependency management
+        (slf4j, logback, bouncycastle, Jackson, httpclient, Spring, xmlsec, ...), which competes
+        with the versions from the other BOMs. The list covers the modules we get through
+        Spring Security SAML. shib-shared.version must match the one the OpenSAML parent POM
+        of opensaml.version uses.
+      -->
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-core-api</artifactId>
+        <version>${opensaml.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-core-impl</artifactId>
+        <version>${opensaml.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-messaging-api</artifactId>
+        <version>${opensaml.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-profile-api</artifactId>
+        <version>${opensaml.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-saml-api</artifactId>
+        <version>${opensaml.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-saml-impl</artifactId>
+        <version>${opensaml.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-security-api</artifactId>
+        <version>${opensaml.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-security-impl</artifactId>
+        <version>${opensaml.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-soap-api</artifactId>
+        <version>${opensaml.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-soap-impl</artifactId>
+        <version>${opensaml.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-storage-api</artifactId>
+        <version>${opensaml.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-xmlsec-api</artifactId>
+        <version>${opensaml.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.opensaml</groupId>
+        <artifactId>opensaml-xmlsec-impl</artifactId>
+        <version>${opensaml.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>net.shibboleth</groupId>
+        <artifactId>shib-networking</artifactId>
+        <version>${shib-shared.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>net.shibboleth</groupId>
+        <artifactId>shib-security</artifactId>
+        <version>${shib-shared.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>net.shibboleth</groupId>
+        <artifactId>shib-support</artifactId>
+        <version>${shib-shared.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>net.shibboleth</groupId>
+        <artifactId>shib-velocity</artifactId>
+        <version>${shib-shared.version}</version>
+      </dependency>
+      <!--
+        OpenSAML's own POMs ask for xmlsec 3.0.x. Managed to stay on xmlsec 4, which we have
+        been shipping.
       -->
       <dependency>
         <groupId>org.apache.santuario</groupId>
         <artifactId>xmlsec</artifactId>
         <version>${xmlsec.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.opensaml</groupId>
-        <artifactId>opensaml-bom</artifactId>
-        <version>${opensaml.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-        <exclusions>
-          <exclusion>
-            <groupId>com.fasterxml.jackson</groupId>
-            <artifactId>*</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>*</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
     </dependencies>
   </dependencyManagement>
