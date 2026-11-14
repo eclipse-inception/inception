@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/spdx/spdx-spec/v2.2.2/schemas/spdx-schema.json",
+  "packages": [
+    {
+      "name": "Apache PDFBox DrawPrintTextLocations example",
+      "versionInfo": "3.0.7",
+      "originator": "Apache Software Foundation",
+      "homepage": "https://pdfbox.apache.org",
+      "downloadLocation": "https://github.com/apache/pdfbox/blob/3.0.7/examples/src/main/java/org/apache/pdfbox/examples/util/DrawPrintTextLocations.java",
+      "licenseDeclared": "Apache-2.0",
+      "description": "Code for calculating glyph positions, adapted from the PDFBox examples. The exact origin of each method is documented by a permalink in the source file.",
+      "hasFiles": [
+        "de/tudarmstadt/ukp/inception/io/pdf/pdfbox/GlyphPositionUtils.java"
+      ]
+    }
+  ]
+}

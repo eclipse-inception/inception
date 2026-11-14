@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/spdx/spdx-spec/v2.2.2/schemas/spdx-schema.json",
+  "packages": [
+    {
+      "name": "RDF4J Lucene SAIL",
+      "versionInfo": "4.3.13",
+      "originator": "Eclipse RDF4J contributors, Aduna, and others",
+      "homepage": "https://rdf4j.org",
+      "downloadLocation": "https://github.com/eclipse-rdf4j/rdf4j/tree/4.3.13",
+      "licenseDeclared": "BSD-3-Clause",
+      "licenseComments": "Eclipse Distribution License 1.0, which SPDX treats as BSD-3-Clause: https://lists.spdx.org/g/Spdx-legal/topic/request_for_adding_eclipse/67981884",
+      "description": "Adapted version that builds against Lucene 9.",
+      "hasFiles": [
+        "org/eclipse/rdf4j/sail/lucene/impl/config/LuceneSailConfig.java",
+        "org/eclipse/rdf4j/sail/lucene/impl/config/LuceneSailFactory.java",
+        "org/eclipse/rdf4j/sail/lucene/impl/LuceneDocument.java",
+        "org/eclipse/rdf4j/sail/lucene/impl/LuceneDocumentDistance.java",
+        "org/eclipse/rdf4j/sail/lucene/impl/LuceneDocumentResult.java",
+        "org/eclipse/rdf4j/sail/lucene/impl/LuceneDocumentScore.java",
+        "org/eclipse/rdf4j/sail/lucene/impl/LuceneIndex.java",
+        "org/eclipse/rdf4j/sail/lucene/impl/LuceneIndexNIOFS.java",
+        "org/eclipse/rdf4j/sail/lucene/impl/LuceneQuery.java",
+        "org/eclipse/rdf4j/sail/lucene/impl/ReaderMonitor.java"
+      ]
+    }
+  ]
+}

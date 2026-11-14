@@ -28,10 +28,12 @@
       "originator": "Universite catholique de Louvain (UCL), Belgium and contributors",
       "homepage": "https://www.openjpeg.org/",
       "licenseDeclared": "BSD-2-Clause",
-      "description": "WASM-compiled OpenJPEG library for JPEG2000 decoding, bundled with PDF.js",
+      "description": "WASM-compiled OpenJPEG library for JPEG2000 decoding, bundled with PDF.js. Copied from the pdfjs-dist npm package into the jar at build time.",
       "hasFiles": [
-        "src/main/ts/pdfjs-web/wasm/LICENSE_OPENJPEG",
-        "src/main/ts/pdfjs-web/wasm/LICENSE_PDFJS_OPENJPEG"
+        "de/tudarmstadt/ukp/inception/pdfeditor2/resources/wasm/openjpeg.wasm",
+        "de/tudarmstadt/ukp/inception/pdfeditor2/resources/wasm/openjpeg_nowasm_fallback.js",
+        "de/tudarmstadt/ukp/inception/pdfeditor2/resources/wasm/LICENSE_OPENJPEG",
+        "de/tudarmstadt/ukp/inception/pdfeditor2/resources/wasm/LICENSE_PDFJS_OPENJPEG"
       ]
     },
     {
@@ -39,10 +41,11 @@
       "originator": "Mozilla Corporation, Marti Maria",
       "homepage": "https://github.com/mozilla/qcms",
       "licenseDeclared": "MIT",
-      "description": "WASM-compiled color management library, bundled with PDF.js",
+      "description": "WASM-compiled color management library, bundled with PDF.js. Copied from the pdfjs-dist npm package into the jar at build time.",
       "hasFiles": [
-        "src/main/ts/pdfjs-web/wasm/LICENSE_QCMS",
-        "src/main/ts/pdfjs-web/wasm/LICENSE_PDFJS_QCMS"
+        "de/tudarmstadt/ukp/inception/pdfeditor2/resources/wasm/qcms_bg.wasm",
+        "de/tudarmstadt/ukp/inception/pdfeditor2/resources/wasm/LICENSE_QCMS",
+        "de/tudarmstadt/ukp/inception/pdfeditor2/resources/wasm/LICENSE_PDFJS_QCMS"
       ]
     },
     {
@@ -50,9 +53,9 @@
       "originator": "International Color Consortium",
       "homepage": "https://www.color.org/",
       "licenseDeclared": "CC0-1.0",
-      "description": "ICC color profiles for color management",
+      "description": "ICC color profiles for color management. Copied from the pdfjs-dist npm package into the jar at build time.",
       "hasFiles": [
-        "src/main/ts/pdfjs-web/iccs/LICENSE"
+        "de/tudarmstadt/ukp/inception/pdfeditor2/resources/iccs/**"
       ]
     },
     {
@@ -60,9 +63,10 @@
       "originator": "Red Hat, Inc., Google Corporation",
       "homepage": "https://github.com/liberationfonts/liberation-fonts",
       "licenseDeclared": "OFL-1.1",
-      "description": "Standard fonts for PDF rendering",
+      "description": "Standard fonts for PDF rendering. Copied from the pdfjs-dist npm package into the jar at build time.",
       "hasFiles": [
-        "src/main/ts/pdfjs-web/standard_fonts/LICENSE_LIBERATION"
+        "de/tudarmstadt/ukp/inception/pdfeditor2/resources/standard_fonts/Liberation*",
+        "de/tudarmstadt/ukp/inception/pdfeditor2/resources/standard_fonts/LICENSE_LIBERATION"
       ]
     },
     {
@@ -70,9 +74,10 @@
       "originator": "PDFium Authors (Google Inc.)",
       "homepage": "https://pdfium.googlesource.com/pdfium/",
       "licenseDeclared": "BSD-3-Clause",
-      "description": "Standard fonts for PDF rendering from PDFium",
+      "description": "Standard fonts for PDF rendering from PDFium. Copied from the pdfjs-dist npm package into the jar at build time.",
       "hasFiles": [
-        "src/main/ts/pdfjs-web/standard_fonts/LICENSE_FOXIT"
+        "de/tudarmstadt/ukp/inception/pdfeditor2/resources/standard_fonts/Foxit*",
+        "de/tudarmstadt/ukp/inception/pdfeditor2/resources/standard_fonts/LICENSE_FOXIT"
       ]
     },
     {
@@ -80,9 +85,9 @@
       "originator": "Adobe Systems Incorporated",
       "homepage": "https://github.com/adobe-type-tools/cmap-resources",
       "licenseDeclared": "BSD-3-Clause",
-      "description": "Character mapping files for CJK fonts",
+      "description": "Character mapping files for CJK fonts. Copied from the pdfjs-dist npm package into the jar at build time.",
       "hasFiles": [
-        "src/main/ts/pdfjs-web/cmaps/LICENSE"
+        "de/tudarmstadt/ukp/inception/pdfeditor2/resources/cmaps/**"
       ]
     }
   ]
