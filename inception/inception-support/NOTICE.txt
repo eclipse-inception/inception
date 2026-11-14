@@ -1,44 +1,37 @@
 NOTE: See META-INF/DEPENDENCIES-EMBEDDED.spdx.json
 
-== src/main/java/org/apache/uima/cas/impl/FixedBinaryCasSerDes.java
+== AjaxDownloadBehavior
 
-Stripped down and fixed version of the BinaryCasSerDes from UIMA 3.4.1 while UIMA 3.4.1 has not yet
-been released.
+File: src/main/java/de/tudarmstadt/ukp/inception/support/wicket/AjaxDownloadBehavior.java
 
-
-== de.tudarmstadt.ukp.clarin.webanno.support.AJAXDownload:
-  Source: https://cwiki.apache.org/confluence/display/WICKET/AJAX+update+and+file+download+in+one+blow
-  License: according to source, same as Wicket, so assuming Apache License 2.0
+Source:  https://cwiki.apache.org/confluence/display/WICKET/AJAX+update+and+file+download+in+one+blow
+License: according to source, same as Wicket, so assuming Apache License 2.0
 
 
-== Vue3 Single File Component loader 0.2.21
+== wicket-jquery-focus-patch.js
 
-Source: https://github.com/FranckFreiburger/vue3-sfc-loader
+File: src/main/java/de/tudarmstadt/ukp/inception/support/kendo/wicket-jquery-focus-patch.js
 
-Files: 
-- vue3-sfc-loader.js
-- vue3-sfc-loader.js.map
+The file wicket-jquery-focus-patch.js is a stripped-down version of Apache Wicket's
+wicket-ajax-jquery.js which is licensed under the Apache License 2.0.
 
-License: 
 
-MIT License
+== Wicketstuff jQuery UI ContextMenu template
 
-Copyright (c) 2020 Franck Freiburger
+File: src/main/java/de/tudarmstadt/ukp/inception/support/wicket/ContextMenu.html
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Modified copy of the ContextMenu.html template of Wicketstuff jQuery UI, which is licensed under
+the Apache License 2.0.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Original source: https://github.com/wicketstuff/core
+Version:         10.11.0
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+
+== Trie.java
+
+File: src/main/java/de/tudarmstadt/ukp/inception/support/text/Trie.java
+
+Copyright 2009 Richard Eckart de Castilho
+Copyright 2012 Ubiquitous Knowledge Processing (UKP) Lab, Technische Universität Darmstadt
+Apache License 2.0
+Source: AnnoLab

@@ -7,10 +7,47 @@
       "originator": "brat project",
       "homepage": "https://github.com/nlplab/brat",
       "licenseDeclared": "(MIT AND Apache-2.0)",
-      "description": "Heavily modified version of brat.",
+      "description": "Heavily modified version of brat. The files are source files that are bundled into the editor JavaScript at build time.",
       "hasFiles": [
-        "src/main/ts/brat/**"
+        "src/main/ts/src/ajax/Ajax.ts",
+        "src/main/ts/src/annotator_ui/AnnotatorUI.ts",
+        "src/main/ts/src/configuration/Configuration.ts",
+        "src/main/ts/src/dispatcher/Dispatcher.ts",
+        "src/main/ts/src/style-ui.scss",
+        "src/main/ts/src/style-vis.scss",
+        "src/main/ts/src/util/Util.ts",
+        "src/main/ts/src/visualizer_ui/VisualizerUI.ts",
+        "src/main/ts/src/visualizer/Arc.ts",
+        "src/main/ts/src/visualizer/AttributeType.ts",
+        "src/main/ts/src/visualizer/Chunk.ts",
+        "src/main/ts/src/visualizer/CollectionLoadedResponse.ts",
+        "src/main/ts/src/visualizer/Comment.ts",
+        "src/main/ts/src/visualizer/DocumentData.ts",
+        "src/main/ts/src/visualizer/Entity.ts",
+        "src/main/ts/src/visualizer/EventDesc.ts",
+        "src/main/ts/src/visualizer/Fragment.ts",
+        "src/main/ts/src/visualizer/Measurements.ts",
+        "src/main/ts/src/visualizer/RectBox.ts",
+        "src/main/ts/src/visualizer/Role.ts",
+        "src/main/ts/src/visualizer/Row.ts",
+        "src/main/ts/src/visualizer/Segmentation.ts",
+        "src/main/ts/src/visualizer/Sizes.ts",
+        "src/main/ts/src/visualizer/Visualizer.ts",
+        "src/main/ts/src/visualizer/VisualOptions.ts"
+      ]
+    },
+    {
+      "name": "jQuery scrollbarWidth",
+      "versionInfo": "0.2",
+      "originator": "Ben Alman",
+      "homepage": "http://benalman.com/projects/jquery-misc-plugins/",
+      "licenseDeclared": "(MIT OR GPL-2.0-only)",
+      "licenseConcluded": "MIT",
+      "licenseComments": "Dual licensed under the MIT and GPL licenses; used under the MIT license.",
+      "description": "Ported to TypeScript. The file is a source file that is bundled into the editor JavaScript at build time.",
+      "hasFiles": [
+        "src/main/ts/src/util/ScrollbarWidth.ts"
       ]
     }
- ]
+  ]
 }
