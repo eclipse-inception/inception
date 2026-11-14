@@ -1,0 +1,790 @@
+# Licensed to the Technische Universität Darmstadt under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The Technische Universität Darmstadt
+# licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+@prefix syntax-dependency: <uima:de.tudarmstadt.ukp.dkpro.core.api.syntax.type.dependency.> .
+@prefix cas: <uima:uima.cas.> .
+@prefix ns1: <uima:de.tudarmstadt.ukp.dkpro.core.api.lexmorph.type.pos.tweet.> .
+@prefix lexmorph-pos: <uima:de.tudarmstadt.ukp.dkpro.core.api.lexmorph.type.pos.> .
+@prefix segmentation: <uima:de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.> .
+@prefix semantics: <uima:de.tudarmstadt.ukp.dkpro.core.api.semantics.type.> .
+@prefix syntax-constituent: <uima:de.tudarmstadt.ukp.dkpro.core.api.syntax.type.constituent.> .
+@prefix syntax: <uima:de.tudarmstadt.ukp.dkpro.core.api.syntax.type.> .
+@prefix coref: <uima:de.tudarmstadt.ukp.dkpro.core.api.coref.type.> .
+@prefix tcas: <uima:uima.tcas.> .
+@prefix metadata: <uima:de.tudarmstadt.ukp.dkpro.core.api.metadata.type.> .
+@prefix rdfcas: <http://uima.apache.org/rdf/cas#> .
+@prefix transform: <uima:de.tudarmstadt.ukp.dkpro.core.api.transform.type.> .
+@prefix lexmorph-morph: <uima:de.tudarmstadt.ukp.dkpro.core.api.lexmorph.type.morph.> .
+@prefix structure: <uima:de.tudarmstadt.ukp.dkpro.core.api.structure.type.> .
+@prefix syntax-chunk: <uima:de.tudarmstadt.ukp.dkpro.core.api.syntax.type.chunk.> .
+@prefix anomaly: <uima:de.tudarmstadt.ukp.dkpro.core.api.anomaly.type.> .
+@prefix ner: <uima:de.tudarmstadt.ukp.dkpro.core.api.ner.type.> .
+
+<doc:de-orig.conll#2> a rdfcas:View, cas:Sofa;
+  cas:Sofa-sofaNum "1"^^<http://www.w3.org/2001/XMLSchema#int>;
+  cas:Sofa-sofaID "_InitialView";
+  cas:Sofa-mimeType "text";
+  cas:Sofa-sofaString """Die Gärtnerin pflanzt im Frühling drei Bäume , die schnell wachsen .
+Der Obstgarten liegt am Fluss .
+""" .
+
+<doc:de-orig.conll#1> a metadata:DocumentMetaData, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "0"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "101"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:DocumentAnnotation-language "x-unspecified";
+  metadata:DocumentMetaData-documentTitle "de-orig.conll";
+  metadata:DocumentMetaData-documentId "de-orig.conll";
+  metadata:DocumentMetaData-isLastSegment false .
+
+<doc:de-orig.conll#3> a segmentation:Token, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "0"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "3"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Token-lemma <doc:de-orig.conll#4>;
+  segmentation:Token-pos <doc:de-orig.conll#5>;
+  segmentation:Token-morph <doc:de-orig.conll#6>;
+  segmentation:Token-order "0"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<doc:de-orig.conll#4> a segmentation:Lemma, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "0"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "3"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Lemma-value "der" .
+
+<doc:de-orig.conll#5> a lexmorph-pos:POS, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "0"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "3"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-pos:POS-PosValue "ART";
+  lexmorph-pos:POS-coarseValue "ART" .
+
+<doc:de-orig.conll#6> a lexmorph-morph:MorphologicalFeatures, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "0"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "3"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-morph:MorphologicalFeatures-value "Nom Sg Fem" .
+
+<doc:de-orig.conll#7> a segmentation:Token, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "4"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "13"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Token-lemma <doc:de-orig.conll#8>;
+  segmentation:Token-pos <doc:de-orig.conll#9>;
+  segmentation:Token-morph <doc:de-orig.conll#10>;
+  segmentation:Token-order "0"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<doc:de-orig.conll#8> a segmentation:Lemma, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "4"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "13"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Lemma-value "Gärtnerin" .
+
+<doc:de-orig.conll#9> a lexmorph-pos:POS, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "4"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "13"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-pos:POS-PosValue "NN";
+  lexmorph-pos:POS-coarseValue "N" .
+
+<doc:de-orig.conll#10> a lexmorph-morph:MorphologicalFeatures, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "4"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "13"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-morph:MorphologicalFeatures-value "Nom Sg Fem" .
+
+<doc:de-orig.conll#11> a segmentation:Token, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "14"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "21"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Token-lemma <doc:de-orig.conll#12>;
+  segmentation:Token-pos <doc:de-orig.conll#13>;
+  segmentation:Token-morph <doc:de-orig.conll#14>;
+  segmentation:Token-order "0"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<doc:de-orig.conll#12> a segmentation:Lemma, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "14"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "21"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Lemma-value "pflanzen" .
+
+<doc:de-orig.conll#13> a lexmorph-pos:POS, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "14"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "21"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-pos:POS-PosValue "VVFIN";
+  lexmorph-pos:POS-coarseValue "V" .
+
+<doc:de-orig.conll#14> a lexmorph-morph:MorphologicalFeatures, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "14"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "21"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-morph:MorphologicalFeatures-value "Prs Act Sg3" .
+
+<doc:de-orig.conll#15> a segmentation:Token, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "22"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "24"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Token-lemma <doc:de-orig.conll#16>;
+  segmentation:Token-pos <doc:de-orig.conll#17>;
+  segmentation:Token-morph <doc:de-orig.conll#18>;
+  segmentation:Token-order "0"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<doc:de-orig.conll#16> a segmentation:Lemma, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "22"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "24"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Lemma-value "in" .
+
+<doc:de-orig.conll#17> a lexmorph-pos:POS, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "22"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "24"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-pos:POS-PosValue "APPRART";
+  lexmorph-pos:POS-coarseValue "APPRART" .
+
+<doc:de-orig.conll#18> a lexmorph-morph:MorphologicalFeatures, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "22"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "24"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-morph:MorphologicalFeatures-value "Dat Sg Masc" .
+
+<doc:de-orig.conll#19> a segmentation:Token, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "25"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "33"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Token-lemma <doc:de-orig.conll#20>;
+  segmentation:Token-pos <doc:de-orig.conll#21>;
+  segmentation:Token-morph <doc:de-orig.conll#22>;
+  segmentation:Token-order "0"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<doc:de-orig.conll#20> a segmentation:Lemma, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "25"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "33"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Lemma-value "Frühling" .
+
+<doc:de-orig.conll#21> a lexmorph-pos:POS, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "25"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "33"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-pos:POS-PosValue "NN";
+  lexmorph-pos:POS-coarseValue "N" .
+
+<doc:de-orig.conll#22> a lexmorph-morph:MorphologicalFeatures, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "25"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "33"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-morph:MorphologicalFeatures-value "Dat Sg Masc" .
+
+<doc:de-orig.conll#23> a segmentation:Token, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "34"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "38"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Token-lemma <doc:de-orig.conll#24>;
+  segmentation:Token-pos <doc:de-orig.conll#25>;
+  segmentation:Token-morph <doc:de-orig.conll#26>;
+  segmentation:Token-order "0"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<doc:de-orig.conll#24> a segmentation:Lemma, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "34"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "38"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Lemma-value "drei" .
+
+<doc:de-orig.conll#25> a lexmorph-pos:POS, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "34"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "38"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-pos:POS-PosValue "CARD";
+  lexmorph-pos:POS-coarseValue "Num" .
+
+<doc:de-orig.conll#26> a lexmorph-morph:MorphologicalFeatures, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "34"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "38"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-morph:MorphologicalFeatures-value "Card" .
+
+<doc:de-orig.conll#27> a segmentation:Token, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "39"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "44"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Token-lemma <doc:de-orig.conll#28>;
+  segmentation:Token-pos <doc:de-orig.conll#29>;
+  segmentation:Token-morph <doc:de-orig.conll#30>;
+  segmentation:Token-order "0"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<doc:de-orig.conll#28> a segmentation:Lemma, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "39"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "44"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Lemma-value "Baum" .
+
+<doc:de-orig.conll#29> a lexmorph-pos:POS, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "39"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "44"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-pos:POS-PosValue "NN";
+  lexmorph-pos:POS-coarseValue "N" .
+
+<doc:de-orig.conll#30> a lexmorph-morph:MorphologicalFeatures, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "39"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "44"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-morph:MorphologicalFeatures-value "Acc Pl Masc" .
+
+<doc:de-orig.conll#31> a segmentation:Token, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "45"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "46"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Token-lemma <doc:de-orig.conll#32>;
+  segmentation:Token-pos <doc:de-orig.conll#33>;
+  segmentation:Token-morph <doc:de-orig.conll#34>;
+  segmentation:Token-order "0"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<doc:de-orig.conll#32> a segmentation:Lemma, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "45"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "46"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Lemma-value "," .
+
+<doc:de-orig.conll#33> a lexmorph-pos:POS, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "45"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "46"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-pos:POS-PosValue "$,";
+  lexmorph-pos:POS-coarseValue "Punct" .
+
+<doc:de-orig.conll#34> a lexmorph-morph:MorphologicalFeatures, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "45"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "46"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-morph:MorphologicalFeatures-value "Punct" .
+
+<doc:de-orig.conll#35> a segmentation:Token, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "47"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "50"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Token-lemma <doc:de-orig.conll#36>;
+  segmentation:Token-pos <doc:de-orig.conll#37>;
+  segmentation:Token-morph <doc:de-orig.conll#38>;
+  segmentation:Token-order "0"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<doc:de-orig.conll#36> a segmentation:Lemma, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "47"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "50"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Lemma-value "der" .
+
+<doc:de-orig.conll#37> a lexmorph-pos:POS, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "47"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "50"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-pos:POS-PosValue "PRELS";
+  lexmorph-pos:POS-coarseValue "Pron" .
+
+<doc:de-orig.conll#38> a lexmorph-morph:MorphologicalFeatures, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "47"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "50"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-morph:MorphologicalFeatures-value "Nom Pl Masc" .
+
+<doc:de-orig.conll#39> a segmentation:Token, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "51"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "58"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Token-lemma <doc:de-orig.conll#40>;
+  segmentation:Token-pos <doc:de-orig.conll#41>;
+  segmentation:Token-morph <doc:de-orig.conll#42>;
+  segmentation:Token-order "0"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<doc:de-orig.conll#40> a segmentation:Lemma, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "51"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "58"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Lemma-value "schnell" .
+
+<doc:de-orig.conll#41> a lexmorph-pos:POS, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "51"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "58"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-pos:POS-PosValue "ADJD";
+  lexmorph-pos:POS-coarseValue "Adj" .
+
+<doc:de-orig.conll#42> a lexmorph-morph:MorphologicalFeatures, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "51"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "58"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-morph:MorphologicalFeatures-value "Pos" .
+
+<doc:de-orig.conll#43> a segmentation:Token, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "59"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "66"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Token-lemma <doc:de-orig.conll#44>;
+  segmentation:Token-pos <doc:de-orig.conll#45>;
+  segmentation:Token-morph <doc:de-orig.conll#46>;
+  segmentation:Token-order "0"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<doc:de-orig.conll#44> a segmentation:Lemma, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "59"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "66"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Lemma-value "wachsen" .
+
+<doc:de-orig.conll#45> a lexmorph-pos:POS, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "59"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "66"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-pos:POS-PosValue "VVFIN";
+  lexmorph-pos:POS-coarseValue "V" .
+
+<doc:de-orig.conll#46> a lexmorph-morph:MorphologicalFeatures, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "59"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "66"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-morph:MorphologicalFeatures-value "Prs Act Pl3" .
+
+<doc:de-orig.conll#47> a segmentation:Token, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "67"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "68"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Token-lemma <doc:de-orig.conll#48>;
+  segmentation:Token-pos <doc:de-orig.conll#49>;
+  segmentation:Token-morph <doc:de-orig.conll#50>;
+  segmentation:Token-order "0"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<doc:de-orig.conll#48> a segmentation:Lemma, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "67"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "68"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Lemma-value "." .
+
+<doc:de-orig.conll#49> a lexmorph-pos:POS, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "67"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "68"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-pos:POS-PosValue "$.";
+  lexmorph-pos:POS-coarseValue "Punct" .
+
+<doc:de-orig.conll#50> a lexmorph-morph:MorphologicalFeatures, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "67"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "68"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-morph:MorphologicalFeatures-value "Punct" .
+
+<doc:de-orig.conll#51> a syntax-dependency:Dependency, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "0"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "3"^^<http://www.w3.org/2001/XMLSchema#int>;
+  syntax-dependency:Dependency-Governor <doc:de-orig.conll#7>;
+  syntax-dependency:Dependency-Dependent <doc:de-orig.conll#3>;
+  syntax-dependency:Dependency-DependencyType "NK";
+  syntax-dependency:Dependency-flavor "basic" .
+
+<doc:de-orig.conll#52> a syntax-dependency:Dependency, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "4"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "13"^^<http://www.w3.org/2001/XMLSchema#int>;
+  syntax-dependency:Dependency-Governor <doc:de-orig.conll#11>;
+  syntax-dependency:Dependency-Dependent <doc:de-orig.conll#7>;
+  syntax-dependency:Dependency-DependencyType "SB";
+  syntax-dependency:Dependency-flavor "basic" .
+
+<doc:de-orig.conll#53> a syntax-dependency:ROOT, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "14"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "21"^^<http://www.w3.org/2001/XMLSchema#int>;
+  syntax-dependency:Dependency-Governor <doc:de-orig.conll#11>;
+  syntax-dependency:Dependency-Dependent <doc:de-orig.conll#11>;
+  syntax-dependency:Dependency-DependencyType "ROOT";
+  syntax-dependency:Dependency-flavor "basic" .
+
+<doc:de-orig.conll#54> a syntax-dependency:Dependency, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "22"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "24"^^<http://www.w3.org/2001/XMLSchema#int>;
+  syntax-dependency:Dependency-Governor <doc:de-orig.conll#11>;
+  syntax-dependency:Dependency-Dependent <doc:de-orig.conll#15>;
+  syntax-dependency:Dependency-DependencyType "MO";
+  syntax-dependency:Dependency-flavor "basic" .
+
+<doc:de-orig.conll#55> a syntax-dependency:Dependency, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "25"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "33"^^<http://www.w3.org/2001/XMLSchema#int>;
+  syntax-dependency:Dependency-Governor <doc:de-orig.conll#15>;
+  syntax-dependency:Dependency-Dependent <doc:de-orig.conll#19>;
+  syntax-dependency:Dependency-DependencyType "NK";
+  syntax-dependency:Dependency-flavor "basic" .
+
+<doc:de-orig.conll#56> a syntax-dependency:Dependency, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "34"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "38"^^<http://www.w3.org/2001/XMLSchema#int>;
+  syntax-dependency:Dependency-Governor <doc:de-orig.conll#27>;
+  syntax-dependency:Dependency-Dependent <doc:de-orig.conll#23>;
+  syntax-dependency:Dependency-DependencyType "NK";
+  syntax-dependency:Dependency-flavor "basic" .
+
+<doc:de-orig.conll#57> a syntax-dependency:Dependency, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "39"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "44"^^<http://www.w3.org/2001/XMLSchema#int>;
+  syntax-dependency:Dependency-Governor <doc:de-orig.conll#11>;
+  syntax-dependency:Dependency-Dependent <doc:de-orig.conll#27>;
+  syntax-dependency:Dependency-DependencyType "OA";
+  syntax-dependency:Dependency-flavor "basic" .
+
+<doc:de-orig.conll#58> a syntax-dependency:Dependency, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "47"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "50"^^<http://www.w3.org/2001/XMLSchema#int>;
+  syntax-dependency:Dependency-Governor <doc:de-orig.conll#43>;
+  syntax-dependency:Dependency-Dependent <doc:de-orig.conll#35>;
+  syntax-dependency:Dependency-DependencyType "SB";
+  syntax-dependency:Dependency-flavor "basic" .
+
+<doc:de-orig.conll#59> a syntax-dependency:Dependency, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "51"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "58"^^<http://www.w3.org/2001/XMLSchema#int>;
+  syntax-dependency:Dependency-Governor <doc:de-orig.conll#43>;
+  syntax-dependency:Dependency-Dependent <doc:de-orig.conll#39>;
+  syntax-dependency:Dependency-DependencyType "MO";
+  syntax-dependency:Dependency-flavor "basic" .
+
+<doc:de-orig.conll#60> a syntax-dependency:Dependency, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "59"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "66"^^<http://www.w3.org/2001/XMLSchema#int>;
+  syntax-dependency:Dependency-Governor <doc:de-orig.conll#27>;
+  syntax-dependency:Dependency-Dependent <doc:de-orig.conll#43>;
+  syntax-dependency:Dependency-DependencyType "RC";
+  syntax-dependency:Dependency-flavor "basic" .
+
+<doc:de-orig.conll#61> a segmentation:Sentence, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "0"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "68"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<doc:de-orig.conll#62> a segmentation:Token, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "69"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "72"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Token-lemma <doc:de-orig.conll#63>;
+  segmentation:Token-pos <doc:de-orig.conll#64>;
+  segmentation:Token-morph <doc:de-orig.conll#65>;
+  segmentation:Token-order "0"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<doc:de-orig.conll#63> a segmentation:Lemma, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "69"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "72"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Lemma-value "der" .
+
+<doc:de-orig.conll#64> a lexmorph-pos:POS, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "69"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "72"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-pos:POS-PosValue "ART";
+  lexmorph-pos:POS-coarseValue "ART" .
+
+<doc:de-orig.conll#65> a lexmorph-morph:MorphologicalFeatures, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "69"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "72"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-morph:MorphologicalFeatures-value "Nom Sg Masc" .
+
+<doc:de-orig.conll#66> a segmentation:Token, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "73"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "83"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Token-lemma <doc:de-orig.conll#67>;
+  segmentation:Token-pos <doc:de-orig.conll#68>;
+  segmentation:Token-morph <doc:de-orig.conll#69>;
+  segmentation:Token-order "0"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<doc:de-orig.conll#67> a segmentation:Lemma, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "73"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "83"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Lemma-value "Obst#garten" .
+
+<doc:de-orig.conll#68> a lexmorph-pos:POS, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "73"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "83"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-pos:POS-PosValue "NN";
+  lexmorph-pos:POS-coarseValue "N" .
+
+<doc:de-orig.conll#69> a lexmorph-morph:MorphologicalFeatures, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "73"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "83"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-morph:MorphologicalFeatures-value "Nom Sg Masc" .
+
+<doc:de-orig.conll#70> a segmentation:Token, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "84"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "89"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Token-lemma <doc:de-orig.conll#71>;
+  segmentation:Token-pos <doc:de-orig.conll#72>;
+  segmentation:Token-morph <doc:de-orig.conll#73>;
+  segmentation:Token-order "0"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<doc:de-orig.conll#71> a segmentation:Lemma, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "84"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "89"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Lemma-value "liegen" .
+
+<doc:de-orig.conll#72> a lexmorph-pos:POS, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "84"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "89"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-pos:POS-PosValue "VVFIN";
+  lexmorph-pos:POS-coarseValue "V" .
+
+<doc:de-orig.conll#73> a lexmorph-morph:MorphologicalFeatures, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "84"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "89"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-morph:MorphologicalFeatures-value "Prs Act Sg3" .
+
+<doc:de-orig.conll#74> a segmentation:Token, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "90"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "92"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Token-lemma <doc:de-orig.conll#75>;
+  segmentation:Token-pos <doc:de-orig.conll#76>;
+  segmentation:Token-morph <doc:de-orig.conll#77>;
+  segmentation:Token-order "0"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<doc:de-orig.conll#75> a segmentation:Lemma, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "90"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "92"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Lemma-value "an" .
+
+<doc:de-orig.conll#76> a lexmorph-pos:POS, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "90"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "92"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-pos:POS-PosValue "APPRART";
+  lexmorph-pos:POS-coarseValue "APPRART" .
+
+<doc:de-orig.conll#77> a lexmorph-morph:MorphologicalFeatures, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "90"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "92"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-morph:MorphologicalFeatures-value "Dat Sg Masc" .
+
+<doc:de-orig.conll#78> a segmentation:Token, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "93"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "98"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Token-lemma <doc:de-orig.conll#79>;
+  segmentation:Token-pos <doc:de-orig.conll#80>;
+  segmentation:Token-morph <doc:de-orig.conll#81>;
+  segmentation:Token-order "0"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<doc:de-orig.conll#79> a segmentation:Lemma, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "93"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "98"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Lemma-value "Fluss" .
+
+<doc:de-orig.conll#80> a lexmorph-pos:POS, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "93"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "98"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-pos:POS-PosValue "NN";
+  lexmorph-pos:POS-coarseValue "N" .
+
+<doc:de-orig.conll#81> a lexmorph-morph:MorphologicalFeatures, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "93"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "98"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-morph:MorphologicalFeatures-value "Dat Sg Masc" .
+
+<doc:de-orig.conll#82> a segmentation:Token, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "99"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "100"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Token-lemma <doc:de-orig.conll#83>;
+  segmentation:Token-pos <doc:de-orig.conll#84>;
+  segmentation:Token-morph <doc:de-orig.conll#85>;
+  segmentation:Token-order "0"^^<http://www.w3.org/2001/XMLSchema#int> .
+
+<doc:de-orig.conll#83> a segmentation:Lemma, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "99"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "100"^^<http://www.w3.org/2001/XMLSchema#int>;
+  segmentation:Lemma-value "." .
+
+<doc:de-orig.conll#84> a lexmorph-pos:POS, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "99"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "100"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-pos:POS-PosValue "$.";
+  lexmorph-pos:POS-coarseValue "Punct" .
+
+<doc:de-orig.conll#85> a lexmorph-morph:MorphologicalFeatures, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "99"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "100"^^<http://www.w3.org/2001/XMLSchema#int>;
+  lexmorph-morph:MorphologicalFeatures-value "Punct" .
+
+<doc:de-orig.conll#86> a syntax-dependency:Dependency, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "69"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "72"^^<http://www.w3.org/2001/XMLSchema#int>;
+  syntax-dependency:Dependency-Governor <doc:de-orig.conll#66>;
+  syntax-dependency:Dependency-Dependent <doc:de-orig.conll#62>;
+  syntax-dependency:Dependency-DependencyType "NK";
+  syntax-dependency:Dependency-flavor "basic" .
+
+<doc:de-orig.conll#87> a syntax-dependency:Dependency, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "73"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "83"^^<http://www.w3.org/2001/XMLSchema#int>;
+  syntax-dependency:Dependency-Governor <doc:de-orig.conll#70>;
+  syntax-dependency:Dependency-Dependent <doc:de-orig.conll#66>;
+  syntax-dependency:Dependency-DependencyType "SB";
+  syntax-dependency:Dependency-flavor "basic" .
+
+<doc:de-orig.conll#88> a syntax-dependency:ROOT, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "84"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "89"^^<http://www.w3.org/2001/XMLSchema#int>;
+  syntax-dependency:Dependency-Governor <doc:de-orig.conll#70>;
+  syntax-dependency:Dependency-Dependent <doc:de-orig.conll#70>;
+  syntax-dependency:Dependency-DependencyType "ROOT";
+  syntax-dependency:Dependency-flavor "basic" .
+
+<doc:de-orig.conll#89> a syntax-dependency:Dependency, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "90"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "92"^^<http://www.w3.org/2001/XMLSchema#int>;
+  syntax-dependency:Dependency-Governor <doc:de-orig.conll#70>;
+  syntax-dependency:Dependency-Dependent <doc:de-orig.conll#74>;
+  syntax-dependency:Dependency-DependencyType "MO";
+  syntax-dependency:Dependency-flavor "basic" .
+
+<doc:de-orig.conll#90> a syntax-dependency:Dependency, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "93"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "98"^^<http://www.w3.org/2001/XMLSchema#int>;
+  syntax-dependency:Dependency-Governor <doc:de-orig.conll#74>;
+  syntax-dependency:Dependency-Dependent <doc:de-orig.conll#78>;
+  syntax-dependency:Dependency-DependencyType "NK";
+  syntax-dependency:Dependency-flavor "basic" .
+
+<doc:de-orig.conll#91> a segmentation:Sentence, rdfcas:FeatureStructure;
+  rdfcas:indexedIn <doc:de-orig.conll#2>;
+  cas:AnnotationBase-sofa <doc:de-orig.conll#2>;
+  tcas:Annotation-begin "69"^^<http://www.w3.org/2001/XMLSchema#int>;
+  tcas:Annotation-end "100"^^<http://www.w3.org/2001/XMLSchema#int> .

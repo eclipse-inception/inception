@@ -1,0 +1,60 @@
+# Licensed to the Technische Universität Darmstadt under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The Technische Universität Darmstadt
+# licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# A small OWL ontology of lexical categories for root class tests.
+
+@prefix lex:  <http://example.org/test/lexicon#> .
+@prefix ext:  <http://example.org/test/external#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+lex:LexicalEntry a owl:Class ; rdfs:label "Lexical entry"@en .
+lex:Word a owl:Class ; rdfs:subClassOf lex:LexicalEntry ; rdfs:label "Word"@en .
+lex:MultiwordExpression a owl:Class ; rdfs:subClassOf lex:LexicalEntry ;
+  rdfs:label "Multiword expression"@en .
+
+lex:Sense a owl:Class ; rdfs:label "Sense"@en .
+
+lex:Concept a owl:Class ; rdfs:label "Concept"@en .
+lex:SemanticField a owl:Class ; rdfs:subClassOf lex:Concept ; rdfs:label "Semantic field"@en .
+
+lex:PartOfSpeech a owl:Class ; rdfs:label "Part of speech"@en .
+lex:OpenClass a owl:Class ; rdfs:subClassOf lex:PartOfSpeech ; rdfs:label "Open class"@en .
+lex:ClosedClass a owl:Class ; rdfs:subClassOf lex:PartOfSpeech ; rdfs:label "Closed class"@en .
+
+lex:sense a owl:ObjectProperty ;
+  rdfs:domain lex:LexicalEntry ;
+  rdfs:range lex:Sense ;
+  rdfs:label "sense"@en .
+
+# A class defined as the intersection of two named classes. It is a child of both operands and
+# must not be a root.
+lex:Noun a owl:Class ;
+  rdfs:label "Noun"@en ;
+  owl:intersectionOf ( lex:Word lex:OpenClass ) .
+
+# A class whose only superclass is an anonymous restriction.
+lex:Lemma a owl:Class ;
+  rdfs:label "Lemma"@en ;
+  rdfs:subClassOf [ a owl:Restriction ; owl:onProperty lex:sense ; owl:someValuesFrom lex:Sense ] .
+
+# An external class that is only used as a superclass. It is a root although it is not declared.
+ext:Morpheme rdfs:label "Morpheme"@en .
+lex:Affix rdfs:subClassOf ext:Morpheme ;
+  rdfs:label "Affix"@en .
+
+# An instance, which must not show up as a class.
+lex:dog a lex:Word ;
+  rdfs:label "dog"@en .

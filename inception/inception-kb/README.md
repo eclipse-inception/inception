@@ -39,8 +39,8 @@ would be meaningless. Each iteration therefore reflects the true cost of query
 construction plus execution.
 
 The knowledge bases come straight from the bundled
-`knowledgebase-profiles.yaml`: the LOCAL `wine_ontology` (an offline data point)
-plus the REMOTE `wikidata`, `db_pedia`, `zbw-stw-economics`, `mesh` and
+`knowledgebase-profiles.yaml`: the LOCAL `hpo` (downloaded and imported, so
+free of network noise during the measurement) plus the REMOTE `wikidata`, `db_pedia`, `zbw-stw-economics`, `mesh` and
 `agrovoc`. Remote endpoints that are unreachable are skipped automatically.
 
 ### Running it
@@ -133,8 +133,7 @@ the hash to the file name.
 - For the REMOTE knowledge bases the timings are dominated by network and server
   load, so trust the **median over many iterations** rather than a single number,
   and run the baseline and the after-run back-to-back under the same network
-  conditions. The LOCAL `wine_ontology` gives a small, network-noise-free signal
-  but its data set is tiny.
+  conditions. The LOCAL `hpo` gives a network-noise-free signal.
 - The test logs at `INFO`; the benchmark logger is enabled in
   `src/test/resources/log4j2-test.xml` so the report is visible (the module's
   default log level is `WARN`).

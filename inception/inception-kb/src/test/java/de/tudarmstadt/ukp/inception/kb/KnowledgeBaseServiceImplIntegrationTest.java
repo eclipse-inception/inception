@@ -21,12 +21,17 @@ import static de.tudarmstadt.ukp.inception.kb.reification.Reification.WIKIDATA;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
@@ -38,6 +43,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
@@ -65,6 +71,7 @@ import de.tudarmstadt.ukp.inception.kb.graph.KBObject;
 import de.tudarmstadt.ukp.inception.kb.graph.KBProperty;
 import de.tudarmstadt.ukp.inception.kb.graph.KBStatement;
 import de.tudarmstadt.ukp.inception.kb.model.KnowledgeBase;
+import de.tudarmstadt.ukp.inception.kb.querybuilder.SPARQLQueryBuilder;
 import de.tudarmstadt.ukp.inception.kb.reification.Reification;
 import de.tudarmstadt.ukp.inception.kb.util.TestFixtures;
 import de.tudarmstadt.ukp.inception.kb.yaml.KnowledgeBaseProfile;
@@ -79,6 +86,10 @@ import de.tudarmstadt.ukp.inception.kb.yaml.KnowledgeBaseProfile;
         "de.tudarmstadt.ukp.clarin.webanno.model" })
 public class KnowledgeBaseServiceImplIntegrationTest
 {
+    private static final String STREAMS_NS = "http://mrklie.com/schemas/streams#";
+    private static final String TAGSET_NS = "http://example.org/test/tagset#";
+    private static final String OBO_NS = "http://purl.obolibrary.org/obo/";
+
     private static final String PROJECT_NAME = "Test project";
     private static final String KB_NAME = "Test knowledge base";
 
@@ -1574,102 +1585,68 @@ public class KnowledgeBaseServiceImplIntegrationTest
 
     @ParameterizedTest(name = "Reification = {0}")
     @MethodSource("data")
-    public void getConceptRoots_WithWildlifeOntology_ShouldReturnRootConcepts(
+    public void getConceptRoots_WithLibraryOntology_ShouldReturnRootConcepts(
             Reification reification)
         throws Exception
     {
         setUp(reification);
-
         sut.registerKnowledgeBase(kb, sut.getNativeConfig());
-        importKnowledgeBase("data/wildlife_ontology.ttl");
+        importKnowledgeBase("data/library_ontology.ttl");
         setSchema(kb, OWL.CLASS, RDFS.SUBCLASSOF, RDF.TYPE, RDFS.COMMENT, RDFS.LABEL, RDF.PROPERTY);
 
         var rootConcepts = sut.listRootConcepts(kb, false);
 
+        // The external Collection class is only used as a superclass and has no label
         assertThat(rootConcepts) //
                 .as("Check that all root concepts have been found")
                 .usingRecursiveFieldByFieldElementComparatorOnFields("identifier", "name")
                 .containsExactlyInAnyOrder(
-                        new KBHandle("http://purl.org/ontology/wo/Adaptation", "Adaptation"),
-                        new KBHandle("http://purl.org/ontology/wo/AnimalIntelligence",
-                                "Animal Intelligence"),
-                        new KBHandle("http://purl.org/dc/dcmitype/Collection", null),
-                        new KBHandle("http://purl.org/ontology/wo/ConservationStatus",
-                                "Conservation Status"),
-                        new KBHandle("http://purl.org/ontology/wo/Ecozone", "Ecozone"),
-                        new KBHandle("http://purl.org/ontology/wo/Habitat", "Habitat"),
-                        new KBHandle("http://purl.org/ontology/wo/RedListStatus",
-                                "Red List Status"),
-                        new KBHandle("http://purl.org/ontology/wo/TaxonName", "Taxon Name"),
-                        new KBHandle("http://purl.org/ontology/wo/TaxonRank", "Taxonomic Rank"));
+                        new KBHandle("http://example.org/test/library#Agent", "Agent"),
+                        new KBHandle("http://example.org/test/library#Work", "Work"),
+                        new KBHandle("http://example.org/test/library#Place", "Place"),
+                        new KBHandle("http://example.org/test/library#Subject", "Subject"),
+                        new KBHandle("http://example.org/test/external#Collection", null));
     }
 
     @ParameterizedTest(name = "Reification = {0}")
     @MethodSource("data")
-    public void getConceptRoots_WithWildlifeOntologyAndExplicityDefinedConcepts_ShouldReturnRootConcepts(
+    public void getConceptRoots_WithLibraryOntologyAndExplicitlyDefinedConcepts_ShouldReturnRootConcepts(
             Reification reification)
         throws Exception
     {
         setUp(reification);
-
         sut.registerKnowledgeBase(kb, sut.getNativeConfig());
         kb.setDefaultLanguage("en");
-        kb.setRootConcepts(asList("http://purl.org/ontology/wo/AnimalIntelligence",
-                "http://purl.org/ontology/wo/Ecozone"));
+        kb.setRootConcepts(asList("http://example.org/test/library#Agent",
+                "http://example.org/test/library#Place"));
         sut.updateKnowledgeBase(kb);
-
-        importKnowledgeBase("data/wildlife_ontology.ttl");
+        importKnowledgeBase("data/library_ontology.ttl");
         setSchema(kb, OWL.CLASS, RDFS.SUBCLASSOF, RDF.TYPE, RDFS.COMMENT, RDFS.LABEL, RDF.PROPERTY);
 
         var rootConcepts = sut.listRootConcepts(kb, false).stream().map(KBHandle::getName);
 
-        String[] expectedLabels = { "Animal Intelligence", "Ecozone" };
-        assertThat(rootConcepts).as("Check that all root concepts have been found")
-                .containsExactlyInAnyOrder(expectedLabels);
+        assertThat(rootConcepts).as("Check that only the explicitly defined roots have been found")
+                .containsExactlyInAnyOrder("Agent", "Place");
     }
 
     @ParameterizedTest(name = "Reification = {0}")
     @MethodSource("data")
-    public void getConceptRoots_WithSparqlPlayground_ReturnsOnlyRootConcepts(
-            Reification reification)
+    public void getConceptRoots_WithStreams_ReturnsOnlyRootConcepts(Reification reification)
         throws Exception
     {
         setUp(reification);
 
         sut.registerKnowledgeBase(kb, sut.getNativeConfig());
-        importKnowledgeBase("data/sparql_playground.ttl");
+        importKnowledgeBase("data/streams.ttl");
         setSchema(kb, RDFS.CLASS, RDFS.SUBCLASSOF, RDF.TYPE, RDFS.COMMENT, RDFS.LABEL,
                 RDF.PROPERTY);
 
-        Stream<String> childConcepts = sut.listRootConcepts(kb, false).stream()
-                .map(KBHandle::getName);
+        // The data also contains instances and an implicitly declared subclass, neither of
+        // which may show up as a root
+        var rootConcepts = sut.listRootConcepts(kb, false).stream().map(KBHandle::getName);
 
-        String[] expectedLabels = { "creature" };
-        assertThat(childConcepts).as("Check that only root concepts")
-                .containsExactlyInAnyOrder(expectedLabels);
-
-    }
-
-    @ParameterizedTest(name = "Reification = {0}")
-    @MethodSource("data")
-    public void getChildConcepts_WithSparqlPlayground_ReturnsAnimals(Reification reification)
-        throws Exception
-    {
-        setUp(reification);
-
-        sut.registerKnowledgeBase(kb, sut.getNativeConfig());
-        importKnowledgeBase("data/sparql_playground.ttl");
-        setSchema(kb, RDFS.CLASS, RDFS.SUBCLASSOF, RDF.TYPE, RDFS.COMMENT, RDFS.LABEL,
-                RDF.PROPERTY);
-        KBConcept concept = sut.readConcept(kb, "http://example.org/tuto/ontology#Animal", true)
-                .get();
-
-        Stream<String> childConcepts = sut.listChildConcepts(kb, concept.getIdentifier(), false)
-                .stream().map(KBHandle::getName);
-
-        String[] expectedLabels = { "cat", "dog", "monkey" };
-        assertThat(childConcepts).as("Check that all child concepts have been found")
-                .containsExactlyInAnyOrder(expectedLabels);
+        assertThat(rootConcepts).as("Check that only root concepts have been found")
+                .containsExactlyInAnyOrder("InputStream", "OutputStream");
     }
 
     @ParameterizedTest(name = "Reification = {0}")
@@ -1694,6 +1671,60 @@ public class KnowledgeBaseServiceImplIntegrationTest
                 "StringBufferInputStream" };
         assertThat(childConcepts).as("Check that all immediate child concepts have been found")
                 .containsExactlyInAnyOrder(expectedLabels);
+    }
+
+    @ParameterizedTest(name = "Reification = {0}")
+    @MethodSource("data")
+    public void getChildConcepts_WithStreams_IncludesImplicitClassesButNoInstances(
+            Reification reification)
+        throws Exception
+    {
+        setUp(reification);
+
+        sut.registerKnowledgeBase(kb, sut.getNativeConfig());
+        importKnowledgeBase("data/streams.ttl");
+        setSchema(kb, RDFS.CLASS, RDFS.SUBCLASSOF, RDF.TYPE, RDFS.COMMENT, RDFS.LABEL,
+                RDF.PROPERTY);
+
+        assertThat(sut.listChildConcepts(kb, STREAMS_NS + "filteroutput", false)) //
+                .as("Check that a class declared only implicitly is a child") //
+                .extracting(KBHandle::getName) //
+                .containsExactly("CheckedOutputStream");
+        assertThat(sut.listChildConcepts(kb, STREAMS_NS + "checkedoutput", false)) //
+                .extracting(KBHandle::getName) //
+                .containsExactly("VerifiedOutputStream");
+        assertThat(sut.listChildConcepts(kb, STREAMS_NS + "bufferedinput", false)) //
+                .as("Check that an instance is not a child concept") //
+                .isEmpty();
+    }
+
+    @ParameterizedTest(name = "Reification = {0}")
+    @MethodSource("data")
+    public void getParentConceptList_WithStreams_ReturnsAllAncestors(Reification reification)
+        throws Exception
+    {
+        setUp(reification);
+
+        sut.registerKnowledgeBase(kb, sut.getNativeConfig());
+        importKnowledgeBase("data/streams.ttl");
+        setSchema(kb, RDFS.CLASS, RDFS.SUBCLASSOF, RDF.TYPE, RDFS.COMMENT, RDFS.LABEL,
+                RDF.PROPERTY);
+
+        var parents = sut
+                .getParentConceptList(kb, "http://mrklie.com/schemas/streams#bufferedinput", false)
+                .stream().map(KBHandle::getName);
+        assertThat(parents).as("Check that the direct and the indirect parent have been found")
+                .containsExactlyInAnyOrder("FilterInputStream", "InputStream");
+
+        var rootParents = sut.getParentConceptList(kb, "http://mrklie.com/schemas/streams#input",
+                false);
+        assertThat(rootParents).as("Check that a root concept has no parents").isEmpty();
+
+        var instanceParents = sut.getParentConceptList(kb, STREAMS_NS + "systemin", false).stream()
+                .map(KBHandle::getName);
+        assertThat(instanceParents).as("Check that the classes of an instance are its parents")
+                .containsExactlyInAnyOrder("BufferedInputStream", "FilterInputStream",
+                        "InputStream");
     }
 
     @ParameterizedTest(name = "Reification = {0}")
@@ -1984,12 +2015,78 @@ public class KnowledgeBaseServiceImplIntegrationTest
     }
 
     @Test
+    public void importKnowledgeBase_RdfXmlWithInternalDoctypeEntities() throws Exception
+    {
+        setUp(Reification.NONE);
+        sut.registerKnowledgeBase(kb, sut.getNativeConfig());
+        importKnowledgeBase("data/tagset_custom_label.rdf");
+        setSchema(kb, OWL.CLASS, RDFS.SUBCLASSOF, RDF.TYPE, RDFS.COMMENT, RDFS.LABEL, RDF.PROPERTY);
+
+        // The IRIs are written using the entities, so they must have been expanded
+        assertThat(sut.listInstances(kb, TAGSET_NS + "CommonNoun", false)) //
+                .extracting(KBHandle::getIdentifier, KBHandle::getName) //
+                .containsExactlyInAnyOrder( //
+                        tuple(TAGSET_NS + "NN", "Singular common noun"), //
+                        tuple(TAGSET_NS + "NNS", "Plural common noun"));
+    }
+
+    @Test
+    public void importKnowledgeBase_RdfXmlWithExternalEntity_DoesNotExpandIt() throws Exception
+    {
+        setUp(Reification.NONE);
+        sut.registerKnowledgeBase(kb, sut.getNativeConfig());
+
+        var canary = "TOP-SECRET-XXE-CANARY";
+        var secretFile = new File(temporaryFolder, "secret.txt");
+        Files.writeString(secretFile.toPath(), canary, UTF_8);
+
+        var rdf = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <!DOCTYPE rdf:RDF [ <!ENTITY xxe SYSTEM "%s"> ]>
+                <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+                  <rdf:Description rdf:about="http://example.org/test/xxe#thing">
+                    <rdfs:label>&xxe;</rdfs:label>
+                  </rdf:Description>
+                </rdf:RDF>
+                """.formatted(secretFile.toURI());
+
+        // Rejecting the document is fine. What must never happen is that the file contents
+        // make it into the knowledge base or into an error message.
+        var thrown = catchThrowable(() -> {
+            try (var is = new ByteArrayInputStream(rdf.getBytes(UTF_8))) {
+                sut.importData(kb, "xxe.rdf", is);
+            }
+        });
+
+        var statements = sut.read(kb, conn -> {
+            try (var stmts = conn.getStatements(null, null, null)) {
+                return stmts.stream().toList();
+            }
+        });
+        assertThat(statements) //
+                .extracting(stmt -> stmt.getObject().stringValue()) //
+                .noneMatch(value -> value.contains(canary));
+
+        if (thrown != null) {
+            assertThat(ExceptionUtils.getStackTrace(thrown)).doesNotContain(canary);
+        }
+        else {
+            assertThat(statements) //
+                    .as("Check that the rest of the document has been imported") //
+                    .extracting(stmt -> stmt.getSubject().stringValue()) //
+                    .contains("http://example.org/test/xxe#thing");
+        }
+    }
+
+    @Test
     public void importKnowledgeBase_OBO() throws Exception
     {
         setUp(Reification.NONE);
         sut.registerKnowledgeBase(kb, sut.getNativeConfig());
-        importKnowledgeBase("data/example1.obo");
-        assertThat(sut.getIndexSize(kb)).isGreaterThan(30000);
+        importKnowledgeBase("data/example.obo");
+
+        assertThatOboExampleHasBeenImported();
     }
 
     @Test
@@ -1997,8 +2094,9 @@ public class KnowledgeBaseServiceImplIntegrationTest
     {
         setUp(Reification.NONE);
         sut.registerKnowledgeBase(kb, sut.getNativeConfig());
-        importKnowledgeBase("data/example1.obo.gz");
-        assertThat(sut.getIndexSize(kb)).isGreaterThan(30000);
+        importKnowledgeBase("data/example.obo.gz");
+
+        assertThatOboExampleHasBeenImported();
     }
 
     @ParameterizedTest(name = "Reification = {0}")
@@ -2238,6 +2336,55 @@ public class KnowledgeBaseServiceImplIntegrationTest
     {
         return IriConstants.IMPLICIT_NAMESPACES.stream()
                 .anyMatch(ns -> handle.getIdentifier().startsWith(ns));
+    }
+
+    private void assertThatOboExampleHasBeenImported()
+    {
+        setSchema(kb, OWL.CLASS, RDFS.SUBCLASSOF, RDF.TYPE, RDFS.COMMENT, RDFS.LABEL, RDF.PROPERTY);
+
+        var concepts = sut.listAllConcepts(kb, false);
+        assertThat(concepts) //
+                .as("Check that all terms have been imported, obsolete ones as deprecated")
+                .extracting(KBHandle::getIdentifier, KBHandle::getName, KBHandle::isDeprecated) //
+                .containsExactlyInAnyOrder( //
+                        tuple(OBO_NS + "INCTEST_0000001", "plant part", false), //
+                        tuple(OBO_NS + "INCTEST_0000002", "root", false), //
+                        tuple(OBO_NS + "INCTEST_0000003", "leaf", false), //
+                        tuple(OBO_NS + "INCTEST_0000004", "shoot system", false), //
+                        tuple(OBO_NS + "INCTEST_0000006", "stem", false), //
+                        tuple(OBO_NS + "INCTEST_0000005", "obsolete plant organ", true),
+                        // The alt_id of "root" becomes a deprecated class without a label
+                        tuple(OBO_NS + "INCTEST_0000020", null, true));
+
+        assertThat(sut.listRootConcepts(kb, false)) //
+                .as("Check that the is_a hierarchy has been imported") //
+                .extracting(KBHandle::getIdentifier) //
+                .containsExactlyInAnyOrder(OBO_NS + "INCTEST_0000001", OBO_NS + "INCTEST_0000005",
+                        OBO_NS + "INCTEST_0000020");
+        assertThat(sut.listChildConcepts(kb, OBO_NS + "INCTEST_0000001", false)) //
+                .extracting(KBHandle::getName) //
+                .containsExactlyInAnyOrder("root", "leaf", "shoot system", "stem");
+
+        var root = concepts.stream().filter(c -> "root".equals(c.getName())).findFirst().get();
+        assertThat(sut.listStatements(kb, root, true)) //
+                .as("Check that synonyms, including non-ASCII ones, have been imported") //
+                .extracting(stmt -> String.valueOf(stmt.getValue())) //
+                .contains("Wurzel", "根", "taproot");
+
+        var shootSystem = concepts.stream().filter(c -> "shoot system".equals(c.getName()))
+                .findFirst().get();
+        assertThat(sut.listStatements(kb, shootSystem, true)) //
+                .extracting(stmt -> String.valueOf(stmt.getValue())) //
+                .contains("Sprossachse (grün)");
+
+        // The label search uses the full text index, so this checks that it has been built
+        var hits = sut.read(kb, conn -> SPARQLQueryBuilder.forItems(kb) //
+                .withPrefLabelProperties(SPARQLQueryBuilder.forItems(kb) //
+                        .resolvePrefLabelProperties(conn)) //
+                .withLabelStartingWith("shoot") //
+                .retrieveLabel() //
+                .asHandles(conn, true));
+        assertThat(hits).extracting(KBHandle::getName).containsExactly("shoot system");
     }
 
     private void importKnowledgeBase(String resourceName) throws Exception

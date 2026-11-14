@@ -145,10 +145,12 @@ public class KnowledgeBaseServiceImplWikiDataIntegrationTest
     {
         setUp(reification);
 
-        Optional<KBConcept> concept = sut.readConcept(kb, "http://www.wikidata.org/entity/Q171644",
+        // Q11344 is "chemical element", a long-established class with stable subclasses
+        Optional<KBConcept> concept = sut.readConcept(kb, "http://www.wikidata.org/entity/Q11344",
                 true);
+        assertThat(concept).as("Check that the concept exists").isPresent();
         assertThat(concept.get().getName()).as("Check that concept has the same UI label")
-                .isIn("12 Hours of Reims");
+                .isEqualTo("chemical element");
     }
 
     @ParameterizedTest(name = "Reification = {0}")
@@ -158,12 +160,14 @@ public class KnowledgeBaseServiceImplWikiDataIntegrationTest
     {
         setUp(reification);
 
-        List<KBHandle> concept = sut.listChildConcepts(kb, "http://www.wikidata.org/entity/Q171644",
+        List<KBHandle> children = sut.listChildConcepts(kb, "http://www.wikidata.org/entity/Q11344",
                 true);
 
-        assertThat(concept.iterator().next().getUiLabel())
-                .as("Check that concept has the same UI label")
-                .isIn("12-Stunden-Rennen von Reims 1965", "1965 12 Hours of Reims");
+        assertThat(children).as("Check that well-established subclasses are found")
+                .extracting(KBHandle::getIdentifier) //
+                .contains("http://www.wikidata.org/entity/Q19609", // noble gases
+                        "http://www.wikidata.org/entity/Q19605", // halogens
+                        "http://www.wikidata.org/entity/Q19577"); // actinide
     }
 
     @ParameterizedTest(name = "Reification = {0}")

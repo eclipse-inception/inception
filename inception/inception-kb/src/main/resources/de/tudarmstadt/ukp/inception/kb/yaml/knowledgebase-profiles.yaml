@@ -389,32 +389,6 @@ zbw-gnd:
 #
 # ##################################################################################################
 
-wine_ontology:
-  name: Wine Ontology
-  type: LOCAL
-  default-language: en
-  access:
-    access-url: classpath:de/tudarmstadt/ukp/inception/kb/pre-defined-knowledge-bases/wine.rdf
-    full-text-search: http://www.openrdf.org/contrib/lucenesail#matches
-  mapping:
-    class: http://www.w3.org/2002/07/owl#Class
-    subclass-of: http://www.w3.org/2000/01/rdf-schema#subClassOf
-    instance-of: http://www.w3.org/1999/02/22-rdf-syntax-ns#type
-    label: http://www.w3.org/2000/01/rdf-schema#label
-    property-type: http://www.w3.org/1999/02/22-rdf-syntax-ns#Property
-    description: http://www.w3.org/2000/01/rdf-schema#comment
-    property-label: http://www.w3.org/2000/01/rdf-schema#label
-    property-description: http://www.w3.org/2000/01/rdf-schema#comment
-    subproperty-of: http://www.w3.org/2000/01/rdf-schema#subPropertyOf
-    deprecation-property: http://www.w3.org/2002/07/owl#deprecated
-  info:
-    description: |
-      An example OWL ontology. Derived from the DAML Wine ontology at 
-      http://ontolingua.stanford.edu/doc/chimaera/ontologies/wines.daml
-    host-institution-name: "-"
-    author-name: "-"
-    website-url: https://www.w3.org/TR/owl-guide/wine.rdf
-
 olia_penn.owl:
   name: OLiA - Penn Treebank tagset (morphosyntax)
   type: LOCAL

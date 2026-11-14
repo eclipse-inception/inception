@@ -1,0 +1,56 @@
+# Licensed to the Technische Universität Darmstadt under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The Technische Universität Darmstadt
+# licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# Part-of-speech tags as instances whose label is given by a custom label property (ex:hasTag)
+# with typed literals. Each instance also has an rdfs:label, which a search over ex:hasTag must
+# ignore.
+
+@prefix ex:   <http://example.org/test/tagset#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+ex:hasTag a owl:DatatypeProperty ;
+  rdfs:label "has tag" .
+
+ex:Noun a owl:Class ; rdfs:label "Noun" .
+ex:CommonNoun a owl:Class ; rdfs:subClassOf ex:Noun ; rdfs:label "Common noun" .
+ex:ProperNoun a owl:Class ; rdfs:subClassOf ex:Noun ; rdfs:label "Proper noun" .
+ex:Verb a owl:Class ; rdfs:label "Verb" .
+ex:Numeral a owl:Class ; rdfs:label "Numeral" .
+
+ex:NN a owl:NamedIndividual, ex:CommonNoun ;
+  ex:hasTag "NN"^^xsd:string ;
+  rdfs:label "Singular common noun" .
+
+ex:NNS a owl:NamedIndividual, ex:CommonNoun ;
+  ex:hasTag "NNS"^^xsd:string ;
+  rdfs:label "Plural common noun" .
+
+ex:NNP a owl:NamedIndividual, ex:ProperNoun ;
+  ex:hasTag "NNP"^^xsd:string ;
+  rdfs:label "Singular proper noun" .
+
+ex:NNPS a owl:NamedIndividual, ex:ProperNoun ;
+  ex:hasTag "NNPS"^^xsd:string ;
+  rdfs:label "Plural proper noun" .
+
+ex:VB a owl:NamedIndividual, ex:Verb ;
+  ex:hasTag "VB"^^xsd:string ;
+  rdfs:label "Verb in base form" .
+
+ex:CD a owl:NamedIndividual, ex:Numeral ;
+  ex:hasTag "CD"^^xsd:string ;
+  rdfs:label "Number" .
