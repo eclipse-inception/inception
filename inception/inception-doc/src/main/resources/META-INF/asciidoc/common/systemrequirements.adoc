@@ -16,15 +16,7 @@
 
 = System Requirements
 
-.Requirements for users
-[cols="2*"]
-|===
-| Browser
-| Chrome or Safari (latest versions)
-|===
-
-[.small]
-You should also be able to use {product-name} with other browsers such as Firefox, Brave, etc. However, those are less regularly tested by the developers. It is recommended to always use the latest version of any browser product you may be using to ensure best compatibility.
+include::browserrequirements.adoc[]
 
 .Requirements to run the standalone version
 [cols="2*"]
@@ -35,9 +27,6 @@ You should also be able to use {product-name} with other browsers such as Firefo
 | Java Runtime Environment
 | version {min-java-version} or higher
 |===
-
-[.small]
-The examples in this guide are based on a recent Debian Linux. Most of them should apply quite directly to Debian-based distributions like e.g. Ubuntu. {product-name} will run on other distributions as well, but you may have to use different commands for managing users, installing software, etc.
 
 .Requirements run the server version
 [cols="2*"]

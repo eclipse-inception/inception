@@ -8,6 +8,7 @@
   "scripts": {
     "build": "node build.mjs",
     "test": "vitest run --reporter=junit --outputFile=\"../../../target/surefire-reports/vitest-test-report.xml\"",
+    "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,ts,svelte,css,scss,json}\"",
     "format:check": "prettier --check \"**/*.{js,ts,svelte,css,scss,json}\""
   },
@@ -27,10 +28,10 @@
     "@svgdotjs/svg.filter.js": "${svgdotjs-svg-filter-js.version}"
   },
   "optionalDependencies": {
-      "@rollup/rollup-win32-x64-msvc": "${rollup.version}",
-      "@rollup/rollup-linux-x64-gnu": "${rollup.version}",
-      "@rollup/rollup-darwin-x64": "${rollup.version}",
-      "@rollup/rollup-darwin-arm64": "${rollup.version}"
+    "@rollup/rollup-win32-x64-msvc": "${rollup.version}",
+    "@rollup/rollup-linux-x64-gnu": "${rollup.version}",
+    "@rollup/rollup-darwin-x64": "${rollup.version}",
+    "@rollup/rollup-darwin-arm64": "${rollup.version}"
   },
   "devDependencies": {
     "license-checker": "${license-checker.version}",
@@ -39,10 +40,6 @@
     "esbuild-sass-plugin": "${esbuild-sass-plugin.version}",
     "eslint": "${eslint.version}",
     "neostandard": "${neostandard.version}",
-    "eslint-config-prettier": "${eslint-config-prettier.version}",
-    "eslint-plugin-import-x": "${eslint-plugin-import-x.version}",
-    "eslint-plugin-n": "${eslint-plugin-n.version}",
-    "eslint-plugin-promise": "${eslint-plugin-promise.version}",
     "eslint-plugin-svelte": "${eslint-plugin-svelte.version}",
     "fs-extra": "${fs-extra.version}",
     "jsdom": "${jsdom.version}",
@@ -55,8 +52,6 @@
     "@sveltejs/vite-plugin-svelte": "${sveltejs-vite-plugin-svelte.version}",
     "temp-write": "${temp-write.version}",
     "typescript": "${typescript.version}",
-    "@typescript-eslint/eslint-plugin": "${typescript-eslint-eslint-plugin.version}",
-    "@typescript-eslint/parser": "${typescript-eslint-parser.version}",
     "@types/events": "${types-events.version}",
     "@testing-library/svelte": "${testing-library-svelte.version}",
     "uuid": "${uuid.version}",

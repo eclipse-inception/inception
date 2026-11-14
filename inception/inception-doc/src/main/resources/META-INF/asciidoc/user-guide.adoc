@@ -27,6 +27,11 @@ include::{include-dir}intro-introduction.adoc[leveloffset=+1]
 
 include::{include-dir}intro-installation.adoc[leveloffset=+1]
 
+[[sect_browser_requirements]]
+== Browser Requirements
+
+include::common/browserrequirements.adoc[]
+
 include::{include-dir}intro-first-login.adoc[leveloffset=+1]
 
 include::{include-dir}intro-first-annotations.adoc[leveloffset=+1]

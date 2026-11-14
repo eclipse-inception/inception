@@ -613,14 +613,6 @@
     </dependency>
     <dependency>
       <groupId>org.wicketstuff</groupId>
-      <artifactId>wicketstuff-htmlcompressor</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.mozilla</groupId>
-      <artifactId>rhino-runtime</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.wicketstuff</groupId>
       <artifactId>wicketstuff-jquery-ui-theme-uilightness</artifactId>
     </dependency>
     <dependency>
@@ -891,6 +883,12 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers-junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>de.tudarmstadt.ukp.inception.app</groupId>
+      <artifactId>inception-testing</artifactId>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -1273,9 +1271,6 @@
               <!-- Themes -->
               <usedDependency>org.wicketstuff:wicketstuff-kendo-ui-theme-bootstrap</usedDependency>
               <usedDependency>org.wicketstuff:wicketstuff-jquery-ui-theme-uilightness</usedDependency>
-              <!-- Wicket plugins -->
-              <usedDependency>org.wicketstuff:wicketstuff-htmlcompressor</usedDependency>
-              <usedDependency>org.mozilla:rhino-runtime</usedDependency>
               <!-- Spring configuration -->
               <usedDependency>org.springframework.boot:spring-boot-starter-web</usedDependency>
               <usedDependency>org.springframework.boot:spring-boot-starter-validation</usedDependency>

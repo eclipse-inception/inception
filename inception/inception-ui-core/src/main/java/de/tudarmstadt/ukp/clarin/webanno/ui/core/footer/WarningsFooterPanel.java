@@ -110,7 +110,7 @@ public class WarningsFooterPanel
 
         var userAgent = defaultString(clientInfo.getUserAgent(), "").toLowerCase();
         var isUsingUnsupportedBrowser = !(userAgent.contains("safari")
-                || userAgent.contains("chrome"));
+                || userAgent.contains("chrome") || userAgent.contains("firefox"));
 
         var showWarning = warningsProperties == null || warningsProperties.isUnsupportedBrowser();
 

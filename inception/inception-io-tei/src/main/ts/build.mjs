@@ -38,7 +38,7 @@ const cssBuild = {
   bundle: true,
   sourcemap: true,
   minify: !dev,
-  target: 'es2020',
+  target: 'es2022',
   loader: { '.ts': 'ts' },
   logLevel: 'info',
   plugins: [sassPlugin()]
@@ -50,7 +50,7 @@ const jsBuild = {
   bundle: true,
   sourcemap: true,
   minify: !dev,
-  target: 'es2020',
+  target: 'es2022',
   loader: { '.ts': 'ts' },
   logLevel: 'info'
 }

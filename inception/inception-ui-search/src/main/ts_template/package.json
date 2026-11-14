@@ -8,6 +8,7 @@
   "scripts": {
     "build": "sass scss/SearchAnnotationSidebar.scss ../../../target/js/de/tudarmstadt/ukp/inception/app/ui/search/sidebar/SearchAnnotationSidebar.css",
     "build:minified": "sass scss/SearchAnnotationSidebar.scss ../../../target/js/de/tudarmstadt/ukp/inception/app/ui/search/sidebar/SearchAnnotationSidebar.min.css --style compressed",
+    "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,ts,svelte,css,scss,json}\"",
     "format:check": "prettier --check \"**/*.{js,ts,svelte,css,scss,json}\""
   },
@@ -15,13 +16,10 @@
   "devDependencies": {
     "license-checker": "${license-checker.version}",
     "eslint": "${eslint.version}",
-    "eslint-config-prettier": "${eslint-config-prettier.version}",
-    "eslint-plugin-import-x": "${eslint-plugin-import-x.version}",
-    "eslint-plugin-n": "${eslint-plugin-n.version}",
-    "eslint-plugin-promise": "${eslint-plugin-promise.version}",
     "neostandard": "${neostandard.version}",
     "prettier": "${prettier.version}",
     "prettier-plugin-svelte": "${prettier-plugin-svelte.version}",
-    "sass": "${sass.version}"
+    "sass": "${sass.version}",
+    "typescript": "${typescript.version}"
   }
 }

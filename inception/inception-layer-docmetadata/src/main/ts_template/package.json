@@ -12,6 +12,7 @@
   "scripts": {
     "build": "node build.mjs",
     "test": "exit 0",
+    "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,ts,svelte,css,scss,json}\"",
     "format:check": "prettier --check \"**/*.{js,ts,svelte,css,scss,json}\""
   },
@@ -30,21 +31,15 @@
     "esbuild-svelte": "${esbuild-svelte.version}",
     "esbuild-sass-plugin": "${esbuild-sass-plugin.version}",
     "eslint": "${eslint.version}",
-    "eslint-config-prettier": "${eslint-config-prettier.version}",
-    "eslint-plugin-import-x": "${eslint-plugin-import-x.version}",
-    "eslint-plugin-n": "${eslint-plugin-n.version}",
-    "eslint-plugin-promise": "${eslint-plugin-promise.version}",
+    "neostandard": "${neostandard.version}",
     "eslint-plugin-svelte": "${eslint-plugin-svelte.version}",
     "fs-extra": "${fs-extra.version}",
-    "neostandard": "${neostandard.version}",
     "prettier": "${prettier.version}",
     "prettier-plugin-svelte": "${prettier-plugin-svelte.version}",
     "sass": "${sass.version}",
     "svelte": "${svelte.version}",
     "svelte-preprocess": "${svelte-preprocess.version}",
     "typescript": "${typescript.version}",
-    "@typescript-eslint/eslint-plugin": "${typescript-eslint-eslint-plugin.version}",
-    "@typescript-eslint/parser": "${typescript-eslint-parser.version}",
     "yargs": "${yargs.version}"
   }
 }
