@@ -529,7 +529,7 @@ public class SPARQLQueryBuilderBenchmarkTest
     private void importKnowledgeBase(KnowledgeBase aKnowledgeBase, String aResource)
         throws Exception
     {
-        // LOCAL profiles either point at a bundled classpath resource (e.g. wine) or at a remote
+        // LOCAL profiles either point at a bundled classpath resource or at a remote
         // file to download once and import into the local repository (e.g. the OBO ontologies).
         if (aResource.startsWith("http://") || aResource.startsWith("https://")
                 || aResource.startsWith("file:")) {
@@ -554,14 +554,6 @@ public class SPARQLQueryBuilderBenchmarkTest
 
         var configs = new ArrayList<BenchmarkConfiguration>();
 
-        // LOCAL - Wine ontology (bundled as a classpath resource). Small, but included so the
-        // benchmark always produces at least one offline data point.
-        configs.add(BenchmarkConfiguration.fromProfile("wine_ontology", profiles) //
-                .parentForChildren("http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine#Wine") //
-                .leafForAncestors(
-                        "http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine#ChateauMargaux") //
-                .labelPrefix("Chateau"));
-
         // LOCAL - Human Phenotype Ontology (downloaded as OWL and imported into a local repo).
         // A non-trivial, network-noise-free data set.
         configs.add(BenchmarkConfiguration.fromProfile("hpo", profiles) //
@@ -570,8 +562,8 @@ public class SPARQLQueryBuilderBenchmarkTest
                 .leafForAncestors("http://purl.obolibrary.org/obo/HP_0001250") // Seizure
                 .labelPrefix("Abnormal"));
 
-        // LOCAL - Gene Ontology (GO-basic, downloaded as OWL and imported into a local repo). Much
-        // larger than the wine ontology, so a good large-but-local data point.
+        // LOCAL - Gene Ontology (GO-basic, downloaded as OWL and imported into a local repo). A
+        // good large-but-local data point.
         configs.add(BenchmarkConfiguration.fromProfile("go", profiles) //
                 .parentForChildren("http://purl.obolibrary.org/obo/GO_0008150") // biological_process
                 .leafForAncestors("http://purl.obolibrary.org/obo/GO_0006915") // apoptotic process

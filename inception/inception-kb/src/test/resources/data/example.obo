@@ -1,0 +1,118 @@
+! Licensed to the Technische Universität Darmstadt under one
+! or more contributor license agreements.  See the NOTICE file
+! distributed with this work for additional information
+! regarding copyright ownership.  The Technische Universität Darmstadt
+! licenses this file to you under the Apache License, Version 2.0 (the
+! "License"); you may not use this file except in compliance
+! with the License.
+!
+! http://www.apache.org/licenses/LICENSE-2.0
+!
+! Unless required by applicable law or agreed to in writing, software
+! distributed under the License is distributed on an "AS IS" BASIS,
+! WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+! See the License for the specific language governing permissions and
+! limitations under the License.
+! A small ontology in OBO format for import tests. It contains header and term constructs that
+! the OBO-to-OWL conversion has to get through: subsets, synonym types, ontology and term property
+! values, alternative ids, comments, creation metadata, definitions, exact/narrow/broad/related
+! synonyms (including non-ASCII ones), cross references, is_a and relationship links, obsolete
+! terms with a replacement, and typedefs with inverse, transitive, symmetric and chain properties.
+! The tests check the imported terms, their hierarchy, deprecation, synonyms and the full text
+! index; for the remaining constructs, they only check that the import succeeds.
+format-version: 1.2
+data-version: test/2026-11-14
+saved-by: inception
+subsetdef: core "Core terms"
+subsetdef: extra "Additional terms"
+synonymtypedef: German "German synonym (exact)" EXACT
+synonymtypedef: Japanese "Japanese synonym (exact)" EXACT
+default-namespace: inception_test
+ontology: inctest
+property_value: dc-description "A test ontology for INCEpTION." xsd:string
+property_value: dc-source http://example.org/test/source
+
+[Term]
+id: INCTEST:0000001
+name: plant part
+namespace: inception_test
+def: "A part of a plant." [INCTEST:curator]
+comment: Every other term in this test ontology is a kind of plant part.
+subset: core
+created_by: inception
+creation_date: 2026-11-14T12:00:00Z
+
+[Term]
+id: INCTEST:0000002
+name: root
+namespace: inception_test
+alt_id: INCTEST:0000020
+def: "A plant part that usually grows below the ground." [INCTEST:curator]
+subset: core
+synonym: "Wurzel" EXACT German []
+synonym: "根" EXACT Japanese []
+synonym: "taproot" NARROW []
+is_a: INCTEST:0000001 ! plant part
+
+[Term]
+id: INCTEST:0000003
+name: leaf
+namespace: inception_test
+def: "A plant part that grows from the stem." [INCTEST:curator]
+subset: core
+synonym: "Blatt" EXACT German []
+synonym: "foliage leaf" RELATED []
+synonym: "plant organ" BROAD []
+xref: INCTEST_REF:42
+is_a: INCTEST:0000001 ! plant part
+relationship: part_of INCTEST:0000004 ! shoot system
+relationship: adjacent_to INCTEST:0000006 ! stem
+
+[Term]
+id: INCTEST:0000004
+name: shoot system
+namespace: inception_test
+def: "The part of a plant above the ground, including stem and leaves." [INCTEST:curator]
+subset: extra
+synonym: "Sprossachse (grün)" RELATED German []
+is_a: INCTEST:0000001 ! plant part
+relationship: has_part INCTEST:0000003 ! leaf
+
+[Term]
+id: INCTEST:0000006
+name: stem
+namespace: inception_test
+def: "A plant part that carries the leaves." [INCTEST:curator]
+subset: extra
+property_value: INCTEST:typical_length "30" xsd:string
+is_a: INCTEST:0000001 ! plant part
+relationship: part_of INCTEST:0000004 ! shoot system
+
+[Term]
+id: INCTEST:0000005
+name: obsolete plant organ
+comment: Use "plant part" instead.
+is_obsolete: true
+replaced_by: INCTEST:0000001
+
+[Typedef]
+id: part_of
+name: part of
+is_transitive: true
+
+[Typedef]
+id: has_part
+name: has part
+inverse_of: part_of
+is_transitive: true
+
+[Typedef]
+id: adjacent_to
+name: adjacent to
+is_symmetric: true
+
+[Typedef]
+id: located_in
+name: located in
+is_transitive: true
+holds_over_chain: part_of located_in

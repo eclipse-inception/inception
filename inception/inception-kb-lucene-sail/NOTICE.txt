@@ -1,3 +1,5 @@
+NOTE: See META-INF/DEPENDENCIES-EMBEDDED.spdx.json
+
 = RDF4J Lucene SAIL
 
 Source:  https://github.com/eclipse-rdf4j/rdf4j/tree/4.3.13

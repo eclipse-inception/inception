@@ -1,14 +1,19 @@
-== src/main/ts/brat
+NOTE: See META-INF/DEPENDENCIES-EMBEDDED.spdx.json
+
+== brat
+
+Folder: src/main/ts/src
 
 This folder includes a modified version of the brat (http://brat.nlplab.org) JavaScript client
-and rendering engine. Additional CSS files are located in 
-src/main/java/de/tudarmstadt/ukp/clarin/webanno/brat/resource
+and rendering engine. The files derived from brat carry the brat copyright notice in their header.
 
  * Copyright (C) 2010-2012 The brat contributors, all rights reserved.
 
 
-== jquery.ba-scrollbarwidth.js
+== jQuery scrollbarWidth
 
-Dual-licensed under MIT and GPL:
+File: src/main/ts/src/util/ScrollbarWidth.ts
+
+Dual-licensed under MIT and GPL, used under MIT:
 
  * Copyright (c) 2010 "Cowboy" Ben Alman

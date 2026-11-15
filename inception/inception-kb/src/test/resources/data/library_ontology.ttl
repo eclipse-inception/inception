@@ -1,0 +1,67 @@
+# Licensed to the Technische Universität Darmstadt under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The Technische Universität Darmstadt
+# licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# A small OWL ontology for root concept tests. All roots are owl:Class with language-tagged labels,
+# except ext:Collection, which is only used as a superclass, is not declared in this file and has
+# no label.
+
+@prefix lib:  <http://example.org/test/library#> .
+@prefix ext:  <http://example.org/test/external#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+lib:Agent a owl:Class ;
+  rdfs:label "Agent"@en-gb ;
+  rdfs:comment "Someone or something that can create or own a work."@en-gb .
+
+lib:Person a owl:Class ;
+  rdfs:subClassOf lib:Agent ;
+  rdfs:label "Person"@en-gb .
+
+lib:Organisation a owl:Class ;
+  rdfs:subClassOf lib:Agent ;
+  rdfs:label "Organisation"@en-gb .
+
+lib:Work a owl:Class ;
+  rdfs:label "Work"@en-gb .
+
+lib:Book a owl:Class ;
+  rdfs:subClassOf lib:Work ;
+  rdfs:label "Book"@en-gb .
+
+lib:Article a owl:Class ;
+  rdfs:subClassOf lib:Work ;
+  rdfs:label "Article"@en-gb .
+
+lib:Place a owl:Class ;
+  rdfs:label "Place"@en-gb .
+
+lib:Library a owl:Class ;
+  rdfs:subClassOf lib:Place ;
+  rdfs:label "Library"@en-gb .
+
+lib:Subject a owl:Class ;
+  rdfs:label "Subject"@en-gb .
+
+lib:ReadingList a owl:Class ;
+  rdfs:subClassOf ext:Collection ;
+  rdfs:label "Reading List"@en-gb .
+
+# Declared as rdf:Property as well, so that it is found with an rdf:Property property type mapping.
+lib:author a owl:ObjectProperty, rdf:Property ;
+  rdfs:domain lib:Work ;
+  rdfs:range lib:Agent ;
+  rdfs:label "author"@en-gb .

@@ -1,3 +1,19 @@
+# Licensed to the Technische Universität Darmstadt under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The Technische Universität Darmstadt
+# licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 @prefix stream:    <http://mrklie.com/schemas/streams#> .
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 
@@ -82,3 +98,19 @@ stream:objectoutput a rdfs:Class ;
 stream:pipedoutput a rdfs:Class ;
   rdfs:subClassOf stream:output ;
   rdfs:label "PipedOutputStream" .
+
+# A class declared only implicitly: it has a superclass, but no explicit rdf:type rdfs:Class.
+stream:checkedoutput rdfs:subClassOf stream:filteroutput ;
+  rdfs:label "CheckedOutputStream" .
+
+# Also declared only implicitly. Having a subclass makes checkedoutput a root candidate, which
+# must still be excluded because it has a superclass.
+stream:verifiedoutput rdfs:subClassOf stream:checkedoutput ;
+  rdfs:label "VerifiedOutputStream" .
+
+# Instances, which must not be treated as concepts.
+stream:systemin a stream:bufferedinput ;
+  rdfs:label "System.in" .
+
+stream:systemout a stream:print ;
+  rdfs:label "System.out" .

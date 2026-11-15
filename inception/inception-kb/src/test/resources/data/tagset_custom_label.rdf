@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE rdf:RDF [
+  <!ENTITY ex   "http://example.org/test/tagset#">
+  <!ENTITY owl  "http://www.w3.org/2002/07/owl#">
+  <!ENTITY xsd  "http://www.w3.org/2001/XMLSchema#">
+]>
+<!--
+  Licensed to the Technische Universität Darmstadt under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The Technische Universität Darmstadt
+  licenses this file to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.
+  
+  http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  The same data as tagset_custom_label.ttl, as RDF/XML with internal DOCTYPE entities that
+  abbreviate the namespace IRIs. Such files must remain importable although the RDF4J XML parser
+  rejects DOCTYPE declarations by default (see RdfImportParserConfigs).
+-->
+<rdf:RDF
+    xmlns:ex="http://example.org/test/tagset#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+
+  <owl:DatatypeProperty rdf:about="&ex;hasTag">
+    <rdfs:label>has tag</rdfs:label>
+  </owl:DatatypeProperty>
+
+  <owl:Class rdf:about="&ex;Noun"><rdfs:label>Noun</rdfs:label></owl:Class>
+  <owl:Class rdf:about="&ex;CommonNoun">
+    <rdfs:subClassOf rdf:resource="&ex;Noun"/>
+    <rdfs:label>Common noun</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:about="&ex;ProperNoun">
+    <rdfs:subClassOf rdf:resource="&ex;Noun"/>
+    <rdfs:label>Proper noun</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:about="&ex;Verb"><rdfs:label>Verb</rdfs:label></owl:Class>
+  <owl:Class rdf:about="&ex;Numeral"><rdfs:label>Numeral</rdfs:label></owl:Class>
+
+  <owl:NamedIndividual rdf:about="&ex;NN">
+    <rdf:type rdf:resource="&ex;CommonNoun"/>
+    <ex:hasTag rdf:datatype="&xsd;string">NN</ex:hasTag>
+    <rdfs:label>Singular common noun</rdfs:label>
+  </owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="&ex;NNS">
+    <rdf:type rdf:resource="&ex;CommonNoun"/>
+    <ex:hasTag rdf:datatype="&xsd;string">NNS</ex:hasTag>
+    <rdfs:label>Plural common noun</rdfs:label>
+  </owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="&ex;NNP">
+    <rdf:type rdf:resource="&ex;ProperNoun"/>
+    <ex:hasTag rdf:datatype="&xsd;string">NNP</ex:hasTag>
+    <rdfs:label>Singular proper noun</rdfs:label>
+  </owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="&ex;NNPS">
+    <rdf:type rdf:resource="&ex;ProperNoun"/>
+    <ex:hasTag rdf:datatype="&xsd;string">NNPS</ex:hasTag>
+    <rdfs:label>Plural proper noun</rdfs:label>
+  </owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="&ex;VB">
+    <rdf:type rdf:resource="&ex;Verb"/>
+    <ex:hasTag rdf:datatype="&xsd;string">VB</ex:hasTag>
+    <rdfs:label>Verb in base form</rdfs:label>
+  </owl:NamedIndividual>
+  <owl:NamedIndividual rdf:about="&ex;CD">
+    <rdf:type rdf:resource="&ex;Numeral"/>
+    <ex:hasTag rdf:datatype="&xsd;string">CD</ex:hasTag>
+    <rdfs:label>Number</rdfs:label>
+  </owl:NamedIndividual>
+</rdf:RDF>

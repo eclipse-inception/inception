@@ -63,6 +63,8 @@ import de.tudarmstadt.ukp.inception.kb.graph.KBHandle;
 import de.tudarmstadt.ukp.inception.kb.graph.KBProperty;
 import de.tudarmstadt.ukp.inception.kb.model.KnowledgeBase;
 import de.tudarmstadt.ukp.inception.kb.util.TestFixtures;
+import de.tudarmstadt.ukp.inception.kb.reification.Reification;
+import de.tudarmstadt.ukp.inception.kb.yaml.KnowledgeBaseMapping;
 import de.tudarmstadt.ukp.inception.kb.yaml.KnowledgeBaseProfile;
 
 @Tag("slow")
@@ -217,12 +219,9 @@ public class KnowledgeBaseServiceRemoteTest
 
         var kbList = new ArrayList<TestConfiguration>();
 
-        // Wine ontology: LOCAL KB - fromProfile strips the classpath: prefix from the access URL
-        // and uses it as a classpath resource path for import. Root concepts must be specified
-        // explicitly since the profile does not define any.
-        kbList.add(TestConfiguration.fromProfile(PROFILES.get("wine_ontology"),
-                "http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine#ChateauMargaux", maxResults,
-                Set.of("http://www.w3.org/TR/2003/PR-owl-guide-20031209/food#Grape")));
+        // A local knowledge base, so that the local code path is covered and that at least one
+        // configuration runs without network access
+        kbList.add(localLibraryOntology(maxResults));
 
         kbList.add(TestConfiguration.fromProfile(PROFILES.get("wikidata"),
                 "http://www.wikidata.org/entity/Q5", maxResults));
@@ -256,6 +255,27 @@ public class KnowledgeBaseServiceRemoteTest
     }
 
     // Helper
+
+    private static TestConfiguration localLibraryOntology(int aMaxResults)
+    {
+        var kb = new KnowledgeBase();
+        kb.setName("Library ontology (local)");
+        kb.setType(LOCAL);
+        kb.setReification(Reification.NONE);
+        kb.setFullTextSearchIri(IriConstants.FTS_RDF4J_LUCENE.stringValue());
+        kb.applyMapping(new KnowledgeBaseMapping(OWL.CLASS.stringValue(),
+                RDFS.SUBCLASSOF.stringValue(), RDF.TYPE.stringValue(),
+                RDFS.SUBPROPERTYOF.stringValue(), RDFS.COMMENT.stringValue(),
+                RDFS.LABEL.stringValue(), RDF.PROPERTY.stringValue(), RDFS.LABEL.stringValue(),
+                RDFS.COMMENT.stringValue(), OWL.DEPRECATED.stringValue()));
+        kb.setMaxResults(aMaxResults);
+
+        return new TestConfiguration("data/library_ontology.ttl", kb,
+                "http://example.org/test/library#Book",
+                Set.of("http://example.org/test/library#Agent",
+                        "http://example.org/test/library#Work"),
+                Map.of());
+    }
 
     private void importKnowledgeBase(KnowledgeBase aKnowledgeBase, String resourceName)
         throws Exception
