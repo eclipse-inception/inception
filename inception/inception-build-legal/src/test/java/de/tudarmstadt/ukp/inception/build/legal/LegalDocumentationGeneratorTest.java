@@ -17,6 +17,7 @@
  */
 package de.tudarmstadt.ukp.inception.build.legal;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.zip.ZipEntry.STORED;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,11 +49,9 @@ class LegalDocumentationGeneratorTest
     private static final String OWN_GROUP_ID = "org.example.app";
 
     private static final List<Conclusion> SPRING_BOOT_CONCLUSIONS = List.of( //
-            new Conclusion("pkg:maven/org.springframework.boot/spring-boot-loader", "Apache-2.0",
-                    null),
+            new Conclusion("pkg:maven/org.springframework.boot/spring-boot-loader", "Apache-2.0"),
             new Conclusion("pkg:maven/org.springframework.boot/spring-boot-jarmode-tools",
-                    "Apache-2.0", null),
-            new Conclusion("pkg:maven/org.example/no-metadata", "BSD-3-Clause", "no-metadata"));
+                    "Apache-2.0"));
 
     @TempDir
     Path tempDir;
@@ -112,7 +111,6 @@ class LegalDocumentationGeneratorTest
                         </license></licenses></project>
                         """)));
         artifactEntries.put("WEB-INF/lib/spring-boot-jarmode-tools-9.9.9.jar", jar(Map.of()));
-        artifactEntries.put("WEB-INF/lib/no-metadata-2.1.jar", jar(Map.of()));
         artifactEntries.put("org/springframework/boot/loader/Launcher.class", new byte[] { 1 });
     }
 
@@ -127,8 +125,6 @@ class LegalDocumentationGeneratorTest
                         + "pkg:maven/org.example/library-a@1.0",
                 "maven/mavencentral/org.example/library-b/2.0, Apache-2.0 OR EPL-2.0, pom, "
                         + "pkg:maven/org.example/library-b@2.0",
-                "maven/mavencentral/org.example/no-metadata/2.1, BSD-3-Clause, concluded, "
-                        + "pkg:maven/org.example/no-metadata@2.1",
                 "maven/mavencentral/org.example/provided-x/1.5, MIT, pom, "
                         + "pkg:maven/org.example/provided-x@1.5",
                 "maven/mavencentral/org.springframework.boot/spring-boot-jarmode-tools/9.9.9, "
@@ -153,6 +149,61 @@ class LegalDocumentationGeneratorTest
                 .contains("* Files: org/example/Icon.svg") //
                 .doesNotContain("${") //
                 .doesNotContain("## Cryptography");
+    }
+
+    @Test
+    void thatEachLibraryNoticeIsListedOnceWithItsLibraries() throws Exception
+    {
+        artifactEntries.put("WEB-INF/lib/library-a-1.0.jar", jar(Map.of( //
+                "META-INF/NOTICE", "Shared notice\n  of a project\n")));
+        artifactEntries.put("WEB-INF/lib/library-b-2.0-classifier.jar", jar(Map.of( //
+                "META-INF/notice.txt", "Shared notice of a project")));
+        artifactEntries.put("WEB-INF/lib-provided/provided-x-1.5.jar", jar(Map.of( //
+                "META-INF/maven/org.example/provided-x/pom.properties", """
+                        groupId=org.example
+                        artifactId=provided-x
+                        version=1.5
+                        """, //
+                "META-INF/maven/org.example/provided-x/pom.xml", """
+                        <project><licenses><license><name>MIT</name></license></licenses></project>
+                        """, //
+                "META-INF/NOTICE.md", "# Provided X\n\nUse ```code```.")));
+        artifactEntries.put("WEB-INF/lib/app-other-1.0.jar", jar(Map.of( //
+                "META-INF/NOTICE.txt", "Own notice")));
+        listOwnModule("app-other");
+
+        generate(SPRING_BOOT_CONCLUSIONS);
+
+        var notice = Files.readString(output.resolve("NOTICE.md"));
+        assertThat(notice) //
+                .contains("""
+                        * org.example:library-a:1.0
+                        * org.example:library-b:2.0
+
+                        ```text
+                        Shared notice
+                          of a project
+                        ```""") //
+                .contains("""
+                        * org.example:provided-x:1.5
+
+                        ````text
+                        # Provided X
+
+                        Use ```code```.
+                        ````""") //
+                .doesNotContain("Own notice") //
+                .doesNotContain("${");
+        assertThat(notice.split("Shared notice", -1)).hasSize(2);
+    }
+
+    @Test
+    void thatNoticesThatAreNotUtf8AreReadAsLatin1()
+    {
+        assertThat(LibraryNotices.decode("Universität".getBytes(ISO_8859_1))) //
+                .isEqualTo("Universität");
+        assertThat(LibraryNotices.decode("Universität".getBytes(UTF_8))) //
+                .isEqualTo("Universität");
     }
 
     @Test
@@ -198,7 +249,7 @@ class LegalDocumentationGeneratorTest
                 .hasMessageContaining("Some Custom License");
 
         var conclusions = new ArrayList<>(SPRING_BOOT_CONCLUSIONS);
-        conclusions.add(new Conclusion("pkg:maven/org.example/library-a", "BSD-3-Clause", null));
+        conclusions.add(new Conclusion("pkg:maven/org.example/library-a", "BSD-3-Clause"));
         generate(conclusions);
 
         assertThat(Files.readAllLines(output.resolve("DEPENDENCIES"), UTF_8))
@@ -210,7 +261,7 @@ class LegalDocumentationGeneratorTest
     void thatUnusedConclusionsAreReported() throws Exception
     {
         var conclusions = new ArrayList<>(SPRING_BOOT_CONCLUSIONS);
-        conclusions.add(new Conclusion("pkg:maven/org.example/gone", "MIT", null));
+        conclusions.add(new Conclusion("pkg:maven/org.example/gone", "MIT"));
 
         assertThatThrownBy(() -> generate(conclusions)) //
                 .hasMessageContaining("pkg:maven/org.example/gone") //

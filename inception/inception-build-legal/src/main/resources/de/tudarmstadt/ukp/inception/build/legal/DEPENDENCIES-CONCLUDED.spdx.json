@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/spdx/spdx-spec/v2.2.2/schemas/spdx-schema.json",
-  "comment": "Licenses concluded for components whose own metadata does not state a usable license. Each package identifies a component by a purl without version. For jars without any metadata, packageFileName gives the stem of the jar file name (the part before the version). Check an entry again when the component is upgraded; the generator fails on entries that no component uses.",
+  "comment": "Licenses concluded for components whose own metadata does not state a usable license. Each package identifies a component by a purl without version. Check an entry again when the component is upgraded; the generator fails on entries that no component uses.",
   "packages": [
     {
       "name": "xz",

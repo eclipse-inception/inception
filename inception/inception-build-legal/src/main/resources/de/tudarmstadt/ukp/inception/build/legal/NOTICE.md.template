@@ -29,7 +29,8 @@ This project includes third-party content.
 ### Libraries
 
 The libraries included in the distribution are listed with their licenses in the file
-DEPENDENCIES.
+DEPENDENCIES. The notices they carry are reproduced in the section "Notices of the libraries"
+below.
 
 ### Embedded content
 
@@ -38,3 +39,10 @@ The following third-party content is embedded in the project's own code.
 ${embeddedContent}
 
 ${cryptography}
+
+## Notices of the libraries
+
+The libraries included in the distribution carry the following notices. Each notice is reproduced
+once, preceded by the libraries that carry it.
+
+${libraryNotices}

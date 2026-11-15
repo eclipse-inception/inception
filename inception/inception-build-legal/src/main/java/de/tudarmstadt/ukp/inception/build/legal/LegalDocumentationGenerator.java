@@ -35,6 +35,7 @@ import static java.nio.file.Files.write;
 import static java.nio.file.Files.writeString;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Comparator.comparing;
+import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.regex.Pattern.compile;
 
 import java.io.ByteArrayInputStream;
@@ -97,6 +98,7 @@ public class LegalDocumentationGenerator
     private static final String DEPENDENCIES_FILE = "DEPENDENCIES";
     private static final String PROP_CRYPTOGRAPHY = "${cryptography}";
     private static final String PROP_EMBEDDED_CONTENT = "${embeddedContent}";
+    private static final String PROP_LIBRARY_NOTICES = "${libraryNotices}";
 
     /** Resources in the package of this class. */
     static final String CONCLUSIONS_RESOURCE = "DEPENDENCIES-CONCLUDED.spdx.json";
@@ -125,6 +127,9 @@ public class LegalDocumentationGenerator
     private static final Pattern POM_PROPERTIES = compile(
             "META-INF/maven/[^/]+/[^/]+/pom\\.properties");
     private static final Pattern POM_XML = compile("META-INF/maven/[^/]+/[^/]+/pom\\.xml");
+
+    /** NOTICE, NOTICE.txt, NOTICE.md, notice.txt, ... */
+    private static final Pattern NOTICE = compile("META-INF/NOTICE[^/]*", CASE_INSENSITIVE);
 
     /**
      * SPDX custom license reference, for licenses without an SPDX identifier.
@@ -220,7 +225,8 @@ public class LegalDocumentationGenerator
     {
         var content = scanArtifact(artifact);
 
-        var maven = collectMavenComponents(content);
+        var notices = new LibraryNotices();
+        var maven = collectMavenComponents(content, notices);
         var npm = collectNpmComponents(content.entries());
         var embedded = collectEmbeddedContent(content.entries());
 
@@ -240,14 +246,16 @@ public class LegalDocumentationGenerator
         createDirectories(output);
         copy(license, output.resolve(LICENSE_FILE), REPLACE_EXISTING);
         writeDependencies(maven, npm);
-        writeNotice(maven, embedded);
+        writeNotice(maven, embedded, notices);
 
         if (patch) {
             patch(artifact, output, List.of(LICENSE_FILE, NOTICE_MD, DEPENDENCIES_FILE));
         }
     }
 
-    private List<Component> collectMavenComponents(ArtifactContent aContent) throws IOException
+    private List<Component> collectMavenComponents(ArtifactContent aContent,
+            LibraryNotices aNotices)
+        throws IOException
     {
         var listed = new HashMap<String, MavenDependency>();
         try (var is = newInputStream(dependencies)) {
@@ -265,14 +273,17 @@ public class LegalDocumentationGenerator
             var coordinates = identify(entry, listed, aContent.springBootVersion());
             if (coordinates.isEmpty()) {
                 errors.add("Library in the artifact is neither listed in " + dependencies
-                        + " nor carries a POM, and no concluded license names its file: "
-                        + entry.path());
+                        + " nor carries a POM: " + entry.path());
                 continue;
             }
 
             var c = coordinates.get();
             if (ownGroupId.equals(c.groupId())) {
                 continue;
+            }
+
+            for (var notice : entry.notices()) {
+                aNotices.add(c.groupId() + ":" + c.artifactId() + ":" + c.version(), notice);
             }
 
             var key = "pkg:maven/" + c.groupId() + "/" + c.artifactId();
@@ -299,8 +310,7 @@ public class LegalDocumentationGenerator
     /**
      * Determines the Maven coordinates and declared licenses of a library: from the application's
      * resolved dependencies, otherwise from the POM embedded in the jar, otherwise from the Spring
-     * Boot version for what the repackaging adds, otherwise from a concluded license naming the
-     * file.
+     * Boot version for what the repackaging adds.
      */
     private Optional<Coordinates> identify(ScannedEntry aEntry,
             Map<String, MavenDependency> aListed, String aSpringBootVersion)
@@ -326,14 +336,6 @@ public class LegalDocumentationGenerator
                     return Optional.of(new Coordinates(SPRING_BOOT_GROUP_ID, artifactId,
                             aSpringBootVersion, List.of()));
                 }
-            }
-        }
-
-        for (var conclusion : conclusions.values()) {
-            if (conclusion.fileStem() != null && base.startsWith(conclusion.fileStem() + "-")) {
-                var version = base.substring(conclusion.fileStem().length() + 1);
-                return Optional.of(new Coordinates(conclusion.groupId(), conclusion.artifactId(),
-                        version, List.of()));
             }
         }
 
@@ -491,7 +493,7 @@ public class LegalDocumentationGenerator
 
             if (classesNpm != null || classesEmbedded != null) {
                 entries.add(new ScannedEntry(aArtifact + "!classes", false, null, classesNpm,
-                        classesEmbedded));
+                        classesEmbedded, List.of()));
             }
 
             return new ArtifactContent(springBootVersion, loader, entries);
@@ -505,6 +507,7 @@ public class LegalDocumentationGenerator
             byte[] embeddedDependencies = null;
             var pomProperties = new LinkedHashMap<String, Properties>();
             var pomXmls = new HashMap<String, byte[]>();
+            var notices = new ArrayList<String>();
             for (var entry = jar.getNextJarEntry(); entry != null; entry = jar.getNextJarEntry()) {
                 var name = entry.getName();
                 if (NPM_DEPENDENCIES.equals(name)) {
@@ -521,10 +524,14 @@ public class LegalDocumentationGenerator
                 else if (POM_XML.matcher(name).matches()) {
                     pomXmls.put(name.substring(0, name.lastIndexOf('/')), jar.readAllBytes());
                 }
+                else if (NOTICE.matcher(name).matches()) {
+                    notices.add(LibraryNotices.decode(jar.readAllBytes()));
+                }
             }
 
             var pom = embeddedPom(aPath, pomProperties, pomXmls);
-            return new ScannedEntry(aPath, true, pom, npmDependencies, embeddedDependencies);
+            return new ScannedEntry(aPath, true, pom, npmDependencies, embeddedDependencies,
+                    notices);
         }
     }
 
@@ -670,7 +677,9 @@ public class LegalDocumentationGenerator
         write(output.resolve(DEPENDENCIES_FILE), lines, UTF_8);
     }
 
-    private void writeNotice(List<Component> aMaven, List<SpdxPackage> aEmbedded) throws IOException
+    private void writeNotice(List<Component> aMaven, List<SpdxPackage> aEmbedded,
+            LibraryNotices aNotices)
+        throws IOException
     {
         var embedded = new StringBuilder();
         for (var pkg : aEmbedded) {
@@ -704,17 +713,23 @@ public class LegalDocumentationGenerator
                         ? CRYPTOGRAPHY_STATEMENT
                         : "";
 
+        var libraryNotices = aNotices.isEmpty() ? "None of the libraries carries a notice."
+                : aNotices.toMarkdown();
+
+        // The library notices go in last, so that no placeholder is replaced inside their texts.
+        // Without cryptography, its placeholder goes with the blank lines after it.
         var notice = readResource(NOTICE_TEMPLATE_RESOURCE) //
                 .replace(PROP_EMBEDDED_CONTENT, embedded.toString().strip()) //
-                .replace(PROP_CRYPTOGRAPHY, cryptography.strip());
+                .replace(PROP_CRYPTOGRAPHY + "\n\n",
+                        cryptography.isEmpty() ? "" : cryptography.strip() + "\n\n") //
+                .replace(PROP_LIBRARY_NOTICES, libraryNotices);
         writeString(output.resolve(NOTICE_MD), notice.strip() + "\n", UTF_8);
     }
 
     /**
      * Loads the licenses we concluded for components whose own metadata does not state a usable
      * license. The file is an SPDX package list: each package identifies the component by a purl
-     * without version, gives the concluded license with the evidence in its comment, and may name
-     * the stem of the jar file in {@code packageFileName} for jars that carry no metadata at all.
+     * without version and gives the concluded license with the evidence in its comment.
      */
     static List<Conclusion> loadConclusions() throws IOException
     {
@@ -747,7 +762,7 @@ public class LegalDocumentationGenerator
                         + "] is not a known SPDX license expression: " + license);
             }
 
-            conclusions.add(new Conclusion(purl, license, pkg.getPackageFileName()));
+            conclusions.add(new Conclusion(purl, license));
         }
         return conclusions;
     }
@@ -775,26 +790,9 @@ public class LegalDocumentationGenerator
     }
 
     /**
-     * A license we concluded for a component. The purl has no version. The file stem, if given,
-     * identifies jars that carry no metadata, e.g. {@code hamcrest} for {@code hamcrest-3.0.jar}.
+     * A license we concluded for a component. The purl has no version.
      */
-    record Conclusion(String purl, String license, String fileStem) {
-        String groupId()
-        {
-            return purlPart(0);
-        }
-
-        String artifactId()
-        {
-            return purlPart(1);
-        }
-
-        private String purlPart(int aIndex)
-        {
-            var parts = purl.substring("pkg:maven/".length()).split("/");
-            return parts[aIndex];
-        }
-    }
+    record Conclusion(String purl, String license) {}
 
     record Coordinates(String groupId, String artifactId, String version, List<String> licenses) {}
 
@@ -806,7 +804,7 @@ public class LegalDocumentationGenerator
      * What was read from a library in the artifact, or from the application's own classes.
      */
     record ScannedEntry(String path, boolean library, Coordinates pom, byte[] npmDependencies,
-            byte[] embeddedDependencies)
+            byte[] embeddedDependencies, List<String> notices)
     {
         String fileName()
         {
