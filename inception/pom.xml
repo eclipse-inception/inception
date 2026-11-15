@@ -156,6 +156,7 @@
   <modules>
     <!-- Build infrastructure modules -->
     <module>inception-build</module>
+    <module>inception-build-legal</module>
     <module>inception-boot-loader</module>
     <!-- Core -->
     <module>inception-support-bootstrap</module>

@@ -17,6 +17,7 @@
  */
 package de.tudarmstadt.ukp.inception.support.about;
 
+import static de.tudarmstadt.ukp.inception.support.json.JSONUtil.fromJsonStream;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.list;
 import static org.apache.commons.lang3.Strings.CS;
@@ -36,8 +37,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.tudarmstadt.ukp.inception.support.json.JSONUtil;
 
 public class ApplicationInformation
 {
@@ -177,10 +176,11 @@ public class ApplicationInformation
         return Optional.empty();
     }
 
-    static EmbeddedSpdxDependencies loadEmbeddedSpdxDependencies(URL aDeps) throws IOException
+    public static EmbeddedSpdxDependencies loadEmbeddedSpdxDependencies(URL aDeps)
+        throws IOException
     {
-        try (InputStream is = aDeps.openStream()) {
-            return JSONUtil.fromJsonStream(EmbeddedSpdxDependencies.class, is);
+        try (var is = aDeps.openStream()) {
+            return loadEmbeddedSpdxDependencies(is);
         }
         catch (Exception e) {
             LOG.error("Unable to read [{}]", aDeps, e);
@@ -188,22 +188,38 @@ public class ApplicationInformation
         }
     }
 
-    static NpmDependencies loadNpmDependencies(URL npmDeps) throws IOException
+    public static EmbeddedSpdxDependencies loadEmbeddedSpdxDependencies(InputStream aIs)
+        throws IOException
     {
-        try (InputStream is = npmDeps.openStream()) {
-            var deps = JSONUtil.fromJsonStream(NpmDependencies.class, is);
-            for (var entry : deps.entrySet()) {
-                entry.getValue().setName(entry.getKey());
-            }
-            return deps;
+        return fromJsonStream(EmbeddedSpdxDependencies.class, aIs);
+    }
+
+    public static NpmDependencies loadNpmDependencies(URL npmDeps) throws IOException
+    {
+        try (var is = npmDeps.openStream()) {
+            return loadNpmDependencies(is);
         }
     }
 
-    static MavenDependencies loadMavenDependencies(URL mavenDeps) throws IOException
+    public static NpmDependencies loadNpmDependencies(InputStream aIs) throws IOException
     {
-        try (InputStream is = mavenDeps.openStream()) {
-            return JSONUtil.fromJsonStream(MavenDependencies.class, is);
+        var deps = fromJsonStream(NpmDependencies.class, aIs);
+        for (var entry : deps.entrySet()) {
+            entry.getValue().setName(entry.getKey());
         }
+        return deps;
+    }
+
+    public static MavenDependencies loadMavenDependencies(URL mavenDeps) throws IOException
+    {
+        try (var is = mavenDeps.openStream()) {
+            return loadMavenDependencies(is);
+        }
+    }
+
+    public static MavenDependencies loadMavenDependencies(InputStream aIs) throws IOException
+    {
+        return fromJsonStream(MavenDependencies.class, aIs);
     }
 
     public static String loadDependencies()

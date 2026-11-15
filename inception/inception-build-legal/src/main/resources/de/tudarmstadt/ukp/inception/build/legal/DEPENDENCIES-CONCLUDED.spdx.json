@@ -1,0 +1,123 @@
+{
+  "$schema": "https://raw.githubusercontent.com/spdx/spdx-spec/v2.2.2/schemas/spdx-schema.json",
+  "comment": "Licenses concluded for components whose own metadata does not state a usable license. Each package identifies a component by a purl without version. For jars without any metadata, packageFileName gives the stem of the jar file name (the part before the version). Check an entry again when the component is upgraded; the generator fails on entries that no component uses.",
+  "packages": [
+    {
+      "name": "xz",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/org.tukaani/xz"
+        }
+      ],
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "LicenseRef-Public-Domain",
+      "licenseComments": "The POM of version 1.9 declares \"Public Domain\", which has no SPDX identifier. Versions from 1.10 on are 0BSD."
+    },
+    {
+      "name": "derive4j-annotation",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/org.derive4j/derive4j-annotation"
+        }
+      ],
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "LGPL-3.0-only",
+      "licenseComments": "The POM names \"The GNU Lesser General Public License\" without a version and links to https://github.com/derive4j/derive4j/blob/master/annotation/LICENSE.txt, which is the LGPL v3 text without an \"or later\" grant."
+    },
+    {
+      "name": "algebra",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.hubspot/algebra"
+        }
+      ],
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "The POM declares no license. The source repository https://github.com/HubSpot/algebra is Apache-2.0."
+    },
+    {
+      "name": "hubspot-style",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.hubspot.immutables/hubspot-style"
+        }
+      ],
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "The POM declares no license. The source repository https://github.com/HubSpot/immutables is Apache-2.0."
+    },
+    {
+      "name": "immutable-collection-encodings",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.hubspot.immutables/immutable-collection-encodings"
+        }
+      ],
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "The POM declares no license. The source repository https://github.com/HubSpot/immutables is Apache-2.0."
+    },
+    {
+      "name": "immutables-exceptions",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.hubspot.immutables/immutables-exceptions"
+        }
+      ],
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "The POM declares no license. The source repository https://github.com/HubSpot/immutables is Apache-2.0."
+    },
+    {
+      "name": "RosettaAnnotations",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.hubspot.rosetta/RosettaAnnotations"
+        }
+      ],
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "The POM declares no license. The source repository https://github.com/HubSpot/Rosetta is Apache-2.0."
+    },
+    {
+      "name": "spring-boot-loader",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/org.springframework.boot/spring-boot-loader"
+        }
+      ],
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "The Spring Boot repackaging copies the loader classes into the root of the executable archive, so neither a jar nor a POM of it ships. Spring Boot is Apache-2.0 (https://github.com/spring-projects/spring-boot)."
+    },
+    {
+      "name": "spring-boot-jarmode-tools",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/org.springframework.boot/spring-boot-jarmode-tools"
+        }
+      ],
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "Added by the Spring Boot repackaging. The jar carries no POM; its META-INF/LICENSE.txt is the Apache License 2.0."
+    }
+  ]
+}

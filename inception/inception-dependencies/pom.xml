@@ -795,6 +795,30 @@
         <version>${servlet-api.version}</version>
       </dependency>
 
+      <!--
+        The wicket-parent POM imported below is Wicket's parent, not a BOM, and it manages the
+        provided scope for these artifacts, which leaks into our resolution: jakarta.annotation-api
+        and jakarta.validation-api, needed at runtime, ended up provided, and hamcrest, a test
+        library pulled in by awaitility, shipped in the distribution. Managing them here without
+        a scope takes precedence over the import. Drop these entries once Wicket publishes a
+        proper wicket-bom that does not manage scopes, and import that instead of wicket-parent.
+      -->
+      <dependency>
+        <groupId>jakarta.annotation</groupId>
+        <artifactId>jakarta.annotation-api</artifactId>
+        <version>${jakarta.annotation-api.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.validation</groupId>
+        <artifactId>jakarta.validation-api</artifactId>
+        <version>${jakarta.validation-api.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest</artifactId>
+        <version>${hamcrest.version}</version>
+      </dependency>
+
       <dependency>
         <groupId>com.fasterxml.woodstox</groupId>
         <artifactId>woodstox-core</artifactId>

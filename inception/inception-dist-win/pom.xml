@@ -75,20 +75,6 @@
                   <overWriteIfNewer>true</overWriteIfNewer>
                 </configuration>
               </execution>
-              <execution>
-                <id>stage-provided-dependencies</id>
-                <phase>prepare-package</phase>
-                <goals>
-                  <goal>copy-dependencies</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${project.build.directory}/jpackage-input</outputDirectory>
-                  <includeScope>provided</includeScope>
-                  <overWriteReleases>false</overWriteReleases>
-                  <overWriteSnapshots>true</overWriteSnapshots>
-                  <overWriteIfNewer>true</overWriteIfNewer>
-                </configuration>
-              </execution>
             </executions>
           </plugin>
 

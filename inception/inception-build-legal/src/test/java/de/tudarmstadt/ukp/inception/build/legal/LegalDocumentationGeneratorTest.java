@@ -1,0 +1,330 @@
+/*
+ * Licensed to the Technische Universität Darmstadt under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The Technische Universität Darmstadt
+ * licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package de.tudarmstadt.ukp.inception.build.legal;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.zip.ZipEntry.STORED;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.io.ByteArrayOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.jar.Attributes;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
+import java.util.zip.CRC32;
+import java.util.zip.ZipFile;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import de.tudarmstadt.ukp.inception.build.legal.LegalDocumentationGenerator.Conclusion;
+import picocli.CommandLine;
+
+class LegalDocumentationGeneratorTest
+{
+    private static final String OWN_GROUP_ID = "org.example.app";
+
+    private static final List<Conclusion> SPRING_BOOT_CONCLUSIONS = List.of( //
+            new Conclusion("pkg:maven/org.springframework.boot/spring-boot-loader", "Apache-2.0",
+                    null),
+            new Conclusion("pkg:maven/org.springframework.boot/spring-boot-jarmode-tools",
+                    "Apache-2.0", null),
+            new Conclusion("pkg:maven/org.example/no-metadata", "BSD-3-Clause", "no-metadata"));
+
+    @TempDir
+    Path tempDir;
+
+    private Path dependencies;
+    private Path license;
+    private Path output;
+    private Path artifact;
+    private Map<String, byte[]> artifactEntries;
+
+    @BeforeEach
+    void setup() throws Exception
+    {
+        dependencies = tempDir.resolve("DEPENDENCIES.json");
+        Files.writeString(dependencies,
+                """
+                        { "dependencies": [
+                          { "name": "App module", "groupId": "org.example.app",
+                            "artifactId": "app-module", "version": "1.0", "licenses": [] },
+                          { "name": "Library A", "groupId": "org.example", "artifactId": "library-a",
+                            "version": "1.0",
+                            "licenses": [ { "name": "The MIT License", "url": "https://opensource.org/licenses/MIT" } ] },
+                          { "name": "Library B", "groupId": "org.example", "artifactId": "library-b",
+                            "version": "2.0",
+                            "licenses": [ { "name": "Apache-2.0" }, { "name": "EPL 2.0" } ] }
+                        ] }
+                        """);
+        license = tempDir.resolve("LICENSE.txt");
+        Files.writeString(license, "Project license");
+        output = tempDir.resolve("legal");
+        artifact = tempDir.resolve("app-standalone.jar");
+
+        artifactEntries = new LinkedHashMap<>();
+        artifactEntries.put("WEB-INF/lib/library-a-1.0.jar", jar(Map.of()));
+        artifactEntries.put("WEB-INF/lib/library-b-2.0-classifier.jar", jar(Map.of()));
+        artifactEntries.put("WEB-INF/lib/app-module-1.0.jar", jar(Map.of( //
+                "META-INF/NPM-DEPENDENCIES.json", """
+                        { "lib-c@3.0.0": { "licenses": "(MIT OR Apache-2.0)" },
+                          "@example/lib-d@1.2.3": { "licenses": "ISC" },
+                          "@app/own-package@1.0.0": { "licenses": "Apache-2.0" } }
+                        """, //
+                "META-INF/DEPENDENCIES-EMBEDDED.spdx.json", """
+                        { "packages": [ { "name": "Icon set", "versionInfo": "6.0",
+                          "originator": "Example Inc.", "homepage": "https://example.org",
+                          "licenseDeclared": "CC-BY-4.0",
+                          "hasFiles": [ "org/example/Icon.svg" ] } ] }
+                        """)));
+        artifactEntries.put("WEB-INF/lib-provided/provided-x-1.5.jar", jar(Map.of( //
+                "META-INF/maven/org.example/provided-x/pom.properties", """
+                        groupId=org.example
+                        artifactId=provided-x
+                        version=1.5
+                        """, //
+                "META-INF/maven/org.example/provided-x/pom.xml", """
+                        <project><licenses><license>
+                          <name>The MIT License</name><url>https://opensource.org/licenses/MIT</url>
+                        </license></licenses></project>
+                        """)));
+        artifactEntries.put("WEB-INF/lib/spring-boot-jarmode-tools-9.9.9.jar", jar(Map.of()));
+        artifactEntries.put("WEB-INF/lib/no-metadata-2.1.jar", jar(Map.of()));
+        artifactEntries.put("org/springframework/boot/loader/Launcher.class", new byte[] { 1 });
+    }
+
+    @Test
+    void thatShippedThirdPartyComponentsAreListed() throws Exception
+    {
+        generate(SPRING_BOOT_CONCLUSIONS);
+
+        assertThat(output.resolve("LICENSE")).hasContent("Project license");
+        assertThat(Files.readAllLines(output.resolve("DEPENDENCIES"), UTF_8)).containsExactly( //
+                "maven/mavencentral/org.example/library-a/1.0, MIT, pom, "
+                        + "pkg:maven/org.example/library-a@1.0",
+                "maven/mavencentral/org.example/library-b/2.0, Apache-2.0 OR EPL-2.0, pom, "
+                        + "pkg:maven/org.example/library-b@2.0",
+                "maven/mavencentral/org.example/no-metadata/2.1, BSD-3-Clause, concluded, "
+                        + "pkg:maven/org.example/no-metadata@2.1",
+                "maven/mavencentral/org.example/provided-x/1.5, MIT, pom, "
+                        + "pkg:maven/org.example/provided-x@1.5",
+                "maven/mavencentral/org.springframework.boot/spring-boot-jarmode-tools/9.9.9, "
+                        + "Apache-2.0, concluded, "
+                        + "pkg:maven/org.springframework.boot/spring-boot-jarmode-tools@9.9.9",
+                "maven/mavencentral/org.springframework.boot/spring-boot-loader/9.9.9, "
+                        + "Apache-2.0, concluded, "
+                        + "pkg:maven/org.springframework.boot/spring-boot-loader@9.9.9",
+                "npm/npmjs/-/lib-c/3.0.0, MIT OR Apache-2.0, npm, pkg:npm/lib-c@3.0.0",
+                "npm/npmjs/@example/lib-d/1.2.3, ISC, npm, pkg:npm/%40example/lib-d@1.2.3");
+    }
+
+    @Test
+    void thatEmbeddedContentGoesIntoTheNotice() throws Exception
+    {
+        generate(SPRING_BOOT_CONCLUSIONS);
+
+        assertThat(output.resolve("NOTICE.md")) //
+                .content() //
+                .contains("#### Icon set 6.0") //
+                .contains("* License: CC-BY-4.0") //
+                .contains("* Files: org/example/Icon.svg") //
+                .doesNotContain("${") //
+                .doesNotContain("## Cryptography");
+    }
+
+    @Test
+    void thatTheFilesArePatchedIntoTheArtifact() throws Exception
+    {
+        generate(SPRING_BOOT_CONCLUSIONS, "--patch");
+
+        try (var zip = new ZipFile(artifact.toFile())) {
+            var manifestTime = zip.getEntry("META-INF/MANIFEST.MF").getTime();
+            for (var file : List.of("LICENSE", "NOTICE.md", "DEPENDENCIES")) {
+                var entry = zip.getEntry("META-INF/" + file);
+                assertThat(entry).as(file).isNotNull();
+                assertThat(entry.getTime()).as(file).isEqualTo(manifestTime);
+            }
+            // The Spring Boot loader requires nested jars to stay stored uncompressed
+            assertThat(zip.getEntry("WEB-INF/lib/library-a-1.0.jar").getMethod()) //
+                    .isEqualTo(STORED);
+            assertThat(new String(
+                    zip.getInputStream(zip.getEntry("META-INF/DEPENDENCIES")).readAllBytes(),
+                    UTF_8)).contains("pkg:maven/org.example/library-a@1.0");
+        }
+    }
+
+    @Test
+    void thatLibrariesWithoutAnyMetadataAreReported() throws Exception
+    {
+        artifactEntries.put("WEB-INF/lib/unknown-1.0.jar", jar(Map.of()));
+
+        assertThatThrownBy(() -> generate(SPRING_BOOT_CONCLUSIONS)) //
+                .hasMessageContaining("neither listed") //
+                .hasMessageContaining("unknown-1.0.jar");
+    }
+
+    @Test
+    void thatUnmappedLicensesNeedAConclusion() throws Exception
+    {
+        Files.writeString(dependencies, Files.readString(dependencies) //
+                .replace("The MIT License", "Some Custom License") //
+                .replace("https://opensource.org/licenses/MIT", ""));
+
+        assertThatThrownBy(() -> generate(SPRING_BOOT_CONCLUSIONS)) //
+                .hasMessageContaining("pkg:maven/org.example/library-a") //
+                .hasMessageContaining("Some Custom License");
+
+        var conclusions = new ArrayList<>(SPRING_BOOT_CONCLUSIONS);
+        conclusions.add(new Conclusion("pkg:maven/org.example/library-a", "BSD-3-Clause", null));
+        generate(conclusions);
+
+        assertThat(Files.readAllLines(output.resolve("DEPENDENCIES"), UTF_8))
+                .contains("maven/mavencentral/org.example/library-a/1.0, BSD-3-Clause, "
+                        + "concluded, pkg:maven/org.example/library-a@1.0");
+    }
+
+    @Test
+    void thatUnusedConclusionsAreReported() throws Exception
+    {
+        var conclusions = new ArrayList<>(SPRING_BOOT_CONCLUSIONS);
+        conclusions.add(new Conclusion("pkg:maven/org.example/gone", "MIT", null));
+
+        assertThatThrownBy(() -> generate(conclusions)) //
+                .hasMessageContaining("pkg:maven/org.example/gone") //
+                .hasMessageContaining("not used");
+    }
+
+    @Test
+    void thatNpmPackagesWithoutVersionAreReportedOnce() throws Exception
+    {
+        var npm = Map.of("META-INF/NPM-DEPENDENCIES.json", """
+                { "lib-e": { "licenses": "MIT" } }
+                """);
+        artifactEntries.put("WEB-INF/lib/app-other-1.0.jar", jar(npm));
+        artifactEntries.put("WEB-INF/lib/app-third-1.0.jar", jar(npm));
+        listOwnModule("app-other");
+        listOwnModule("app-third");
+
+        assertThatThrownBy(() -> generate(SPRING_BOOT_CONCLUSIONS)) //
+                .satisfies(
+                        e -> assertThat(e.getMessage().split("without a version", -1)).hasSize(2));
+    }
+
+    @Test
+    void thatEmbeddedContentAcceptsLicenseRefsAndNeedsAName() throws Exception
+    {
+        artifactEntries.put("WEB-INF/lib/app-other-1.0.jar", jar(Map.of( //
+                "META-INF/DEPENDENCIES-EMBEDDED.spdx.json", """
+                        { "packages": [
+                          { "name": "Data set", "licenseDeclared": "LicenseRef-Public-Domain" },
+                          { "licenseDeclared": "MIT" } ] }
+                        """)));
+        listOwnModule("app-other");
+
+        assertThatThrownBy(() -> generate(SPRING_BOOT_CONCLUSIONS)) //
+                .hasMessageContaining("Embedded content without a name") //
+                .hasMessageNotContaining("Data set");
+    }
+
+    @Test
+    void thatTheBundledConclusionsAreValid() throws Exception
+    {
+        assertThat(LegalDocumentationGenerator.loadConclusions()).isNotEmpty();
+    }
+
+    private void generate(List<Conclusion> aConclusions, String... aExtraArgs) throws Exception
+    {
+        writeArtifact();
+
+        var args = new ArrayList<String>(List.of( //
+                "--artifact", artifact.toString(), //
+                "--dependencies", dependencies.toString(), //
+                "--license", license.toString(), //
+                "--output", output.toString(), //
+                "--own-group-id", OWN_GROUP_ID, //
+                "--own-npm-scope", "@app"));
+        args.addAll(List.of(aExtraArgs));
+
+        var generator = new LegalDocumentationGenerator(aConclusions);
+        new CommandLine(generator).parseArgs(args.toArray(String[]::new));
+        generator.generate();
+    }
+
+    private void listOwnModule(String aArtifactId) throws Exception
+    {
+        var json = Files.readString(dependencies);
+        var end = json.lastIndexOf(']');
+        Files.writeString(dependencies,
+                json.substring(0, end) + ", { \"name\": \"" + aArtifactId + "\", \"groupId\": \""
+                        + OWN_GROUP_ID + "\", \"artifactId\": \"" + aArtifactId
+                        + "\", \"version\": \"1.0\", \"licenses\": [] } " + json.substring(end));
+    }
+
+    /**
+     * Writes a Spring Boot style executable archive: nested jars stored uncompressed, the Spring
+     * Boot version in the manifest.
+     */
+    private void writeArtifact() throws Exception
+    {
+        var manifest = new Manifest();
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        manifest.getMainAttributes().putValue("Spring-Boot-Version", "9.9.9");
+
+        try (var jos = new JarOutputStream(Files.newOutputStream(artifact), manifest)) {
+            for (var entry : artifactEntries.entrySet()) {
+                var data = entry.getValue();
+                var jarEntry = new JarEntry(entry.getKey());
+                if (entry.getKey().endsWith(".jar")) {
+                    var crc = new CRC32();
+                    crc.update(data);
+                    jarEntry.setMethod(STORED);
+                    jarEntry.setSize(data.length);
+                    jarEntry.setCompressedSize(data.length);
+                    jarEntry.setCrc(crc.getValue());
+                }
+                jos.putNextEntry(jarEntry);
+                jos.write(data);
+                jos.closeEntry();
+            }
+        }
+    }
+
+    private static byte[] jar(Map<String, String> aEntries) throws Exception
+    {
+        var manifest = new Manifest();
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+
+        var bytes = new ByteArrayOutputStream();
+        try (var jos = new JarOutputStream(bytes, manifest)) {
+            for (var entry : aEntries.entrySet()) {
+                jos.putNextEntry(new JarEntry(entry.getKey()));
+                jos.write(entry.getValue().getBytes(UTF_8));
+                jos.closeEntry();
+            }
+        }
+        return bytes.toByteArray();
+    }
+}

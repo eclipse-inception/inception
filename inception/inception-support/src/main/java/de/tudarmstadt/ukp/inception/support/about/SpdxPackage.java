@@ -43,6 +43,7 @@ public class SpdxPackage
     private String licenseConcluded;
     private String licenseComments;
     private List<String> hasFiles;
+    private List<SpdxExternalRef> externalRefs;
 
     public void setHomepage(String aHomepage)
     {
@@ -142,6 +143,16 @@ public class SpdxPackage
     public void setHasFiles(List<String> aHasFiles)
     {
         hasFiles = aHasFiles;
+    }
+
+    public List<SpdxExternalRef> getExternalRefs()
+    {
+        return externalRefs;
+    }
+
+    public void setExternalRefs(List<SpdxExternalRef> aExternalRefs)
+    {
+        externalRefs = aExternalRefs;
     }
 
     public String getName()

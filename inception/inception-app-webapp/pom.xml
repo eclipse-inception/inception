@@ -1469,6 +1469,19 @@
                       <groupId>org.slf4j</groupId>
                       <artifactId>jcl-over-slf4j</artifactId>
                     </exclude>
+                    <!--
+                      Provided dependencies would otherwise go into WEB-INF/lib-provided. Neither is
+                      needed at runtime: the embedded Tomcat brings the servlet API, and jsr305 only
+                      holds annotations for compile-time checks.
+                    -->
+                    <exclude>
+                      <groupId>jakarta.servlet</groupId>
+                      <artifactId>jakarta.servlet-api</artifactId>
+                    </exclude>
+                    <exclude>
+                      <groupId>com.google.code.findbugs</groupId>
+                      <artifactId>jsr305</artifactId>
+                    </exclude>
                   </excludes>
                 </configuration>
               </execution>
@@ -1520,6 +1533,53 @@
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+          <plugin>
+            <!--
+              Analyses the standalone jar produced above and writes LICENSE, NOTICE.md and
+              DEPENDENCIES into its META-INF/ (and into target/legal). Declared after the antrun
+              plugin, so that it runs on the renamed .jar and the spring-boot-maven-plugin above
+              stays in front of the antrun plugin. The generator is a plugin dependency, so it does
+              not ship.
+            -->
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>generate-legal-documentation</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>java</goal>
+                </goals>
+                <configuration>
+                  <mainClass>de.tudarmstadt.ukp.inception.build.legal.LegalDocumentationGenerator</mainClass>
+                  <includeProjectDependencies>false</includeProjectDependencies>
+                  <includePluginDependencies>true</includePluginDependencies>
+                  <arguments>
+                    <argument>--artifact</argument>
+                    <argument>${project.build.directory}/${project.artifactId}-${project.version}-standalone.jar</argument>
+                    <argument>--patch</argument>
+                    <argument>--dependencies</argument>
+                    <argument>${project.build.outputDirectory}/META-INF/DEPENDENCIES.json</argument>
+                    <argument>--license</argument>
+                    <argument>${project.basedir}/LICENSE.txt</argument>
+                    <argument>--output</argument>
+                    <argument>${project.build.directory}/legal</argument>
+                    <argument>--own-group-id</argument>
+                    <argument>${project.groupId}</argument>
+                    <argument>--own-npm-scope</argument>
+                    <argument>@inception-project</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
+            <dependencies>
+              <dependency>
+                <groupId>de.tudarmstadt.ukp.inception.app</groupId>
+                <artifactId>inception-build-legal</artifactId>
+                <version>${project.version}</version>
+              </dependency>
+            </dependencies>
           </plugin>
         </plugins>
       </build>

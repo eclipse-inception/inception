@@ -1,0 +1,40 @@
+# Notices for INCEpTION
+
+This content is produced and maintained by the INCEpTION project.
+
+* Project home: https://inception-project.github.io
+
+## Copyright
+
+All content is the property of the respective authors or their employers. For more information
+regarding authorship of content, please consult the listed source code repository logs.
+
+## Declared Project Licenses
+
+This program and the accompanying materials are made available under the terms of the Apache
+License, Version 2.0 which is available at https://www.apache.org/licenses/LICENSE-2.0.
+
+SPDX-License-Identifier: Apache-2.0
+
+## Source Code
+
+The project maintains the following source code repository:
+
+* https://github.com/eclipse-inception/inception
+
+## Third-party Content
+
+This project includes third-party content.
+
+### Libraries
+
+The libraries included in the distribution are listed with their licenses in the file
+DEPENDENCIES.
+
+### Embedded content
+
+The following third-party content is embedded in the project's own code.
+
+${embeddedContent}
+
+${cryptography}

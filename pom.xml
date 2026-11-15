@@ -108,6 +108,13 @@
     <tomcat.version>11.0.27</tomcat.version>
     <jetty.version>12.1.13</jetty.version>
     <servlet-api.version>6.1.0</servlet-api.version>
+    <!--
+      Pinned in inception-dependencies to undo the provided scope that the imported wicket-parent
+      manages for them. The versions are those wicket-parent resolved to.
+    -->
+    <jakarta.annotation-api.version>2.1.1</jakarta.annotation-api.version>
+    <jakarta.validation-api.version>3.1.1</jakarta.validation-api.version>
+    <hamcrest.version>3.0</hamcrest.version>
 
     <mariadb.driver.version>3.5.11</mariadb.driver.version>
     <mssql.driver.version>13.6.2.jre11</mssql.driver.version>
