@@ -29,8 +29,9 @@ This project includes third-party content.
 ### Libraries
 
 The libraries included in the distribution are listed with their licenses in the file
-DEPENDENCIES. The notices they carry are reproduced in the section "Notices of the libraries"
-below.
+DEPENDENCIES, the texts of these licenses in the folder LICENSES, one file per SPDX license
+identifier. The notices the libraries carry are reproduced in the section "Notices of the
+libraries" below.
 
 ### Embedded content
 

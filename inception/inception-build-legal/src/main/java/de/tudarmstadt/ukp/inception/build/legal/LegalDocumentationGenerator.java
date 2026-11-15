@@ -28,7 +28,9 @@ import static java.lang.String.join;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.copy;
 import static java.nio.file.Files.createDirectories;
+import static java.nio.file.Files.deleteIfExists;
 import static java.nio.file.Files.getLastModifiedTime;
+import static java.nio.file.Files.list;
 import static java.nio.file.Files.newInputStream;
 import static java.nio.file.Files.setLastModifiedTime;
 import static java.nio.file.Files.write;
@@ -55,6 +57,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.jar.JarInputStream;
 import java.util.regex.Pattern;
@@ -76,8 +79,8 @@ import picocli.CommandLine.Option;
 
 /**
  * Generates the legal documentation that goes into the root of a distribution artifact: the project
- * {@code LICENSE}, a {@code NOTICE.md} and a {@code DEPENDENCIES} table of all third-party
- * components with their SPDX license expressions.
+ * {@code LICENSE}, a {@code NOTICE.md}, a {@code DEPENDENCIES} table of all third-party components
+ * with their SPDX license expressions, and the texts of these licenses in {@code LICENSES/}.
  * <p>
  * Analyses what the artifact actually contains, so that the files describe exactly what ships: the
  * libraries in a Spring Boot executable archive ({@code WEB-INF/lib}, {@code WEB-INF/lib-provided}
@@ -89,13 +92,15 @@ import picocli.CommandLine.Option;
 @Command( //
         name = "generate-legal-documentation", //
         mixinStandardHelpOptions = true, //
-        description = "Generates LICENSE, NOTICE.md and DEPENDENCIES for a distribution artifact.")
+        description = "Generates LICENSE, NOTICE.md, DEPENDENCIES and LICENSES/ for a "
+                + "distribution artifact.")
 public class LegalDocumentationGenerator
     implements Callable<Integer>
 {
     private static final String LICENSE_FILE = "LICENSE";
     private static final String NOTICE_MD = "NOTICE.md";
     private static final String DEPENDENCIES_FILE = "DEPENDENCIES";
+    private static final String LICENSES_DIR = "LICENSES";
     private static final String PROP_CRYPTOGRAPHY = "${cryptography}";
     private static final String PROP_EMBEDDED_CONTENT = "${embeddedContent}";
     private static final String PROP_LIBRARY_NOTICES = "${libraryNotices}";
@@ -103,6 +108,20 @@ public class LegalDocumentationGenerator
     /** Resources in the package of this class. */
     static final String CONCLUSIONS_RESOURCE = "DEPENDENCIES-CONCLUDED.spdx.json";
     static final String NOTICE_TEMPLATE_RESOURCE = "NOTICE.md.template";
+    /**
+     * One text per SPDX license or exception id, taken unchanged from the text folder of the SPDX
+     * license list data, v3.29.0 (https://github.com/spdx/license-list-data). The
+     * {@code LicenseRef-*} texts are our own.
+     */
+    static final String LICENSE_TEXTS_RESOURCE = "licenses/";
+
+    /**
+     * Licenses whose text incorporates another license by reference, so that the other text has to
+     * ship as well.
+     */
+    private static final Map<String, String> INCORPORATED_LICENSES = Map.of( //
+            "LGPL-3.0-only", "GPL-3.0-only", //
+            "LGPL-3.0-or-later", "GPL-3.0-or-later");
 
     private static final String NPM_DEPENDENCIES = "META-INF/NPM-DEPENDENCIES.json";
     private static final String EMBEDDED_DEPENDENCIES = "META-INF/DEPENDENCIES-EMBEDDED.spdx.json";
@@ -229,6 +248,7 @@ public class LegalDocumentationGenerator
         var maven = collectMavenComponents(content, notices);
         var npm = collectNpmComponents(content.entries());
         var embedded = collectEmbeddedContent(content.entries());
+        var licenses = collectLicenseTexts(maven, npm, embedded);
 
         for (var unused : conclusions.keySet()) {
             if (!usedConclusions.contains(unused)) {
@@ -247,10 +267,91 @@ public class LegalDocumentationGenerator
         copy(license, output.resolve(LICENSE_FILE), REPLACE_EXISTING);
         writeDependencies(maven, npm);
         writeNotice(maven, embedded, notices);
+        var licenseFiles = writeLicenseTexts(licenses);
 
         if (patch) {
-            patch(artifact, output, List.of(LICENSE_FILE, NOTICE_MD, DEPENDENCIES_FILE));
+            var files = new ArrayList<>(List.of(LICENSE_FILE, NOTICE_MD, DEPENDENCIES_FILE));
+            files.addAll(licenseFiles);
+            patch(artifact, output, files);
         }
+    }
+
+    /**
+     * @return the texts of all licenses in use, by SPDX id, including the licenses they incorporate
+     *         by reference.
+     */
+    private Map<String, byte[]> collectLicenseTexts(List<Component> aMaven, List<Component> aNpm,
+            List<SpdxPackage> aEmbedded)
+        throws IOException
+    {
+        var expressions = new ArrayList<String>();
+        aMaven.forEach(c -> expressions.add(c.license()));
+        aNpm.forEach(c -> expressions.add(c.license()));
+        aEmbedded.forEach(p -> licenseExpression(embeddedLicense(p)).ifPresent(expressions::add));
+
+        var ids = new TreeSet<String>();
+        for (var expression : expressions) {
+            for (var id : licenseIds(expression)) {
+                ids.add(id);
+                if (INCORPORATED_LICENSES.containsKey(id)) {
+                    ids.add(INCORPORATED_LICENSES.get(id));
+                }
+            }
+        }
+
+        var texts = new TreeMap<String, byte[]>();
+        for (var id : ids) {
+            try (var is = LegalDocumentationGenerator.class
+                    .getResourceAsStream(LICENSE_TEXTS_RESOURCE + id + ".txt")) {
+                if (is == null) {
+                    errors.add("No text for license [" + id + "] - add " + LICENSE_TEXTS_RESOURCE
+                            + id + ".txt from the text folder of the SPDX license list data "
+                            + "(https://github.com/spdx/license-list-data)");
+                    continue;
+                }
+                texts.put(id, is.readAllBytes());
+            }
+        }
+        return texts;
+    }
+
+    /**
+     * @return the license and exception ids in an SPDX license expression.
+     */
+    static Set<String> licenseIds(String aExpression)
+    {
+        var ids = new LinkedHashSet<String>();
+        for (var token : aExpression.replace('(', ' ').replace(')', ' ').trim().split("\\s+")) {
+            if (!token.isEmpty() && !List.of("AND", "OR", "WITH").contains(token)) {
+                ids.add(token);
+            }
+        }
+        return ids;
+    }
+
+    /**
+     * Writes the license texts into a folder of their own, cleared first so that a text no longer
+     * in use does not linger from an earlier build.
+     *
+     * @return the paths of the written files, relative to the output directory.
+     */
+    private List<String> writeLicenseTexts(Map<String, byte[]> aTexts) throws IOException
+    {
+        var dir = output.resolve(LICENSES_DIR);
+        createDirectories(dir);
+        try (var existing = list(dir)) {
+            for (var file : existing.toList()) {
+                deleteIfExists(file);
+            }
+        }
+
+        var files = new ArrayList<String>();
+        for (var text : aTexts.entrySet()) {
+            var file = LICENSES_DIR + "/" + text.getKey() + ".txt";
+            write(output.resolve(file), text.getValue());
+            files.add(file);
+        }
+        return files;
     }
 
     private List<Component> collectMavenComponents(ArtifactContent aContent,
@@ -610,6 +711,7 @@ public class LegalDocumentationGenerator
             var time = getLastModifiedTime(fs.getPath("META-INF/MANIFEST.MF"));
             for (var file : aFiles) {
                 var target = fs.getPath("META-INF", file);
+                createDirectories(target.getParent());
                 copy(aDirectory.resolve(file), target, REPLACE_EXISTING);
                 setLastModifiedTime(target, time);
             }

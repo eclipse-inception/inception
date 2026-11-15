@@ -207,13 +207,53 @@ class LegalDocumentationGeneratorTest
     }
 
     @Test
+    void thatTheTextsOfTheLicensesInUseAreWritten() throws Exception
+    {
+        generate(SPRING_BOOT_CONCLUSIONS);
+
+        try (var files = Files.list(output.resolve("LICENSES"))) {
+            assertThat(files.map(f -> f.getFileName().toString())) //
+                    .containsExactlyInAnyOrder("Apache-2.0.txt", "CC-BY-4.0.txt", "EPL-2.0.txt",
+                            "ISC.txt", "MIT.txt");
+        }
+        assertThat(output.resolve("LICENSES/MIT.txt")).content().startsWith("MIT License");
+    }
+
+    @Test
+    void thatIncorporatedLicensesAndExceptionsShipTheirTexts() throws Exception
+    {
+        var conclusions = new ArrayList<>(SPRING_BOOT_CONCLUSIONS);
+        conclusions.add(new Conclusion("pkg:maven/org.example/library-a", "LGPL-3.0-only"));
+        conclusions.add(new Conclusion("pkg:maven/org.example/library-b",
+                "(GPL-2.0-only WITH Classpath-exception-2.0)"));
+
+        generate(conclusions);
+
+        assertThat(output.resolve("LICENSES")) //
+                .isDirectoryContaining("glob:**/LGPL-3.0-only.txt") //
+                .isDirectoryContaining("glob:**/GPL-3.0-only.txt") //
+                .isDirectoryContaining("glob:**/GPL-2.0-only.txt") //
+                .isDirectoryContaining("glob:**/Classpath-exception-2.0.txt");
+    }
+
+    @Test
+    void thatLicensesWithoutTextAreReported() throws Exception
+    {
+        var conclusions = new ArrayList<>(SPRING_BOOT_CONCLUSIONS);
+        conclusions.add(new Conclusion("pkg:maven/org.example/library-a", "Zlib"));
+
+        assertThatThrownBy(() -> generate(conclusions)) //
+                .hasMessageContaining("No text for license [Zlib]");
+    }
+
+    @Test
     void thatTheFilesArePatchedIntoTheArtifact() throws Exception
     {
         generate(SPRING_BOOT_CONCLUSIONS, "--patch");
 
         try (var zip = new ZipFile(artifact.toFile())) {
             var manifestTime = zip.getEntry("META-INF/MANIFEST.MF").getTime();
-            for (var file : List.of("LICENSE", "NOTICE.md", "DEPENDENCIES")) {
+            for (var file : List.of("LICENSE", "NOTICE.md", "DEPENDENCIES", "LICENSES/MIT.txt")) {
                 var entry = zip.getEntry("META-INF/" + file);
                 assertThat(entry).as(file).isNotNull();
                 assertThat(entry.getTime()).as(file).isEqualTo(manifestTime);
