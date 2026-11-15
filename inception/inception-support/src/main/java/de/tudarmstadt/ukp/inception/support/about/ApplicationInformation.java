@@ -42,12 +42,10 @@ public class ApplicationInformation
 {
     private static final Logger LOG = LoggerFactory.getLogger(ApplicationInformation.class);
 
-    private static final Map<String, Set<String>> LICENSES = new HashMap<>();
     private static final Map<String, Set<String>> SOURCES = new HashMap<>();
     private static final Map<String, Set<String>> SOURCE_BY_PACKAGE_NAME = new HashMap<>();
 
-    private static void populateNormalisation()
-    {
+    static {
         SOURCE_BY_PACKAGE_NAME.put("emotion", Set.of( //
                 "@emotion/.*"));
         SOURCE_BY_PACKAGE_NAME.put("Sven Sauleau", Set.of( //
@@ -70,60 +68,6 @@ public class ApplicationInformation
                 "max ogden"));
         SOURCES.put("Oracle Corporation", Set.of( //
                 "Oracle"));
-
-        LICENSES.put("Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)", Set.of( //
-                "ASF 2\\.0.*", //
-                "Apache-2\\.0.*", //
-                "Apache 2 .*", //
-                "Apache 2\\.0.*", //
-                ".*Apache License 2\\.0.*", //
-                ".*Apache License.*Version 2\\.0.*", //
-                ".* Apache Software License.*Version 2\\.0.*", //
-                ".*://www\\.apache\\.org/licenses/LICENSE-2\\.0.*", //
-                "Apache-2.0"));
-        LICENSES.put("ISC License (https://spdx.org/licenses/ISC#licenseText)", Set.of("ISC"));
-        LICENSES.put(
-                "Eclipse Public License 1.0 (https://www.eclipse.org/org/documents/epl-1.0/EPL-1.0.txt)",
-                Set.of("Eclipse Public License.*1\\.0.*"));
-        LICENSES.put(
-                "Eclipse Public License 2.0 (https://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.txt)",
-                Set.of( //
-                        "Eclipse Public License.*2\\.0.*", //
-                        "EPL 2\\.0.*", //
-                        "EPL-2\\.0.*"));
-        LICENSES.put("MIT (https://spdx.org/licenses/MIT#licenseText)", Set.of( //
-                "MIT", //
-                "MIT .*", //
-                ".*MIT License.*"));
-        // According to the SPDX folks EDL 1.0 is essentially BSD-3-Clause, so there is no SPDX for
-        // EDL 1.0. So we fold it into BSD-3-Clause as well.
-        // https://lists.spdx.org/g/Spdx-legal/topic/request_for_adding_eclipse/67981884
-        LICENSES.put("BSD 3-Clause (https://spdx.org/licenses/BSD 3-Clause#licenseText)", Set.of( //
-                ".*BSD.3.Clause.*", ".*://raw.github.com/jsonld-java/jsonld-java/master/LICENCE.*",
-                ".*://www.antlr.org/license.html.*",
-                ".*://raw.githubusercontent.com/jaxen-xpath/jaxen/master/LICENSE.txt.*",
-                "Eclipse Distribution License.*", "EDL 1\\.0.*"));
-        LICENSES.put("BSD 2-Clause (https://spdx.org/licenses/BSD-2-Clause#licenseText)", Set.of( //
-                ".*BSD.2.Clause.*", //
-                ".*://www.opensource.org/licenses/bsd-license.*"));
-        LICENSES.put("LGPL 2.1 (http://www.gnu.org/licenses/lgpl-2.1.html)", Set.of( //
-                "LGPL-2.1"));
-        LICENSES.put("LGPL 2.1 or later (http://www.gnu.org/licenses/lgpl-2.1.html)", Set.of( //
-                "GNU Library General Public License v2.1 or later.*"));
-        LICENSES.put("LGPL 3.0 (https://www.gnu.org/licenses/lgpl-3.0.html)", Set.of( //
-                ".*http://www.gnu.org/licenses/lgpl.html.*"));
-        LICENSES.put("Mozilla Public License 1.1 (http://www.mozilla.org/MPL/MPL-1.1.html)", Set.of( //
-                "MPL 1.1.*"));
-        LICENSES.put("Mozilla Public License 2.0 (http://www.mozilla.org/MPL/2.0/index.txt)",
-                Set.of( //
-                        "MPL 2.0.*", //
-                        "Mozilla Public License.*2\\.0.*"));
-        LICENSES.put(
-                "CDDL + GPLv2 with classpath exception (https://oss.oracle.com/licenses/CDDL+GPL-1.1)",
-                Set.of( //
-                        "CDDL \\+ GPLv2 with classpath exception.*", //
-                        "CDDL/GPLv2\\+CE.*", //
-                        ".*://oss.oracle.com/licenses/CDDL\\+GPL-1.1.*"));
     }
 
     public static String sourceFromPackageName(String aString)
@@ -141,19 +85,12 @@ public class ApplicationInformation
         return aString;
     }
 
+    /**
+     * @see KnownLicenses#toDisplayName(String)
+     */
     public static String normaliseLicense(String aString)
     {
-        if (aString == null) {
-            return null;
-        }
-
-        for (var entry : LICENSES.entrySet()) {
-            if (entry.getValue().stream().anyMatch(pattern -> Pattern.matches(pattern, aString))) {
-                return entry.getKey();
-            }
-        }
-
-        return aString;
+        return KnownLicenses.toDisplayName(aString);
     }
 
     public static String normaliseSource(String aString)
@@ -173,8 +110,6 @@ public class ApplicationInformation
 
     public static Set<Dependency> loadJsonDependencies()
     {
-        populateNormalisation();
-
         try {
             var deps = new LinkedHashSet<Dependency>();
             var cl = ApplicationInformation.class.getClassLoader();
