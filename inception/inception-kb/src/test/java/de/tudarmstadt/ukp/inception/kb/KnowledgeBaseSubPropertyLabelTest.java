@@ -30,6 +30,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.OWL;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -58,6 +61,7 @@ import de.tudarmstadt.ukp.inception.kb.graph.KBStatement;
 import de.tudarmstadt.ukp.inception.kb.model.KnowledgeBase;
 import de.tudarmstadt.ukp.inception.kb.reification.Reification;
 import de.tudarmstadt.ukp.inception.kb.util.TestFixtures;
+import de.tudarmstadt.ukp.inception.kb.yaml.KnowledgeBaseMapping;
 import de.tudarmstadt.ukp.inception.kb.yaml.KnowledgeBaseProfile;
 import jakarta.persistence.EntityManager;
 
@@ -164,7 +168,7 @@ public class KnowledgeBaseSubPropertyLabelTest
     public void readProperty_ShouldReturnPropertyWithSubPropertyLabel(Reification reification)
         throws IOException
     {
-        kb = buildLocalKnowledgeBase(project, "Wine", reification);
+        kb = buildLocalKnowledgeBase(project, "Local", reification);
         sut.registerKnowledgeBase(kb, sut.getNativeConfig());
 
         KBProperty subpropertylabel = createSubPropertyLabel(kb);
@@ -210,20 +214,21 @@ public class KnowledgeBaseSubPropertyLabelTest
 
     private KnowledgeBase buildLocalKnowledgeBase(Project aProject, String aName,
             Reification aReification)
-        throws IOException
     {
-        PROFILES = readKnowledgeBaseProfiles();
-        KnowledgeBase wine = new KnowledgeBase();
-        wine.setProject(aProject);
-        wine.setName(aName);
-        wine.setType(RepositoryType.LOCAL);
-        wine.applyMapping(PROFILES.get("wine_ontology").getMapping());
-        wine.applyRootConcepts(PROFILES.get("wine_ontology"));
-        wine.setReification(aReification);
-        wine.setDefaultLanguage("en");
-        wine.setMaxResults(1000);
+        var local = new KnowledgeBase();
+        local.setProject(aProject);
+        local.setName(aName);
+        local.setType(RepositoryType.LOCAL);
+        local.applyMapping(new KnowledgeBaseMapping(OWL.CLASS.stringValue(),
+                RDFS.SUBCLASSOF.stringValue(), RDF.TYPE.stringValue(),
+                RDFS.SUBPROPERTYOF.stringValue(), RDFS.COMMENT.stringValue(),
+                RDFS.LABEL.stringValue(), RDF.PROPERTY.stringValue(), RDFS.LABEL.stringValue(),
+                RDFS.COMMENT.stringValue(), OWL.DEPRECATED.stringValue()));
+        local.setReification(aReification);
+        local.setDefaultLanguage("en");
+        local.setMaxResults(1000);
 
-        return wine;
+        return local;
     }
 
     private KBProperty createSubPropertyLabel(KnowledgeBase aKB)

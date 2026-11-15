@@ -243,35 +243,35 @@ The values of boolean features are indexed as `true` and `false`.
 
 === Concept feature queries
 
-.Generic Search over annotated KB entities : all occurrences for KB entity *Bordeaux*
+.Generic Search over annotated KB entities : all occurrences for KB entity *Albert Einstein*
 ----
-<KB-Entity="Bordeaux"/>
+<KB-Entity="Albert Einstein"/>
 ----
 
-The following query returns all mentions of *ChateauMorgonBeaujolais* or any of its subclasses in
-the associated knowledge base.
+The following query returns all mentions of the class *human* or any of its subclasses and
+instances in the associated knowledge base.
 
-.Named Entity Identifier for KB instance: all mentions of *ChateauMorgonBeaujolais*
+.Named Entity Identifier for KB class: all mentions of *human*
 ----
-<Named_entity.identifier="ChateauMorgonBeaujolais"/>
+<Named_entity.identifier="human"/>
 ----
 
 Mind that the label of a knowledge base item may be ambiguous, so it may be necessary to search by
 IRI.
 
-.Named Entity Identifier for KB instance: all mentions of *ChateauMorgonBeaujolais* by IRI
+.Named Entity Identifier for KB class: all mentions of *human* by IRI
 ----
-<Named_entity.identifier="http://www.w3.org/TR/2003/PR-owl-guide-20031209/wine#ChateauMorgonBeaujolais"/>
-----
-
-
-.Named Entity Identifier : all exact mentions of *ChateauMorgonBeaujolais* .
-----
-<Named_entity.identifier-exact="ChateauMorgonBeaujolais"/>
+<Named_entity.identifier="http://www.wikidata.org/entity/Q5"/>
 ----
 
 
-.OR All exact mentions of either *ChateauMorgonBeaujolais* or *AmericanWine*
+.Named Entity Identifier : all exact mentions of *Albert Einstein* .
+----
+<Named_entity.identifier-exact="Albert Einstein"/>
+----
+
+
+.OR All exact mentions of either *Albert Einstein* or *Marie Curie*
 ---- 
-(<Named_entity.identifier-exact="ChateauMorgonBeaujolais"/> | <Named_entity.identifier-exact="AmericanWine"/>)
+(<Named_entity.identifier-exact="Albert Einstein"/> | <Named_entity.identifier-exact="Marie Curie"/>)
 ----

@@ -1,5 +1,0 @@
-= Trie.java
-
-Copyright 2009 Richard Eckart de Castilho
-Apache License 2.0
-Source: AnnoLab

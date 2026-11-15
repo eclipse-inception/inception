@@ -25,15 +25,21 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.List;
 
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.base.RepositoryConnectionWrapper;
+import org.eclipse.rdf4j.repository.base.RepositoryWrapper;
+import org.eclipse.rdf4j.rio.RDFFormat;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -56,7 +62,6 @@ import de.tudarmstadt.ukp.inception.kb.querybuilder.SPARQLQueryBuilderLocalTestS
 // Go to http://localhost:8890/conductor -> System Admin -> User Accounts -> SPARQL and add account role SPARQL_UPDATE
 // Check if FTS is enabled: `SELECT * from DB.DBA.RDF_OBJ_FT_RULES;`
 // Enable FTS: `DB.DBA.RDF_OBJ_FT_RULE_ADD (null, null, 'ALL');`
-@Disabled("It seems the FTS is not properly flushing its data and tests may fail kind of randomly")
 @Testcontainers(disabledWithoutDocker = true)
 public class VirtuosoRepositoryTest
 {
@@ -66,9 +71,11 @@ public class VirtuosoRepositoryTest
 
     private static final int VIRTUOSO_PORT = 8890;
 
+    // Pinned: the "latest" image (7.2.18-dev at the time of writing) rejects SPARQL updates that
+    // end with a semicolon, which RDF4J always appends, so no test data can be loaded
     @Container
     private static final GenericContainer<?> VIRTUOSO = new GenericContainer<>(
-            "openlink/virtuoso-opensource-7:latest") //
+            "openlink/virtuoso-opensource-7:7.2.16") //
                     .withEnv("DBA_PASSWORD", "secret") //
                     .withExposedPorts(VIRTUOSO_PORT) //
                     .waitingFor(Wait.forHttp("/sparql").forPort(VIRTUOSO_PORT)
@@ -100,13 +107,46 @@ public class VirtuosoRepositoryTest
 
         SPARQLQueryBuilderLocalTestScenarios.initRdfsMapping(kb);
 
-        repository = SPARQLQueryBuilderLocalTestScenarios
+        var sparqlRepository = SPARQLQueryBuilderLocalTestScenarios
                 .buildSparqlRepository("http://dba:secret@" + VIRTUOSO.getHost() + ":"
                         + VIRTUOSO.getMappedPort(VIRTUOSO_PORT) + "/sparql-auth/");
+
+        // Virtuoso adds new literals to its full text index only in batches, even with batch
+        // updates switched off. Without updating the index after each import, the scenarios
+        // would search before their data is indexed.
+        repository = new RepositoryWrapper(sparqlRepository)
+        {
+            @Override
+            public RepositoryConnection getConnection() throws RepositoryException
+            {
+                return new RepositoryConnectionWrapper(this, super.getConnection())
+                {
+                    @Override
+                    public void add(InputStream aIn, String aBaseUri, RDFFormat aFormat,
+                            Resource... aContexts)
+                        throws IOException
+                    {
+                        super.add(aIn, aBaseUri, aFormat, aContexts);
+                        updateFullTextIndex();
+                    }
+                };
+            }
+        };
 
         try (var conn = repository.getConnection()) {
             var ctx = SimpleValueFactory.getInstance().createIRI(kb.getDefaultDatasetIri());
             conn.clear(ctx);
+        }
+    }
+
+    private static void updateFullTextIndex() throws IOException
+    {
+        try {
+            virtuosoSqlCommand("DB.DBA.VT_INC_INDEX_DB_DBA_RDF_OBJ ();");
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted while updating the full text index", e);
         }
     }
 
@@ -138,8 +178,20 @@ public class VirtuosoRepositoryTest
                 // Virtuoso 37000 Error SP031: SPARQL compiler: Object of transitive triple pattern
                 // should be variable or QName or literal, not blank node
                 "thatPropertyQueryLimitedToDomainDoesNotReturnOutOfScopeResults",
-                // Virtuoso does not like to import the test data for this one
-                "testWithLabelStartingWith_OLIA");
+                // These search for the prefix "N". Virtuoso rejects wildcards with fewer than four
+                // leading characters (hard-coded in its text index), so FtsAdapterVirtuoso drops
+                // such prefixes and finds nothing
+                "testWithLabelStartingWith_customLabelProperty",
+                "testWithLabelStartingWith_customLabelProperty_rdfXml",
+                // FtsAdapterVirtuoso matches the value of withLabelContainingAnyOf() as a whole
+                // word, so "auto" finds the label "auto" but not "automobile"
+                "testWithLabelStartingWith_withLanguage_FTS_5",
+                // Virtuoso matches a multi-word query as a phrase, so "hand structure" does not
+                // match the label "Hand" as it does with the other full text indexes
+                "thatMatchingAgainstAdditionalSearchPropertiesWorks2",
+                // Virtuoso returns the blank node of an owl:Restriction superclass as a root
+                // concept - a bug in the roots query
+                "thatRootsCanBeRetrieved_owl");
 
         return SPARQLQueryBuilderLocalTestScenarios.tests().stream() //
                 .filter(scenario -> !exclusions.contains(scenario.name)) //

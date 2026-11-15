@@ -1,9 +1,12 @@
+NOTE: See META-INF/DEPENDENCIES-EMBEDDED.spdx.json
+
 == Font Awesome
 
 File: src/main/java/de/tudarmstadt/ukp/inception/assistant/sidebar/AssistantSidebarIcon.svg
 
 This icon is derived from Font Awesome Free (classic solid). The icons are licensed under
-CC BY 4.0.
+CC BY 4.0. The modifications made for INCEpTION are copyright Technische Universität
+Darmstadt and are also licensed under CC BY 4.0.
 
   Font Awesome Free 6.7.2 by @fontawesome
   Copyright 2024 Fonticons, Inc.

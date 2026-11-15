@@ -32,9 +32,10 @@ public class RdfImportParserConfigs
      * <p>
      * RDF4J 5.3.2 hardened its XML parsers against XXE (follow-up to CVE-2018-1000644) and as part
      * of that started rejecting {@code DOCTYPE} declarations outright. That is too strict for us:
-     * many OWL vocabularies - OLIA being the one our own tests trip over - declare <b>internal</b>
-     * entities in a {@code DOCTYPE} purely to abbreviate namespace IRIs, and those files must
-     * remain importable.
+     * many OWL vocabularies - e.g. OLiA, which the slow profile tests import - declare
+     * <b>internal</b> entities in a {@code DOCTYPE} purely to abbreviate namespace IRIs, and those
+     * files must remain importable. The test fixture {@code tagset_custom_label.rdf} covers this in
+     * the default build.
      * <p>
      * So we accept the {@code DOCTYPE} declaration again, but only that. Every setting that would
      * make the parser reach outside the document stays off, and it is the outside reach - not the
