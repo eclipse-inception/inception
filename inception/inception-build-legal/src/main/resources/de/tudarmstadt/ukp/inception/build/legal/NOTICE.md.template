@@ -31,7 +31,8 @@ This project includes third-party content.
 The libraries included in the distribution are listed with their licenses in the file
 DEPENDENCIES, the texts of these licenses in the folder LICENSES, one file per SPDX license
 identifier. The notices the libraries carry are reproduced in the section "Notices of the
-libraries" below.
+libraries" below. The file sbom.spdx.json lists all third-party content as a software bill of
+materials in the SPDX 2.3 format.
 
 ### Embedded content
 

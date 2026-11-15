@@ -24,9 +24,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayOutputStream;
+import java.security.MessageDigest;
+import java.time.Instant;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +46,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import de.tudarmstadt.ukp.inception.build.legal.LegalDocumentationGenerator.Conclusion;
+import de.tudarmstadt.ukp.inception.support.json.JSONUtil;
 import picocli.CommandLine;
+import tools.jackson.databind.JsonNode;
 
 class LegalDocumentationGeneratorTest
 {
@@ -93,9 +99,10 @@ class LegalDocumentationGeneratorTest
                           "@example/lib-d@1.2.3": { "licenses": "ISC" },
                           "@app/own-package@1.0.0": { "licenses": "Apache-2.0" } }
                         """, //
-                "META-INF/DEPENDENCIES-EMBEDDED.spdx.json", """
+                "META-INF/DEPENDENCIES-EMBEDDED.spdx.json",
+                """
                         { "packages": [ { "name": "Icon set", "versionInfo": "6.0",
-                          "originator": "Example Inc.", "homepage": "https://example.org",
+                          "originator": "Organization: Example Inc.", "homepage": "https://example.org",
                           "licenseDeclared": "CC-BY-4.0",
                           "hasFiles": [ "org/example/Icon.svg" ] } ] }
                         """)));
@@ -147,6 +154,7 @@ class LegalDocumentationGeneratorTest
                 .contains("#### Icon set 6.0") //
                 .contains("* License: CC-BY-4.0") //
                 .contains("* Files: org/example/Icon.svg") //
+                .contains("* Originator: Example Inc.\n") //
                 .doesNotContain("${") //
                 .doesNotContain("## Cryptography");
     }
@@ -247,13 +255,96 @@ class LegalDocumentationGeneratorTest
     }
 
     @Test
+    void thatTheSbomListsTheDistributionAndItsComponents() throws Exception
+    {
+        generate(SPRING_BOOT_CONCLUSIONS);
+
+        var sbom = JSONUtil.getObjectMapper().readTree(output.resolve("sbom.spdx.json").toFile());
+        assertThat(sbom.get("spdxVersion").asString()).isEqualTo("SPDX-2.3");
+        assertThat(sbom.get("creationInfo").get("created").asString())
+                .isEqualTo("2026-01-02T03:04:05Z");
+
+        var packages = new HashMap<String, JsonNode>();
+        sbom.get("packages").forEach(p -> packages.put(p.get("name").asString(), p));
+        assertThat(packages).containsOnlyKeys("App", "org.example:library-a",
+                "org.example:library-b", "org.example:provided-x",
+                "org.springframework.boot:spring-boot-jarmode-tools",
+                "org.springframework.boot:spring-boot-loader", "lib-c", "@example/lib-d",
+                "Icon set");
+
+        // The project license is given by its name in the POM
+        assertThat(packages.get("App").get("licenseDeclared").asString()).isEqualTo("Apache-2.0");
+
+        var libraryA = packages.get("org.example:library-a");
+        assertThat(libraryA.get("packageFileName").asString())
+                .isEqualTo("WEB-INF/lib/library-a-1.0.jar");
+        assertThat(libraryA.get("checksums").get(0).get("checksumValue").asString())
+                .isEqualTo(HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                        .digest(artifactEntries.get("WEB-INF/lib/library-a-1.0.jar"))));
+        assertThat(libraryA.get("externalRefs").get(0).get("referenceLocator").asString())
+                .isEqualTo("pkg:maven/org.example/library-a@1.0");
+        assertThat(packages.get("org.springframework.boot:spring-boot-loader")
+                .get("licenseDeclared").asString()).isEqualTo("NOASSERTION");
+        assertThat(packages.get("Icon set").get("comment").asString())
+                .isEqualTo("Embedded in: org/example/Icon.svg");
+
+        // The distribution describes and contains everything else
+        assertThat(sbom.get("relationships")).hasSize(packages.size());
+    }
+
+    @Test
+    void thatLicenseRefsAreDefinedInTheSbom() throws Exception
+    {
+        artifactEntries.put("WEB-INF/lib/app-other-1.0.jar", jar(Map.of( //
+                "META-INF/DEPENDENCIES-EMBEDDED.spdx.json", """
+                        { "packages": [
+                          { "name": "Data set", "licenseDeclared": "LicenseRef-Public-Domain" } ] }
+                        """)));
+        listOwnModule("app-other");
+
+        generate(SPRING_BOOT_CONCLUSIONS);
+
+        var sbom = JSONUtil.getObjectMapper().readTree(output.resolve("sbom.spdx.json").toFile());
+        assertThat(sbom.get("hasExtractedLicensingInfos").get(0).get("licenseId").asString())
+                .isEqualTo("LicenseRef-Public-Domain");
+    }
+
+    @Test
+    void thatOriginatorsWithoutTypeAreReported() throws Exception
+    {
+        artifactEntries.put("WEB-INF/lib/app-other-1.0.jar", jar(Map.of( //
+                "META-INF/DEPENDENCIES-EMBEDDED.spdx.json", """
+                        { "packages": [ { "name": "Data set", "originator": "Example Inc.",
+                          "licenseDeclared": "MIT" } ] }
+                        """)));
+        listOwnModule("app-other");
+
+        assertThatThrownBy(() -> generate(SPRING_BOOT_CONCLUSIONS)) //
+                .hasMessageContaining("[Data set]") //
+                .hasMessageContaining("Example Inc.");
+    }
+
+    @Test
+    void thatTheSbomIsCreatedAtThePinnedOutputTimestamp()
+    {
+        var now = Instant.parse("2030-01-01T00:00:00Z");
+        assertThat(SpdxSbom.creationTime("2026-01-02T03:04:05Z", now))
+                .isEqualTo("2026-01-02T03:04:05Z");
+        assertThat(SpdxSbom.creationTime("1767323045", now)).isEqualTo("2026-01-02T03:04:05Z");
+        // Maven's placeholder when the property is not set, and an unresolved property
+        assertThat(SpdxSbom.creationTime("1980-02-01T00:00:00Z", now)).isEqualTo(now);
+        assertThat(SpdxSbom.creationTime("${project.build.outputTimestamp}", now)).isEqualTo(now);
+    }
+
+    @Test
     void thatTheFilesArePatchedIntoTheArtifact() throws Exception
     {
         generate(SPRING_BOOT_CONCLUSIONS, "--patch");
 
         try (var zip = new ZipFile(artifact.toFile())) {
             var manifestTime = zip.getEntry("META-INF/MANIFEST.MF").getTime();
-            for (var file : List.of("LICENSE", "NOTICE.md", "DEPENDENCIES", "LICENSES/MIT.txt")) {
+            for (var file : List.of("LICENSE", "NOTICE.md", "DEPENDENCIES", "LICENSES/MIT.txt",
+                    "sbom.spdx.json")) {
                 var entry = zip.getEntry("META-INF/" + file);
                 assertThat(entry).as(file).isNotNull();
                 assertThat(entry.getTime()).as(file).isEqualTo(manifestTime);
@@ -356,7 +447,12 @@ class LegalDocumentationGeneratorTest
                 "--license", license.toString(), //
                 "--output", output.toString(), //
                 "--own-group-id", OWN_GROUP_ID, //
-                "--own-npm-scope", "@app"));
+                "--own-npm-scope", "@app", //
+                "--project-name", "App", //
+                "--project-version", "1.0", //
+                "--project-license", "Apache License Version 2.0", //
+                "--project-url", "https://app.example.org", //
+                "--output-timestamp", "2026-01-02T03:04:05Z"));
         args.addAll(List.of(aExtraArgs));
 
         var generator = new LegalDocumentationGenerator(aConclusions);

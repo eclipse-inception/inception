@@ -1103,8 +1103,8 @@
               <project-version>${project.version}</project-version>
               <revnumber>${project.version}</revnumber>
               <min-java-version>${maven.compiler.release}</min-java-version>
-              <product-name>INCEpTION</product-name>
-              <product-website-url>https://inception-project.github.io</product-website-url>
+              <product-name>${product.name}</product-name>
+              <product-website-url>${project.organization.url}</product-website-url>
               <icons>font</icons>
               <experimental>true</experimental>
             </attributes>
@@ -1536,8 +1536,9 @@
           </plugin>
           <plugin>
             <!--
-              Analyses the standalone jar produced above and writes LICENSE, NOTICE.md and
-              DEPENDENCIES into its META-INF/ (and into target/legal). Declared after the antrun
+              Analyses the standalone jar produced above and writes LICENSE, NOTICE.md, DEPENDENCIES,
+              the license texts in LICENSES/ and the SPDX SBOM into its META-INF/ (and into
+              target/legal). Declared after the antrun
               plugin, so that it runs on the renamed .jar and the spring-boot-maven-plugin above
               stays in front of the antrun plugin. The generator is a plugin dependency, so it does
               not ship.
@@ -1569,6 +1570,17 @@
                     <argument>${project.groupId}</argument>
                     <argument>--own-npm-scope</argument>
                     <argument>@inception-project</argument>
+                    <argument>--project-name</argument>
+                    <argument>${product.name}</argument>
+                    <argument>--project-version</argument>
+                    <argument>${project.version}</argument>
+                    <argument>--project-license</argument>
+                    <argument>${project.licenses[0].name}</argument>
+                    <argument>--project-url</argument>
+                    <!-- Not project.url, which inheritance extends by the module path -->
+                    <argument>${project.organization.url}</argument>
+                    <argument>--output-timestamp</argument>
+                    <argument>${project.build.outputTimestamp}</argument>
                   </arguments>
                 </configuration>
               </execution>

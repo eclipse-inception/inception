@@ -23,6 +23,7 @@ import static java.util.Arrays.asList;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -32,10 +33,14 @@ public class SpdxPackage
 {
     private static final long serialVersionUID = -146919416362600033L;
 
+    /** The type prefix of an SPDX entity such as {@code Organization: Example Inc.} */
+    private static final Pattern ENTITY_TYPE = Pattern.compile("^(Person|Organization|Tool):\\s*");
+
     private String name;
     private String supplier;
     private String originator;
     private String versionInfo;
+    private String description;
     private String homepage;
     private String downloadLocation;
     private String packageFileName;
@@ -44,6 +49,25 @@ public class SpdxPackage
     private String licenseComments;
     private List<String> hasFiles;
     private List<SpdxExternalRef> externalRefs;
+
+    /**
+     * @return the name of an SPDX entity such as {@code Organization: Example Inc.}, without its
+     *         type.
+     */
+    public static String entityName(String aEntity)
+    {
+        return aEntity == null ? null : ENTITY_TYPE.matcher(aEntity).replaceFirst("");
+    }
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public void setDescription(String aDescription)
+    {
+        description = aDescription;
+    }
 
     public void setHomepage(String aHomepage)
     {
@@ -183,10 +207,10 @@ public class SpdxPackage
             public String getSource()
             {
                 if (SpdxPackage.this.getOriginator() != null) {
-                    return normaliseSource(SpdxPackage.this.getOriginator());
+                    return normaliseSource(entityName(SpdxPackage.this.getOriginator()));
                 }
 
-                return normaliseSource(SpdxPackage.this.getSupplier());
+                return normaliseSource(entityName(SpdxPackage.this.getSupplier()));
             }
 
             @Override

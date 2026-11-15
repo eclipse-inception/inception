@@ -71,6 +71,12 @@
   </distributionManagement>
 
   <properties>
+    <!--
+      The name of the product as shown to users, e.g. in the documentation and the generated legal
+      documentation. Not project.name, which each module overrides with its own.
+    -->
+    <product.name>INCEpTION</product.name>
+
     <build-ant-version>1.10.18</build-ant-version>
     <build-groovy-version>5.0.8</build-groovy-version>
 

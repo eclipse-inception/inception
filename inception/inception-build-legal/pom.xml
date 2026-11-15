@@ -40,5 +40,13 @@
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.networknt</groupId>
+      <artifactId>json-schema-validator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>tools.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
   </dependencies>
 </project>

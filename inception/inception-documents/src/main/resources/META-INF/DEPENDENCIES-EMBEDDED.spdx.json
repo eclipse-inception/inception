@@ -4,7 +4,7 @@
     {
       "name": "Universal Dependencies documentation",
       "versionInfo": "2",
-      "originator": "Universal Dependencies contributors",
+      "originator": "Organization: Universal Dependencies contributors",
       "homepage": "https://universaldependencies.org",
       "downloadLocation": "https://github.com/UniversalDependencies/docs",
       "licenseDeclared": "Apache-2.0",

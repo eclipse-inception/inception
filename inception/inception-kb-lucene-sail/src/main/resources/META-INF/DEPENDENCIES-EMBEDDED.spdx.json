@@ -4,7 +4,7 @@
     {
       "name": "RDF4J Lucene SAIL",
       "versionInfo": "4.3.13",
-      "originator": "Eclipse RDF4J contributors, Aduna, and others",
+      "originator": "Organization: Eclipse RDF4J contributors, Aduna, and others",
       "homepage": "https://rdf4j.org",
       "downloadLocation": "https://github.com/eclipse-rdf4j/rdf4j/tree/4.3.13",
       "licenseDeclared": "BSD-3-Clause",

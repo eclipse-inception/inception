@@ -41,24 +41,28 @@ import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.regex.Pattern.compile;
 
 import java.io.ByteArrayInputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.stream.Stream;
 import java.util.jar.JarInputStream;
 import java.util.regex.Pattern;
 
@@ -73,6 +77,7 @@ import de.tudarmstadt.ukp.inception.support.about.MavenDependency;
 import de.tudarmstadt.ukp.inception.support.about.MavenLicense;
 import de.tudarmstadt.ukp.inception.support.about.SpdxExternalRef;
 import de.tudarmstadt.ukp.inception.support.about.SpdxPackage;
+import de.tudarmstadt.ukp.inception.support.json.JSONUtil;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -80,7 +85,8 @@ import picocli.CommandLine.Option;
 /**
  * Generates the legal documentation that goes into the root of a distribution artifact: the project
  * {@code LICENSE}, a {@code NOTICE.md}, a {@code DEPENDENCIES} table of all third-party components
- * with their SPDX license expressions, and the texts of these licenses in {@code LICENSES/}.
+ * with their SPDX license expressions, the texts of these licenses in {@code LICENSES/}, and an
+ * SPDX 2.3 SBOM.
  * <p>
  * Analyses what the artifact actually contains, so that the files describe exactly what ships: the
  * libraries in a Spring Boot executable archive ({@code WEB-INF/lib}, {@code WEB-INF/lib-provided}
@@ -92,8 +98,8 @@ import picocli.CommandLine.Option;
 @Command( //
         name = "generate-legal-documentation", //
         mixinStandardHelpOptions = true, //
-        description = "Generates LICENSE, NOTICE.md, DEPENDENCIES and LICENSES/ for a "
-                + "distribution artifact.")
+        description = "Generates LICENSE, NOTICE.md, DEPENDENCIES, LICENSES/ and an SPDX SBOM "
+                + "for a distribution artifact.")
 public class LegalDocumentationGenerator
     implements Callable<Integer>
 {
@@ -101,6 +107,7 @@ public class LegalDocumentationGenerator
     private static final String NOTICE_MD = "NOTICE.md";
     private static final String DEPENDENCIES_FILE = "DEPENDENCIES";
     private static final String LICENSES_DIR = "LICENSES";
+    private static final String SBOM_FILE = "sbom.spdx.json";
     private static final String PROP_CRYPTOGRAPHY = "${cryptography}";
     private static final String PROP_EMBEDDED_CONTENT = "${embeddedContent}";
     private static final String PROP_LIBRARY_NOTICES = "${libraryNotices}";
@@ -198,6 +205,25 @@ public class LegalDocumentationGenerator
             description = "npm scope of our own packages, which are not third-party content")
     private String ownNpmScope;
 
+    @Option(names = "--project-name", required = true, description = "Name of the project")
+    private String projectName;
+
+    @Option(names = "--project-version", required = true, description = "Version of the project")
+    private String projectVersion;
+
+    @Option(names = "--project-license", required = true, //
+            description = "License of the project: an SPDX expression or a license name that "
+                    + "maps to one, such as the name in the POM")
+    private String projectLicense;
+
+    @Option(names = "--project-url", required = true, //
+            description = "Home page of the project, also the base of the SBOM namespace")
+    private String projectUrl;
+
+    @Option(names = "--output-timestamp", //
+            description = "The build's project.build.outputTimestamp, for a reproducible SBOM")
+    private String outputTimestamp;
+
     private Map<String, Conclusion> conclusions;
     private final Set<String> usedConclusions = new HashSet<>();
     private final List<String> errors = new ArrayList<>();
@@ -250,6 +276,21 @@ public class LegalDocumentationGenerator
         var embedded = collectEmbeddedContent(content.entries());
         var licenses = collectLicenseTexts(maven, npm, embedded);
 
+        var components = new ArrayList<>(maven);
+        components.addAll(npm);
+        var projectSpdxLicense = licenseExpression(projectLicense);
+        if (projectSpdxLicense.isEmpty()) {
+            errors.add("The project license does not map to an SPDX id: " + projectLicense);
+        }
+        var project = new SpdxSbom.Project(projectName, projectVersion,
+                projectSpdxLicense.orElse(projectLicense), projectUrl,
+                artifact.getFileName().toString(),
+                SpdxSbom.creationTime(outputTimestamp, Instant.now()));
+        var sbom = SpdxSbom.build(project, components, embedded, licenses);
+        for (var violation : SpdxSbom.validate(sbom)) {
+            errors.add("The SBOM violates the SPDX 2.3 schema: " + violation);
+        }
+
         for (var unused : conclusions.keySet()) {
             if (!usedConclusions.contains(unused)) {
                 errors.add("Concluded license for [" + unused
@@ -268,9 +309,12 @@ public class LegalDocumentationGenerator
         writeDependencies(maven, npm);
         writeNotice(maven, embedded, notices);
         var licenseFiles = writeLicenseTexts(licenses);
+        JSONUtil.generatePrettyJson(JSONUtil.getObjectMapper(), sbom,
+                output.resolve(SBOM_FILE).toFile());
 
         if (patch) {
-            var files = new ArrayList<>(List.of(LICENSE_FILE, NOTICE_MD, DEPENDENCIES_FILE));
+            var files = new ArrayList<>(
+                    List.of(LICENSE_FILE, NOTICE_MD, DEPENDENCIES_FILE, SBOM_FILE));
             files.addAll(licenseFiles);
             patch(artifact, output, files);
         }
@@ -388,8 +432,9 @@ public class LegalDocumentationGenerator
             }
 
             var key = "pkg:maven/" + c.groupId() + "/" + c.artifactId();
-            resolveLicense(key, c.licenses()).ifPresent(l -> components.add(
-                    maven(c.groupId(), c.artifactId(), c.version(), l, authority(key, "pom"))));
+            resolveLicense(key, c.licenses())
+                    .ifPresent(l -> components.add(maven(c.groupId(), c.artifactId(), c.version(),
+                            l, authority(key, "pom"), entry.path(), entry.sha256())));
         }
 
         if (aContent.springBootLoader()) {
@@ -399,9 +444,11 @@ public class LegalDocumentationGenerator
             }
             else {
                 var key = "pkg:maven/" + SPRING_BOOT_GROUP_ID + "/" + SPRING_BOOT_LOADER;
-                resolveLicense(key, List.of()).ifPresent(
-                        l -> components.add(maven(SPRING_BOOT_GROUP_ID, SPRING_BOOT_LOADER,
-                                aContent.springBootVersion(), l, authority(key, "pom"))));
+                // The loader classes are copied in loose, so there is no jar to name or checksum
+                resolveLicense(key, List.of())
+                        .ifPresent(l -> components.add(maven(SPRING_BOOT_GROUP_ID,
+                                SPRING_BOOT_LOADER, aContent.springBootVersion(), l,
+                                authority(key, "pom"), null, null)));
             }
         }
 
@@ -526,6 +573,13 @@ public class LegalDocumentationGenerator
                     continue;
                 }
 
+                Stream.of(pkg.getOriginator(), pkg.getSupplier()) //
+                        .filter(Objects::nonNull) //
+                        .filter(entity -> !SpdxSbom.isEntity(entity)) //
+                        .forEach(entity -> errors.add("Embedded content [" + pkg.getName() + "] in "
+                                + entry.path() + " names its originator or supplier "
+                                + "without \"Person: \" or \"Organization: \": " + entity));
+
                 var declared = embeddedLicense(pkg);
                 if (licenseExpression(declared).isEmpty()) {
                     errors.add("Embedded content [" + pkg.getName() + "] in " + entry.path()
@@ -539,7 +593,7 @@ public class LegalDocumentationGenerator
         return packages;
     }
 
-    private static String embeddedLicense(SpdxPackage aPackage)
+    static String embeddedLicense(SpdxPackage aPackage)
     {
         return aPackage.getLicenseConcluded() != null ? aPackage.getLicenseConcluded()
                 : aPackage.getLicenseDeclared();
@@ -549,7 +603,7 @@ public class LegalDocumentationGenerator
      * @return the SPDX expression for a license declaration, accepting a custom
      *         {@code LicenseRef-...} as it is.
      */
-    private static Optional<String> licenseExpression(String aDeclared)
+    static Optional<String> licenseExpression(String aDeclared)
     {
         if (aDeclared != null && LICENSE_REF.matcher(aDeclared.trim()).matches()) {
             return Optional.of(aDeclared.trim());
@@ -578,7 +632,7 @@ public class LegalDocumentationGenerator
                     .getNextJarEntry()) {
                 var name = entry.getName();
                 if (name.endsWith(".jar") && LIBRARY_DIRS.stream().anyMatch(name::startsWith)) {
-                    entries.add(scanJar(name, new CloseShieldInputStream(archive)));
+                    entries.add(scanJar(name, archive.readAllBytes()));
                 }
                 else if (CLASSES_DIRS.stream().anyMatch(d -> name.equals(d + NPM_DEPENDENCIES))) {
                     classesNpm = archive.readAllBytes();
@@ -593,7 +647,7 @@ public class LegalDocumentationGenerator
             }
 
             if (classesNpm != null || classesEmbedded != null) {
-                entries.add(new ScannedEntry(aArtifact + "!classes", false, null, classesNpm,
+                entries.add(new ScannedEntry(aArtifact + "!classes", false, null, null, classesNpm,
                         classesEmbedded, List.of()));
             }
 
@@ -601,9 +655,9 @@ public class LegalDocumentationGenerator
         }
     }
 
-    static ScannedEntry scanJar(String aPath, InputStream aJar) throws IOException
+    static ScannedEntry scanJar(String aPath, byte[] aJar) throws IOException
     {
-        try (var jar = new JarInputStream(aJar)) {
+        try (var jar = new JarInputStream(new ByteArrayInputStream(aJar))) {
             byte[] npmDependencies = null;
             byte[] embeddedDependencies = null;
             var pomProperties = new LinkedHashMap<String, Properties>();
@@ -631,8 +685,19 @@ public class LegalDocumentationGenerator
             }
 
             var pom = embeddedPom(aPath, pomProperties, pomXmls);
-            return new ScannedEntry(aPath, true, pom, npmDependencies, embeddedDependencies,
-                    notices);
+            return new ScannedEntry(aPath, true, pom, sha256(aJar), npmDependencies,
+                    embeddedDependencies, notices);
+        }
+    }
+
+    private static String sha256(byte[] aData)
+    {
+        try {
+            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(aData));
+        }
+        catch (NoSuchAlgorithmException e) {
+            // Every Java platform has to support SHA-256
+            throw new IllegalStateException(e);
         }
     }
 
@@ -795,7 +860,8 @@ public class LegalDocumentationGenerator
             embedded.append("* License: ").append(licenseExpression(lic).orElseThrow())
                     .append("\n");
             if (pkg.getOriginator() != null) {
-                embedded.append("* Originator: ").append(pkg.getOriginator()).append("\n");
+                embedded.append("* Originator: ")
+                        .append(SpdxPackage.entityName(pkg.getOriginator())).append("\n");
             }
             var source = pkg.getHomepage() != null ? pkg.getHomepage() : pkg.getDownloadLocation();
             if (source != null) {
@@ -905,8 +971,8 @@ public class LegalDocumentationGenerator
     /**
      * What was read from a library in the artifact, or from the application's own classes.
      */
-    record ScannedEntry(String path, boolean library, Coordinates pom, byte[] npmDependencies,
-            byte[] embeddedDependencies, List<String> notices)
+    record ScannedEntry(String path, boolean library, Coordinates pom, String sha256,
+            byte[] npmDependencies, byte[] embeddedDependencies, List<String> notices)
     {
         String fileName()
         {
@@ -915,35 +981,22 @@ public class LegalDocumentationGenerator
     }
 
     /**
-     * Lets a nested jar be read through its own stream without closing the archive around it.
+     * A third-party component. The file name and checksum are those of the jar in the artifact; npm
+     * packages and the Spring Boot loader classes have none.
      */
-    private static final class CloseShieldInputStream
-        extends FilterInputStream
-    {
-        CloseShieldInputStream(InputStream aIn)
-        {
-            super(aIn);
-        }
-
-        @Override
-        public void close()
-        {
-            // The enclosing archive stays open
-        }
-    }
-
     record Component(String kind, String groupId, String name, String version, String license,
-            String authority)
+            String authority, String fileName, String sha256)
     {
         static Component maven(String aGroupId, String aArtifactId, String aVersion,
-                String aLicense, String aAuthority)
+                String aLicense, String aAuthority, String aFileName, String aSha256)
         {
-            return new Component("maven", aGroupId, aArtifactId, aVersion, aLicense, aAuthority);
+            return new Component("maven", aGroupId, aArtifactId, aVersion, aLicense, aAuthority,
+                    aFileName, aSha256);
         }
 
         static Component npm(String aName, String aVersion, String aLicense, String aAuthority)
         {
-            return new Component("npm", null, aName, aVersion, aLicense, aAuthority);
+            return new Component("npm", null, aName, aVersion, aLicense, aAuthority, null, null);
         }
 
         String clearlyDefinedId()

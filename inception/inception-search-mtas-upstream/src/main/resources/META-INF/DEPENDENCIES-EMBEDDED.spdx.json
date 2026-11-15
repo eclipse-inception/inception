@@ -4,7 +4,7 @@
     {
       "name": "MTAS",
       "versionInfo": "9.10.0.0",
-      "originator": "Matthijs Brouwer",
+      "originator": "Person: Matthijs Brouwer",
       "homepage": "https://github.com/textexploration/mtas",
       "licenseDeclared": "Apache-2.0",
       "description": "A customized version of MTAS without Solr support",
@@ -19,7 +19,7 @@
     {
       "name": "Apache Solr",
       "versionInfo": "9.6.0",
-      "originator": "Apache Foundation",
+      "originator": "Organization: Apache Foundation",
       "homepage": "https://solr.apache.org",
       "licenseDeclared": "Apache-2.0",
       "description": "LegacyNumericUtils utility class required by MTAS",

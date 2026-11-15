@@ -4,7 +4,7 @@
     {
       "name": "jsoup",
       "versionInfo": "1.23.2",
-      "originator": "Jonathan Hedley",
+      "originator": "Person: Jonathan Hedley",
       "homepage": "https://jsoup.org",
       "downloadLocation": "https://github.com/jhy/jsoup/tree/jsoup-1.23.2",
       "licenseDeclared": "MIT",
