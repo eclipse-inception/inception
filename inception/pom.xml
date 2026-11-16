@@ -1086,19 +1086,18 @@
                 </configuration>
               </execution>
               <execution>
+                <!--
+                  Lists the npm packages the module ships, with their licenses, for the About page
+                  and the legal documentation of the distributions.
+                -->
                 <id>bun generate license report</id>
                 <goals>
                   <goal>bun</goal>
                 </goals>
                 <phase>${ts-build-phase}</phase>
                 <configuration>
-                  <environmentVariables>
-                    <DEBUG>license-report*</DEBUG>
-                  </environmentVariables>
-                  <arguments>x license-checker --production --out
-                    ${project.build.directory}/js/META-INF/NPM-DEPENDENCIES.json --json --customPath
-                    ../../../../inception-build/src/main/resources/inception/licenseCheckerCustomFormat.json
-                    --excludePrivatePackages</arguments>
+                  <arguments>../../../../inception-build/src/main/resources/inception/npm-dependencies.mjs
+                    ${project.build.directory}/js/META-INF/NPM-DEPENDENCIES.json</arguments>
                 </configuration>
               </execution>
               <execution>

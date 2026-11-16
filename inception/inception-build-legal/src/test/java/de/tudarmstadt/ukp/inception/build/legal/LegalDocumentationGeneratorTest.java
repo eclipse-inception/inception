@@ -95,7 +95,8 @@ class LegalDocumentationGeneratorTest
         artifactEntries.put("WEB-INF/lib/library-b-2.0-classifier.jar", jar(Map.of()));
         artifactEntries.put("WEB-INF/lib/app-module-1.0.jar", jar(Map.of( //
                 "META-INF/NPM-DEPENDENCIES.json", """
-                        { "lib-c@3.0.0": { "licenses": "(MIT OR Apache-2.0)" },
+                        { "lib-c@3.0.0": { "licenses": "(MIT OR Apache-2.0)",
+                                           "noticeText": "Lib C\\nCopyright The Lib C Authors" },
                           "@example/lib-d@1.2.3": { "licenses": "ISC" },
                           "@app/own-package@1.0.0": { "licenses": "Apache-2.0" } }
                         """, //
@@ -155,6 +156,7 @@ class LegalDocumentationGeneratorTest
                 .contains("* License: CC-BY-4.0") //
                 .contains("* Files: org/example/Icon.svg") //
                 .contains("* Originator: Example Inc.\n") //
+                .contains("* npm:lib-c:3.0.0\n\n```text\nLib C\nCopyright The Lib C Authors\n```") //
                 .doesNotContain("${") //
                 .doesNotContain("## Cryptography");
     }

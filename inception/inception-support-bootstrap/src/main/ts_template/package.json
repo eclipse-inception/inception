@@ -14,7 +14,6 @@
     "format:check": "prettier --check \"**/*.{js,ts,css,scss,json,md,html}\""
   },
   "devDependencies": {
-    "license-checker": "${license-checker.version}",
     "bootstrap": "${bootstrap.version}",
     "cross-env": "${cross-env.version}",
     "esbuild": "${esbuild.version}",

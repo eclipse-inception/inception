@@ -269,7 +269,6 @@
     <jsdom-global.version>^3.0.2</jsdom-global.version>
     <jquery.version>4.0.0</jquery.version>
     <jquery-ui.version>1.14.2+1</jquery-ui.version>
-    <license-checker.version>^25.0.1</license-checker.version>
     <marked.version>~18.0.14</marked.version>
     <pdfjs.version>5.4.449</pdfjs.version>
     <neostandard.version>^0.13.0</neostandard.version>

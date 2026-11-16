@@ -328,7 +328,7 @@ public class LegalDocumentationGenerator
             }
             maven.add(runtime.toComponent());
         }
-        var npm = collectNpmComponents(content.entries());
+        var npm = collectNpmComponents(content.entries(), notices);
         var embedded = collectEmbeddedContent(content.entries());
         var licenses = collectLicenseTexts(maven, npm, embedded);
 
@@ -596,7 +596,9 @@ public class LegalDocumentationGenerator
                 : aFileName;
     }
 
-    private List<Component> collectNpmComponents(List<ScannedEntry> aEntries) throws IOException
+    private List<Component> collectNpmComponents(List<ScannedEntry> aEntries,
+            LibraryNotices aNotices)
+        throws IOException
     {
         var components = new TreeMap<String, Component>();
         // The same package appears in several of our modules; check and report it only once
@@ -624,6 +626,10 @@ public class LegalDocumentationGenerator
                     errors.add("npm package without a version in " + entry.path() + ": "
                             + dep.getName());
                     continue;
+                }
+
+                if (dep.getNoticeText() != null) {
+                    aNotices.add("npm:" + name + ":" + version, dep.getNoticeText());
                 }
 
                 var key = "pkg:npm/" + name.replace("@", "%40");

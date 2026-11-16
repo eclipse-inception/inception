@@ -30,7 +30,6 @@
     "@svgdotjs/svg.js": "${svgdotjs-svg-js.version}"
   },
   "devDependencies": {
-    "license-checker": "${license-checker.version}",
     "esbuild": "${esbuild.version}",
     "esbuild-svelte": "${esbuild-svelte.version}",
     "esbuild-sass-plugin": "${esbuild-sass-plugin.version}",
