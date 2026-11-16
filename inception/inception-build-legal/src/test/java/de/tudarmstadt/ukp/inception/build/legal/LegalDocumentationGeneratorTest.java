@@ -55,9 +55,10 @@ class LegalDocumentationGeneratorTest
     private static final String OWN_GROUP_ID = "org.example.app";
 
     private static final List<Conclusion> SPRING_BOOT_CONCLUSIONS = List.of( //
-            new Conclusion("pkg:maven/org.springframework.boot/spring-boot-loader", "Apache-2.0"),
+            new Conclusion("pkg:maven/org.springframework.boot/spring-boot-loader", "Apache-2.0",
+                    "[9.0,10)"),
             new Conclusion("pkg:maven/org.springframework.boot/spring-boot-jarmode-tools",
-                    "Apache-2.0"));
+                    "Apache-2.0", "[9.0,10)"));
 
     @TempDir
     Path tempDir;
@@ -233,9 +234,9 @@ class LegalDocumentationGeneratorTest
     void thatIncorporatedLicensesAndExceptionsShipTheirTexts() throws Exception
     {
         var conclusions = new ArrayList<>(SPRING_BOOT_CONCLUSIONS);
-        conclusions.add(new Conclusion("pkg:maven/org.example/library-a", "LGPL-3.0-only"));
+        conclusions.add(new Conclusion("pkg:maven/org.example/library-a", "LGPL-3.0-only", "1.0"));
         conclusions.add(new Conclusion("pkg:maven/org.example/library-b",
-                "(GPL-2.0-only WITH Classpath-exception-2.0)"));
+                "(GPL-2.0-only WITH Classpath-exception-2.0)", "2.0"));
 
         generate(conclusions);
 
@@ -250,7 +251,7 @@ class LegalDocumentationGeneratorTest
     void thatLicensesWithoutTextAreReported() throws Exception
     {
         var conclusions = new ArrayList<>(SPRING_BOOT_CONCLUSIONS);
-        conclusions.add(new Conclusion("pkg:maven/org.example/library-a", "Zlib"));
+        conclusions.add(new Conclusion("pkg:maven/org.example/library-a", "Zlib", "1.0"));
 
         assertThatThrownBy(() -> generate(conclusions)) //
                 .hasMessageContaining("No text for license [Zlib]");
@@ -500,7 +501,7 @@ class LegalDocumentationGeneratorTest
                 .hasMessageContaining("Some Custom License");
 
         var conclusions = new ArrayList<>(SPRING_BOOT_CONCLUSIONS);
-        conclusions.add(new Conclusion("pkg:maven/org.example/library-a", "BSD-3-Clause"));
+        conclusions.add(new Conclusion("pkg:maven/org.example/library-a", "BSD-3-Clause", "1.0"));
         generate(conclusions);
 
         assertThat(Files.readAllLines(output.resolve("DEPENDENCIES"), UTF_8))
@@ -509,10 +510,42 @@ class LegalDocumentationGeneratorTest
     }
 
     @Test
+    void thatAConclusionForAnotherVersionIsReported() throws Exception
+    {
+        var conclusions = new ArrayList<>(SPRING_BOOT_CONCLUSIONS);
+        // Checked for 0.9, but 1.0 ships
+        conclusions.add(new Conclusion("pkg:maven/org.example/library-a", "BSD-3-Clause", "0.9"));
+
+        assertThatThrownBy(() -> generate(conclusions)) //
+                .hasMessageContaining("[pkg:maven/org.example/library-a] was checked for version "
+                        + "0.9, but version 1.0 ships");
+    }
+
+    @Test
+    void thatConclusionsCoverTheirVersionsOrRanges()
+    {
+        var exact = new Conclusion("pkg:maven/x/y", "MIT", "1.9");
+        assertThat(exact.covers("1.9")).isTrue();
+        assertThat(exact.covers("1.10")).isFalse();
+
+        var range = new Conclusion("pkg:maven/x/y", "MIT", "[4.0,5)");
+        assertThat(range.covers("4.0")).isTrue();
+        assertThat(range.covers("4.10.2")).isTrue();
+        assertThat(range.covers("5.0")).isFalse();
+        assertThat(range.covers("3.9.9")).isFalse();
+
+        assertThat(new Conclusion("pkg:maven/x/y", "MIT", "(1.0,)").covers("1.0")).isFalse();
+        assertThat(new Conclusion("pkg:maven/x/y", "MIT", "(1.0,)").covers("1.0.1")).isTrue();
+
+        assertThatThrownBy(() -> new Conclusion("pkg:maven/x/y", "MIT", "[1.0"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void thatUnusedConclusionsAreReported() throws Exception
     {
         var conclusions = new ArrayList<>(SPRING_BOOT_CONCLUSIONS);
-        conclusions.add(new Conclusion("pkg:maven/org.example/gone", "MIT"));
+        conclusions.add(new Conclusion("pkg:maven/org.example/gone", "MIT", "1.0"));
 
         assertThatThrownBy(() -> generate(conclusions, "--fail-on-unused-conclusions")) //
                 .hasMessageContaining("pkg:maven/org.example/gone") //

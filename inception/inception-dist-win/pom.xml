@@ -184,8 +184,11 @@
                     <argument>${project.licenses[0].name}</argument>
                     <argument>--project-url</argument>
                     <argument>${project.organization.url}</argument>
-                    <argument>--output-timestamp</argument>
-                    <argument>${project.build.outputTimestamp}</argument>
+                    <!--
+                      One argument: Maven 3 passes an unset property on its own as null, but leaves
+                      it as text inside a longer string, which the generator reads as not set.
+                    -->
+                    <argument>--output-timestamp=${project.build.outputTimestamp}</argument>
                   </arguments>
                 </configuration>
               </execution>

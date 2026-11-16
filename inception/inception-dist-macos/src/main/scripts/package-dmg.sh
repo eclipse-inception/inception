@@ -23,7 +23,9 @@
 #              legal documentation to be generated from
 #   dmg:       builds and signs the app again from the same input and packs it
 #              into the DMG, with the legal documentation from
-#              <destination dir>/legal next to it in the DMG window
+#              <destination dir>/legal next to it in the DMG window and inside
+#              the app (Contents/legal), so that it stays with the app once it
+#              has been copied to the Applications folder
 #
 # Both steps choose the JDK the same way: if no JDK is configured for the
 # target architecture, native-arch builds fall back to JAVA_HOME and
@@ -167,6 +169,7 @@ jpackage_app \
   --type dmg \
   --dest "$DEST_DIR" \
   --mac-dmg-content "$LEGAL_DIR" \
+  --app-content "$LEGAL_DIR" \
   --mac-sign \
   --mac-signing-key-user-name "$SIGNING_IDENTITY" \
   --mac-entitlements "$ENTITLEMENTS"

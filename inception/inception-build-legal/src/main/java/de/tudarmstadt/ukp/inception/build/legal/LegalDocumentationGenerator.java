@@ -498,7 +498,7 @@ public class LegalDocumentationGenerator
 
             var key = "pkg:maven/" + c.groupId() + "/" + c.artifactId();
             var classifier = classifier(entry.fileName(), c.artifactId(), c.version());
-            resolveLicense(key, c.licenses())
+            resolveLicense(key, c.version(), c.licenses())
                     .ifPresent(l -> components.add(maven(c.groupId(), c.artifactId(), c.version(),
                             classifier, l, authority(key, "pom"), entry.path(), entry.sha256())));
         }
@@ -511,7 +511,7 @@ public class LegalDocumentationGenerator
             else {
                 var key = "pkg:maven/" + SPRING_BOOT_GROUP_ID + "/" + SPRING_BOOT_LOADER;
                 // The loader classes are copied in loose, so there is no jar to name or checksum
-                resolveLicense(key, List.of())
+                resolveLicense(key, aContent.springBootVersion(), List.of())
                         .ifPresent(l -> components.add(maven(SPRING_BOOT_GROUP_ID,
                                 SPRING_BOOT_LOADER, aContent.springBootVersion(), null, l,
                                 authority(key, "pom"), null, null)));
@@ -635,7 +635,7 @@ public class LegalDocumentationGenerator
                 var key = "pkg:npm/" + name.replace("@", "%40");
                 var declared = dep.getLicenses() == null ? List.<String> of()
                         : List.of(dep.getLicenses());
-                resolveLicense(key, declared).ifPresent(l -> components.put(dep.getName(),
+                resolveLicense(key, version, declared).ifPresent(l -> components.put(dep.getName(),
                         npm(name, version, l, authority(key, "npm"))));
             }
         }
@@ -994,11 +994,18 @@ public class LegalDocumentationGenerator
      * are read as alternatives, which is what multiple licenses in a POM usually mean. A component
      * whose declarations do not all map needs a concluded license.
      */
-    private Optional<String> resolveLicense(String aKey, List<String> aDeclared)
+    private Optional<String> resolveLicense(String aKey, String aVersion, List<String> aDeclared)
     {
         var concluded = conclusions.get(aKey);
         if (concluded != null) {
             usedConclusions.add(aKey);
+            if (!concluded.covers(aVersion)) {
+                errors.add("The concluded license of [" + aKey + "] was checked for version "
+                        + concluded.versions() + ", but version " + aVersion + " ships - check "
+                        + "the license of this version and update the entry in "
+                        + CONCLUSIONS_RESOURCE);
+                return Optional.empty();
+            }
             return Optional.of(concluded.license());
         }
 
@@ -1116,7 +1123,9 @@ public class LegalDocumentationGenerator
     /**
      * Loads the licenses we concluded for components whose own metadata does not state a usable
      * license. The file is an SPDX package list: each package identifies the component by a purl
-     * without version and gives the concluded license with the evidence in its comment.
+     * without version, gives the version the license was checked for in {@code versionInfo}
+     * (exactly, or as a range such as {@code [4.0,5)} where the license cannot change with the
+     * version) and the concluded license with the evidence in its comment.
      */
     static List<Conclusion> loadConclusions() throws IOException
     {
@@ -1149,7 +1158,13 @@ public class LegalDocumentationGenerator
                         + "] is not a known SPDX license expression: " + license);
             }
 
-            conclusions.add(new Conclusion(purl, license));
+            var versions = pkg.getVersionInfo();
+            if (versions == null || versions.isBlank()) {
+                throw new IOException("The entry of [" + purl + "] in " + CONCLUSIONS_RESOURCE
+                        + " needs a versionInfo: the version its license was checked for");
+            }
+
+            conclusions.add(new Conclusion(purl, license, versions));
         }
         return conclusions;
     }
@@ -1177,9 +1192,76 @@ public class LegalDocumentationGenerator
     }
 
     /**
-     * A license we concluded for a component. The purl has no version.
+     * A license we concluded for a component. The purl has no version; the versions are those the
+     * license was checked for: one version, or a range in interval notation such as
+     * {@code [4.0,5)}, with either end open, e.g. {@code [1.0,)}.
      */
-    record Conclusion(String purl, String license) {}
+    record Conclusion(String purl, String license, String versions) {
+        Conclusion
+        {
+            // Fail early on a malformed range. The fields are not set yet in a compact
+            // constructor, so this works on the parameter.
+            covers(versions, "0");
+        }
+
+        boolean covers(String aVersion)
+        {
+            return covers(versions, aVersion);
+        }
+
+        private static boolean covers(String aVersions, String aVersion)
+        {
+            var spec = aVersions.trim();
+            if (!spec.startsWith("[") && !spec.startsWith("(")) {
+                return spec.equals(aVersion);
+            }
+
+            if (!(spec.endsWith("]") || spec.endsWith(")")) || spec.indexOf(',') < 0) {
+                throw new IllegalArgumentException("Not a version range: " + aVersions);
+            }
+
+            var lower = spec.substring(1, spec.indexOf(',')).trim();
+            var upper = spec.substring(spec.indexOf(',') + 1, spec.length() - 1).trim();
+            if (!lower.isEmpty()) {
+                var c = compareVersions(aVersion, lower);
+                if (c < 0 || (c == 0 && spec.startsWith("("))) {
+                    return false;
+                }
+            }
+            if (!upper.isEmpty()) {
+                var c = compareVersions(aVersion, upper);
+                if (c > 0 || (c == 0 && spec.endsWith(")"))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /**
+         * Compares versions segment by segment, numerically where both segments are numbers, e.g.
+         * {@code 4.10 > 4.9}. Missing segments count as 0.
+         */
+        static int compareVersions(String aOne, String aOther)
+        {
+            var one = aOne.split("[.+-]");
+            var other = aOther.split("[.+-]");
+            for (var i = 0; i < Math.max(one.length, other.length); i++) {
+                var a = i < one.length ? one[i] : "0";
+                var b = i < other.length ? other[i] : "0";
+                int c;
+                if (a.matches("\\d+") && b.matches("\\d+")) {
+                    c = Long.compare(Long.parseLong(a), Long.parseLong(b));
+                }
+                else {
+                    c = a.compareTo(b);
+                }
+                if (c != 0) {
+                    return c;
+                }
+            }
+            return 0;
+        }
+    }
 
     record Coordinates(String groupId, String artifactId, String version, List<String> licenses) {}
 
