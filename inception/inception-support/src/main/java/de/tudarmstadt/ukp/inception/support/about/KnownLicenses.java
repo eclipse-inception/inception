@@ -98,8 +98,10 @@ public final class KnownLicenses
                 "LGPL 2\\.1 .*");
         add("LGPL-2.1-or-later", "LGPL 2.1 or later (http://www.gnu.org/licenses/lgpl-2.1.html)", //
                 "GNU Library General Public License v2.1 or later.*");
+        // Not the bare http://www.gnu.org/licenses/lgpl.html: it always points to the current
+        // version, so it says nothing about the version a component is licensed under
         add("LGPL-3.0-only", "LGPL 3.0 (https://www.gnu.org/licenses/lgpl-3.0.html)", //
-                ".*http://www.gnu.org/licenses/lgpl.html.*", //
+                "GNU Lesser General Public License, Version 3 .*", //
                 "GNU LGPL Version 3\\.0.*", //
                 ".*://www\\.gnu\\.org/licenses/lgpl-3\\.0\\.txt.*");
         add("MPL-1.1", "Mozilla Public License 1.1 (http://www.mozilla.org/MPL/MPL-1.1.html)", //
@@ -121,6 +123,7 @@ public final class KnownLicenses
                 "GPL2 w/ CPE.*");
         add("CC0-1.0", "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)", //
                 ".*://creativecommons\\.org/publicdomain/zero/1\\.0.*");
+        add("CC-BY-2.5", "CC BY 2.5 (https://creativecommons.org/licenses/by/2.5/)");
         add("CC-BY-3.0", "CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/)");
         add("CC-BY-4.0", "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)");
         add("OFL-1.1", "SIL Open Font License 1.1 (https://openfontlicense.org)");

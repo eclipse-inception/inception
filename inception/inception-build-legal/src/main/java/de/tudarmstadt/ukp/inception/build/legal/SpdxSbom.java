@@ -154,13 +154,18 @@ class SpdxSbom
     private static ObjectNode componentPackage(Component aComponent)
     {
         var maven = "maven".equals(aComponent.kind());
+        var runtime = "runtime".equals(aComponent.kind());
         var name = maven ? aComponent.groupId() + ":" + aComponent.name() : aComponent.name();
 
         var node = getObjectMapper().createObjectNode();
         node.put("SPDXID",
-                id(aComponent.kind() + "-" + name.replace(':', '-') + "-" + aComponent.version()));
+                id(aComponent.kind() + "-" + name.replace(':', '-') + "-" + aComponent.version()
+                        + (aComponent.classifier() != null ? "-" + aComponent.classifier() : "")));
         node.put("name", name);
         node.put("versionInfo", aComponent.version());
+        if (runtime && aComponent.groupId() != null) {
+            node.put("supplier", "Organization: " + aComponent.groupId());
+        }
         if (aComponent.fileName() != null) {
             node.put("packageFileName", aComponent.fileName());
         }
@@ -171,15 +176,28 @@ class SpdxSbom
             checksum.put("algorithm", "SHA256");
             checksum.put("checksumValue", aComponent.sha256());
         }
-        node.put("licenseConcluded", aComponent.license());
-        // A concluded license replaces a declaration that does not map to SPDX
-        node.put("licenseDeclared",
-                "concluded".equals(aComponent.authority()) ? NOASSERTION : aComponent.license());
+        if (runtime) {
+            // The runtime's own license; its folder legal lists further third-party content under
+            // other licenses, which the runtime includes
+            node.put("licenseConcluded", NOASSERTION);
+            node.put("licenseDeclared", aComponent.license());
+            node.put("licenseComments", "The runtime is licensed under " + aComponent.license()
+                    + ". It includes third-party content under further licenses, listed in its "
+                    + "folder " + aComponent.fileName() + "/legal.");
+        }
+        else {
+            node.put("licenseConcluded", aComponent.license());
+            // A concluded license replaces a declaration that does not map to SPDX
+            node.put("licenseDeclared", "concluded".equals(aComponent.authority()) ? NOASSERTION
+                    : aComponent.license());
+        }
         var purl = node.putArray("externalRefs").addObject();
         purl.put("referenceCategory", "PACKAGE-MANAGER");
         purl.put("referenceType", "purl");
         purl.put("referenceLocator", aComponent.purl());
-        node.put("primaryPackagePurpose", "LIBRARY");
+        if (!runtime) {
+            node.put("primaryPackagePurpose", "LIBRARY");
+        }
         return node;
     }
 

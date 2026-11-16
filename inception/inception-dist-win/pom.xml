@@ -126,6 +126,70 @@
                 </configuration>
               </execution>
               <execution>
+                <id>package-app-image-x86_64</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>bash</executable>
+                  <arguments>
+                    <argument>${project.basedir}/src/main/scripts/package-msi.sh</argument>
+                    <argument>app-image</argument>
+                    <argument>x86_64</argument>
+                    <argument>${jdk.x86_64.home}</argument>
+                    <argument>${project.build.directory}/jpackage-input</argument>
+                    <argument>${project.build.directory}/jpackage-x86_64</argument>
+                    <argument>inception-app-webapp-${project.version}-lib.jar</argument>
+                    <argument>de.tudarmstadt.ukp.inception.INCEpTION</argument>
+                    <argument>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</argument>
+                    <argument>${project.build.directory}/icon.ico</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <!--
+                  Analyses the application image built above, including the Java runtime jpackage
+                  bundled, and writes the legal documentation that package-msi puts into the
+                  installation folder. Skipped along with a cross-arch build without a JDK.
+                -->
+                <id>generate-legal-documentation-x86_64</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>java</goal>
+                </goals>
+                <configuration>
+                  <mainClass>de.tudarmstadt.ukp.inception.build.legal.LegalDocumentationGenerator</mainClass>
+                  <includeProjectDependencies>false</includeProjectDependencies>
+                  <includePluginDependencies>true</includePluginDependencies>
+                  <arguments>
+                    <argument>--artifact</argument>
+                    <argument>${project.build.directory}/jpackage-x86_64/INCEpTION</argument>
+                    <argument>--distribution-name</argument>
+                    <argument>INCEpTION-${parsedVersion.majorVersion}.${parsedVersion.minorVersion}-x86_64.msi</argument>
+                    <argument>--skip-if-missing</argument>
+                    <argument>--license</argument>
+                    <argument>${project.basedir}/../../LICENSE.txt</argument>
+                    <argument>--output</argument>
+                    <argument>${project.build.directory}/jpackage-x86_64/legal</argument>
+                    <argument>--own-group-id</argument>
+                    <argument>${project.groupId}</argument>
+                    <argument>--own-npm-scope</argument>
+                    <argument>@inception-project</argument>
+                    <argument>--project-name</argument>
+                    <argument>${product.name}</argument>
+                    <argument>--project-version</argument>
+                    <argument>${project.version}</argument>
+                    <argument>--project-license</argument>
+                    <argument>${project.licenses[0].name}</argument>
+                    <argument>--project-url</argument>
+                    <argument>${project.organization.url}</argument>
+                    <argument>--output-timestamp</argument>
+                    <argument>${project.build.outputTimestamp}</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+              <execution>
                 <id>package-msi-x86_64</id>
                 <phase>package</phase>
                 <goals>
@@ -135,6 +199,7 @@
                   <executable>bash</executable>
                   <arguments>
                     <argument>${project.basedir}/src/main/scripts/package-msi.sh</argument>
+                    <argument>msi</argument>
                     <argument>x86_64</argument>
                     <argument>${jdk.x86_64.home}</argument>
                     <argument>${project.build.directory}/jpackage-input</argument>
@@ -147,6 +212,13 @@
                 </configuration>
               </execution>
             </executions>
+            <dependencies>
+              <dependency>
+                <groupId>de.tudarmstadt.ukp.inception.app</groupId>
+                <artifactId>inception-build-legal</artifactId>
+                <version>${project.version}</version>
+              </dependency>
+            </dependencies>
           </plugin>
         </plugins>
       </build>

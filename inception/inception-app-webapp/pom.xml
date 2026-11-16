@@ -1560,8 +1560,11 @@
                     <argument>--artifact</argument>
                     <argument>${project.build.directory}/${project.artifactId}-${project.version}-standalone.jar</argument>
                     <argument>--patch</argument>
-                    <argument>--dependencies</argument>
-                    <argument>${project.build.outputDirectory}/META-INF/DEPENDENCIES.json</argument>
+                    <!-- The standalone jar contains every component with a concluded license -->
+                    <argument>--fail-on-unused-conclusions</argument>
+                    <!-- Published as a release asset next to the jar -->
+                    <argument>--sbom-copy</argument>
+                    <argument>${project.build.directory}/${project.artifactId}-${project.version}-standalone.spdx.json</argument>
                     <argument>--license</argument>
                     <argument>${project.basedir}/LICENSE.txt</argument>
                     <argument>--output</argument>

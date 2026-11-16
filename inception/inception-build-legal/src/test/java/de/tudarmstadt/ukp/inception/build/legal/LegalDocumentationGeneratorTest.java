@@ -131,7 +131,7 @@ class LegalDocumentationGeneratorTest
                 "maven/mavencentral/org.example/library-a/1.0, MIT, pom, "
                         + "pkg:maven/org.example/library-a@1.0",
                 "maven/mavencentral/org.example/library-b/2.0, Apache-2.0 OR EPL-2.0, pom, "
-                        + "pkg:maven/org.example/library-b@2.0",
+                        + "pkg:maven/org.example/library-b@2.0?classifier=classifier",
                 "maven/mavencentral/org.example/provided-x/1.5, MIT, pom, "
                         + "pkg:maven/org.example/provided-x@1.5",
                 "maven/mavencentral/org.springframework.boot/spring-boot-jarmode-tools/9.9.9, "
@@ -165,7 +165,7 @@ class LegalDocumentationGeneratorTest
         artifactEntries.put("WEB-INF/lib/library-a-1.0.jar", jar(Map.of( //
                 "META-INF/NOTICE", "Shared notice\n  of a project\n")));
         artifactEntries.put("WEB-INF/lib/library-b-2.0-classifier.jar", jar(Map.of( //
-                "META-INF/notice.txt", "Shared notice of a project")));
+                "notice.txt", "Shared notice of a project")));
         artifactEntries.put("WEB-INF/lib-provided/provided-x-1.5.jar", jar(Map.of( //
                 "META-INF/maven/org.example/provided-x/pom.properties", """
                         groupId=org.example
@@ -337,9 +337,125 @@ class LegalDocumentationGeneratorTest
     }
 
     @Test
+    void thatAnApplicationImageIsAnalysedWithItsJavaRuntime() throws Exception
+    {
+        var image = applicationImage("""
+                The GNU General Public License (GPL)
+
+                Version 2, June 1991
+                ...
+                "CLASSPATH" EXCEPTION TO THE GPL
+                """);
+
+        generate(image, List.of(), "--distribution-name", "App-1.0-x86_64.dmg");
+
+        assertThat(Files.readAllLines(output.resolve("DEPENDENCIES"), UTF_8)) //
+                .contains("maven/mavencentral/org.example/library-a/1.0, MIT, pom, "
+                        + "pkg:maven/org.example/library-a@1.0") //
+                .contains("pkg:generic/openjdk@25.0.5, GPL-2.0-only WITH "
+                        + "Classpath-exception-2.0, runtime, pkg:generic/openjdk@25.0.5") //
+                .noneMatch(line -> line.contains("jrt-fs"));
+        assertThat(output.resolve("NOTICE.md")).content() //
+                .contains("The distribution includes the Java runtime Temurin-25.0.5+8 by "
+                        + "Eclipse Adoptium") //
+                .contains("in the folder runtime/legal of the application") //
+                .contains("## Cryptography");
+
+        var sbom = JSONUtil.getObjectMapper().readTree(output.resolve("sbom.spdx.json").toFile());
+        assertThat(sbom.get("documentNamespace").asString())
+                .isEqualTo("https://app.example.org/spdx/App-1.0-x86_64.dmg");
+        var runtime = new HashMap<String, JsonNode>();
+        sbom.get("packages").forEach(p -> runtime.put(p.get("name").asString(), p));
+        assertThat(runtime.get("openjdk").get("licenseConcluded").asString())
+                .isEqualTo("NOASSERTION");
+        assertThat(runtime.get("openjdk").get("licenseDeclared").asString())
+                .isEqualTo("GPL-2.0-only WITH Classpath-exception-2.0");
+        assertThat(output.resolve("LICENSES")) //
+                .isDirectoryContaining("glob:**/GPL-2.0-only.txt") //
+                .isDirectoryContaining("glob:**/Classpath-exception-2.0.txt");
+    }
+
+    @Test
+    void thatAJavaRuntimeUnderAnotherLicenseIsReported() throws Exception
+    {
+        var image = applicationImage("Oracle No-Fee Terms and Conditions (NFTC)");
+
+        assertThatThrownBy(() -> generate(image, List.of())) //
+                .hasMessageContaining("Java runtime in runtime") //
+                .hasMessageContaining("is not licensed under");
+    }
+
+    @Test
+    void thatAJavaRuntimeWithoutVersionIsReported() throws Exception
+    {
+        var image = applicationImage("GPL");
+        Files.writeString(image.resolve("runtime/release"), "IMPLEMENTOR=\"Example\"\n");
+
+        assertThatThrownBy(() -> generate(image, List.of())) //
+                .hasMessageContaining("has no JAVA_VERSION");
+    }
+
+    @Test
+    void thatEmbeddedContentDeclaredByTwoModulesIsListedOnce() throws Exception
+    {
+        artifactEntries.put("WEB-INF/lib/app-other-1.0.jar", jar(Map.of( //
+                "META-INF/DEPENDENCIES-EMBEDDED.spdx.json", """
+                        { "packages": [ { "name": "Icon set", "versionInfo": "6.0",
+                          "originator": "Organization: Example Inc.",
+                          "licenseDeclared": "CC-BY-4.0",
+                          "hasFiles": [ "org/example/Other.svg" ] } ] }
+                        """)));
+        listOwnModule("app-other");
+
+        generate(SPRING_BOOT_CONCLUSIONS);
+
+        var notice = Files.readString(output.resolve("NOTICE.md"));
+        assertThat(notice.split("#### Icon set", -1)).hasSize(2);
+        assertThat(notice).contains("* Files: org/example/Icon.svg, org/example/Other.svg");
+    }
+
+    @Test
+    void thatAMissingArtifactCanBeSkipped() throws Exception
+    {
+        generate(tempDir.resolve("not-built"), List.of(), "--skip-if-missing");
+
+        assertThat(output).doesNotExist();
+    }
+
+    /**
+     * Writes a folder like a jpackage application image: the application's jars and a Java runtime
+     * with its release file, its module image, its own jar and its license.
+     */
+    private Path applicationImage(String aRuntimeLicense) throws Exception
+    {
+        var image = tempDir.resolve("image");
+        var app = Files.createDirectories(image.resolve("app"));
+        Files.write(app.resolve("app-module-1.0.jar"), jar(Map.of( //
+                "META-INF/version.properties", "version=1.0", //
+                "META-INF/DEPENDENCIES.json", Files.readString(dependencies))));
+        Files.write(app.resolve("library-a-1.0.jar"), jar(Map.of()));
+
+        var runtime = Files.createDirectories(image.resolve("runtime"));
+        Files.writeString(runtime.resolve("release"), """
+                IMPLEMENTOR="Eclipse Adoptium"
+                IMPLEMENTOR_VERSION="Temurin-25.0.5+8"
+                JAVA_VERSION="25.0.5"
+                """);
+        Files.createDirectories(runtime.resolve("lib"));
+        Files.write(runtime.resolve("lib/modules"), new byte[] { 0 });
+        Files.write(runtime.resolve("lib/jrt-fs.jar"), jar(Map.of()));
+        Files.createDirectories(runtime.resolve("legal/java.base"));
+        Files.writeString(runtime.resolve("legal/java.base/LICENSE"), aRuntimeLicense);
+        return image;
+    }
+
+    @Test
     void thatTheFilesArePatchedIntoTheArtifact() throws Exception
     {
-        generate(SPRING_BOOT_CONCLUSIONS, "--patch");
+        var sbomCopy = tempDir.resolve("app-standalone.spdx.json");
+        generate(SPRING_BOOT_CONCLUSIONS, "--patch", "--sbom-copy", sbomCopy.toString());
+
+        assertThat(sbomCopy).hasSameBinaryContentAs(output.resolve("sbom.spdx.json"));
 
         try (var zip = new ZipFile(artifact.toFile())) {
             var manifestTime = zip.getEntry("META-INF/MANIFEST.MF").getTime();
@@ -349,6 +465,8 @@ class LegalDocumentationGeneratorTest
                 assertThat(entry).as(file).isNotNull();
                 assertThat(entry.getTime()).as(file).isEqualTo(manifestTime);
             }
+            // A folder created by the patch must not carry the build time
+            assertThat(zip.getEntry("META-INF/LICENSES/").getTime()).isEqualTo(manifestTime);
             // The Spring Boot loader requires nested jars to stay stored uncompressed
             assertThat(zip.getEntry("WEB-INF/lib/library-a-1.0.jar").getMethod()) //
                     .isEqualTo(STORED);
@@ -394,9 +512,12 @@ class LegalDocumentationGeneratorTest
         var conclusions = new ArrayList<>(SPRING_BOOT_CONCLUSIONS);
         conclusions.add(new Conclusion("pkg:maven/org.example/gone", "MIT"));
 
-        assertThatThrownBy(() -> generate(conclusions)) //
+        assertThatThrownBy(() -> generate(conclusions, "--fail-on-unused-conclusions")) //
                 .hasMessageContaining("pkg:maven/org.example/gone") //
                 .hasMessageContaining("not used");
+
+        // Without the option, e.g. for an installer, which lacks some concluded components
+        generate(conclusions);
     }
 
     @Test
@@ -440,10 +561,14 @@ class LegalDocumentationGeneratorTest
     private void generate(List<Conclusion> aConclusions, String... aExtraArgs) throws Exception
     {
         writeArtifact();
+        generate(artifact, aConclusions, aExtraArgs);
+    }
 
+    private void generate(Path aArtifact, List<Conclusion> aConclusions, String... aExtraArgs)
+        throws Exception
+    {
         var args = new ArrayList<String>(List.of( //
-                "--artifact", artifact.toString(), //
-                "--dependencies", dependencies.toString(), //
+                "--artifact", aArtifact.toString(), //
                 "--license", license.toString(), //
                 "--output", output.toString(), //
                 "--own-group-id", OWN_GROUP_ID, //
@@ -472,10 +597,15 @@ class LegalDocumentationGeneratorTest
 
     /**
      * Writes a Spring Boot style executable archive: nested jars stored uncompressed, the Spring
-     * Boot version in the manifest.
+     * Boot version in the manifest, the application's resolved dependencies in its classes.
      */
     private void writeArtifact() throws Exception
     {
+        artifactEntries.put("WEB-INF/classes/META-INF/version.properties",
+                "version=1.0".getBytes(UTF_8));
+        artifactEntries.put("WEB-INF/classes/META-INF/DEPENDENCIES.json",
+                Files.readAllBytes(dependencies));
+
         var manifest = new Manifest();
         manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
         manifest.getMainAttributes().putValue("Spring-Boot-Version", "9.9.9");

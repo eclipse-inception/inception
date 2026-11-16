@@ -191,6 +191,11 @@ expected_artifacts() {
   printf 'JAR signature|%s|%s\n' \
     "$WEBAPP_TARGET/inception-app-webapp-$version-standalone.jar.asc" \
     "inception-app-webapp-$version-standalone.jar.asc"
+  # Written by the legal documentation generator; the same SBOM is inside the
+  # jar as META-INF/sbom.spdx.json.
+  printf 'SBOM (SPDX)|%s|%s\n' \
+    "$WEBAPP_TARGET/inception-app-webapp-$version-standalone.spdx.json" \
+    "inception-app-webapp-$version-standalone.spdx.json"
 
   # The generated example scripts, so users can grab a compose file pinned to
   # this release instead of copying one out of the documentation. Note releases

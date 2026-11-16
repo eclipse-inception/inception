@@ -28,6 +28,9 @@ import static java.lang.String.join;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.copy;
 import static java.nio.file.Files.createDirectories;
+import static java.nio.file.Files.exists;
+import static java.nio.file.Files.isDirectory;
+import static java.nio.file.Files.isRegularFile;
 import static java.nio.file.Files.deleteIfExists;
 import static java.nio.file.Files.getLastModifiedTime;
 import static java.nio.file.Files.list;
@@ -41,8 +44,10 @@ import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.regex.Pattern.compile;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -111,6 +116,13 @@ public class LegalDocumentationGenerator
     private static final String PROP_CRYPTOGRAPHY = "${cryptography}";
     private static final String PROP_EMBEDDED_CONTENT = "${embeddedContent}";
     private static final String PROP_LIBRARY_NOTICES = "${libraryNotices}";
+    private static final String PROP_JAVA_RUNTIME = "${javaRuntime}";
+
+    /**
+     * The license of OpenJDK builds, checked against the {@code legal/java.base/LICENSE} of a
+     * bundled runtime.
+     */
+    static final String JAVA_RUNTIME_LICENSE = "GPL-2.0-only WITH Classpath-exception-2.0";
 
     /** Resources in the package of this class. */
     static final String CONCLUSIONS_RESOURCE = "DEPENDENCIES-CONCLUDED.spdx.json";
@@ -131,6 +143,9 @@ public class LegalDocumentationGenerator
             "LGPL-3.0-or-later", "GPL-3.0-or-later");
 
     private static final String NPM_DEPENDENCIES = "META-INF/NPM-DEPENDENCIES.json";
+    /** Only the application has it, see {@code ApplicationInformation}. */
+    private static final String APPLICATION_MARKER = "META-INF/version.properties";
+    private static final String APPLICATION_DEPENDENCIES = "META-INF/DEPENDENCIES.json";
     private static final String EMBEDDED_DEPENDENCIES = "META-INF/DEPENDENCIES-EMBEDDED.spdx.json";
 
     /** Where Spring Boot executable archives keep the libraries and the application classes. */
@@ -154,8 +169,11 @@ public class LegalDocumentationGenerator
             "META-INF/maven/[^/]+/[^/]+/pom\\.properties");
     private static final Pattern POM_XML = compile("META-INF/maven/[^/]+/[^/]+/pom\\.xml");
 
-    /** NOTICE, NOTICE.txt, NOTICE.md, notice.txt, ... */
-    private static final Pattern NOTICE = compile("META-INF/NOTICE[^/]*", CASE_INSENSITIVE);
+    /**
+     * NOTICE, NOTICE.txt, notice.md, SENTRY_THIRD_PARTY_NOTICES.md, ... in META-INF/ or, as some
+     * libraries such as kafka-clients have it, in the root of the jar.
+     */
+    private static final Pattern NOTICE = compile("(META-INF/)?[^/]*NOTICE[^/]*", CASE_INSENSITIVE);
 
     /**
      * SPDX custom license reference, for licenses without an SPDX identifier.
@@ -180,16 +198,35 @@ public class LegalDocumentationGenerator
                     """;
 
     @Option(names = "--artifact", required = true, //
-            description = "The distribution artifact to analyse, e.g. the standalone jar")
+            description = "The distribution artifact to analyse: an archive such as the "
+                    + "standalone jar, or a folder such as a jpackage application image")
     private Path artifact;
 
-    @Option(names = "--patch", //
-            description = "Also write the files into META-INF/ of the artifact")
-    private boolean patch;
+    @Option(names = "--skip-if-missing", //
+            description = "Do nothing if the artifact does not exist, e.g. when building an "
+                    + "installer for another architecture was skipped")
+    private boolean skipIfMissing;
 
-    @Option(names = "--dependencies", required = true, //
-            description = "The application's resolved DEPENDENCIES.json")
-    private Path dependencies;
+    @Option(names = "--distribution-name", //
+            description = "File name of the distribution as published, e.g. the DMG for an "
+                    + "analysed application image; names the SBOM and makes its namespace "
+                    + "unique. Defaults to the artifact's file name")
+    private String distributionName;
+
+    @Option(names = "--sbom-copy", //
+            description = "Also write the SBOM to this file, e.g. named after the artifact so "
+                    + "that it can be published next to it")
+    private Path sbomCopy;
+
+    @Option(names = "--fail-on-unused-conclusions", //
+            description = "Fail if a concluded license is used by no component. The concluded "
+                    + "licenses are shared by all distributions, so only the distribution that "
+                    + "contains all their components should check this")
+    private boolean failOnUnusedConclusions;
+
+    @Option(names = "--patch", //
+            description = "Also write the files into META-INF/ of the artifact (archives only)")
+    private boolean patch;
 
     @Option(names = "--license", required = true, description = "The project's license file")
     private Path license;
@@ -268,10 +305,29 @@ public class LegalDocumentationGenerator
 
     void generate() throws IOException
     {
-        var content = scanArtifact(artifact);
+        if (skipIfMissing && !exists(artifact)) {
+            System.out.println(
+                    "Not generating the legal documentation: " + artifact + " does not exist");
+            return;
+        }
+
+        var directory = isDirectory(artifact);
+        if (patch && directory) {
+            throw new IllegalArgumentException("Only archives can be patched: " + artifact);
+        }
+
+        var content = directory ? scanDirectory(artifact) : scanArtifact(artifact);
 
         var notices = new LibraryNotices();
         var maven = collectMavenComponents(content, notices);
+        var runtime = content.javaRuntime();
+        if (runtime != null) {
+            if (!runtime.gplWithClasspathException()) {
+                errors.add("The Java runtime in " + runtime.path() + " is not licensed under "
+                        + JAVA_RUNTIME_LICENSE + " according to its legal/java.base/LICENSE");
+            }
+            maven.add(runtime.toComponent());
+        }
         var npm = collectNpmComponents(content.entries());
         var embedded = collectEmbeddedContent(content.entries());
         var licenses = collectLicenseTexts(maven, npm, embedded);
@@ -284,7 +340,7 @@ public class LegalDocumentationGenerator
         }
         var project = new SpdxSbom.Project(projectName, projectVersion,
                 projectSpdxLicense.orElse(projectLicense), projectUrl,
-                artifact.getFileName().toString(),
+                distributionName != null ? distributionName : artifact.getFileName().toString(),
                 SpdxSbom.creationTime(outputTimestamp, Instant.now()));
         var sbom = SpdxSbom.build(project, components, embedded, licenses);
         for (var violation : SpdxSbom.validate(sbom)) {
@@ -292,7 +348,7 @@ public class LegalDocumentationGenerator
         }
 
         for (var unused : conclusions.keySet()) {
-            if (!usedConclusions.contains(unused)) {
+            if (failOnUnusedConclusions && !usedConclusions.contains(unused)) {
                 errors.add("Concluded license for [" + unused
                         + "] is not used by any component - remove it from "
                         + CONCLUSIONS_RESOURCE);
@@ -307,10 +363,13 @@ public class LegalDocumentationGenerator
         createDirectories(output);
         copy(license, output.resolve(LICENSE_FILE), REPLACE_EXISTING);
         writeDependencies(maven, npm);
-        writeNotice(maven, embedded, notices);
+        writeNotice(maven, embedded, notices, runtime);
         var licenseFiles = writeLicenseTexts(licenses);
         JSONUtil.generatePrettyJson(JSONUtil.getObjectMapper(), sbom,
                 output.resolve(SBOM_FILE).toFile());
+        if (sbomCopy != null) {
+            copy(output.resolve(SBOM_FILE), sbomCopy, REPLACE_EXISTING);
+        }
 
         if (patch) {
             var files = new ArrayList<>(
@@ -403,8 +462,14 @@ public class LegalDocumentationGenerator
         throws IOException
     {
         var listed = new HashMap<String, MavenDependency>();
-        try (var is = newInputStream(dependencies)) {
-            for (var dep : loadMavenDependencies(is).getDependencies()) {
+        if (aContent.applicationDependencies() == null) {
+            errors.add("The artifact contains no application DEPENDENCIES.json, i.e. no jar or "
+                    + "classes folder with " + APPLICATION_MARKER);
+        }
+        else {
+            var deps = loadMavenDependencies(
+                    new ByteArrayInputStream(aContent.applicationDependencies()));
+            for (var dep : deps.getDependencies()) {
                 listed.put(dep.getArtifactId() + "-" + dep.getVersion(), dep);
             }
         }
@@ -417,8 +482,8 @@ public class LegalDocumentationGenerator
 
             var coordinates = identify(entry, listed, aContent.springBootVersion());
             if (coordinates.isEmpty()) {
-                errors.add("Library in the artifact is neither listed in " + dependencies
-                        + " nor carries a POM: " + entry.path());
+                errors.add("Library in the artifact is neither listed in the application's "
+                        + "DEPENDENCIES.json nor carries a POM: " + entry.path());
                 continue;
             }
 
@@ -432,9 +497,10 @@ public class LegalDocumentationGenerator
             }
 
             var key = "pkg:maven/" + c.groupId() + "/" + c.artifactId();
+            var classifier = classifier(entry.fileName(), c.artifactId(), c.version());
             resolveLicense(key, c.licenses())
                     .ifPresent(l -> components.add(maven(c.groupId(), c.artifactId(), c.version(),
-                            l, authority(key, "pom"), entry.path(), entry.sha256())));
+                            classifier, l, authority(key, "pom"), entry.path(), entry.sha256())));
         }
 
         if (aContent.springBootLoader()) {
@@ -447,7 +513,7 @@ public class LegalDocumentationGenerator
                 // The loader classes are copied in loose, so there is no jar to name or checksum
                 resolveLicense(key, List.of())
                         .ifPresent(l -> components.add(maven(SPRING_BOOT_GROUP_ID,
-                                SPRING_BOOT_LOADER, aContent.springBootVersion(), l,
+                                SPRING_BOOT_LOADER, aContent.springBootVersion(), null, l,
                                 authority(key, "pom"), null, null)));
             }
         }
@@ -508,6 +574,19 @@ public class LegalDocumentationGenerator
                 .filter(e -> base.startsWith(e.getKey() + "-")) //
                 .max(comparing(e -> e.getKey().length())) //
                 .map(Map.Entry::getValue);
+    }
+
+    /**
+     * @return the classifier in a jar's file name, e.g. {@code module} for
+     *         {@code jakarta.json-2.0.1-module.jar}, if any.
+     */
+    static String classifier(String aFileName, String aArtifactId, String aVersion)
+    {
+        var base = removeJarSuffix(aFileName);
+        var prefix = aArtifactId + "-" + aVersion + "-";
+        return base.startsWith(prefix) && base.length() > prefix.length()
+                ? base.substring(prefix.length())
+                : null;
     }
 
     private static String removeJarSuffix(String aFileName)
@@ -586,11 +665,49 @@ public class LegalDocumentationGenerator
                             + " declares an unknown license: " + declared);
                     continue;
                 }
-                packages.add(pkg);
+                var same = packages.stream().filter(p -> isSameContent(p, pkg)).findFirst();
+                if (same.isPresent()) {
+                    merge(same.get(), pkg);
+                }
+                else {
+                    packages.add(pkg);
+                }
             }
         }
         packages.sort(comparing(SpdxPackage::getName, CASE_INSENSITIVE_ORDER));
         return packages;
+    }
+
+    /**
+     * Several of our modules can embed parts of the same third-party content, e.g. icons from the
+     * same icon set. They declare it separately, but it is one component.
+     */
+    private static boolean isSameContent(SpdxPackage aOne, SpdxPackage aOther)
+    {
+        return Objects.equals(aOne.getName(), aOther.getName())
+                && Objects.equals(aOne.getVersionInfo(), aOther.getVersionInfo())
+                && Objects.equals(embeddedLicense(aOne), embeddedLicense(aOther))
+                && Objects.equals(aOne.getOriginator(), aOther.getOriginator());
+    }
+
+    private static void merge(SpdxPackage aTarget, SpdxPackage aOther)
+    {
+        var files = new TreeSet<String>();
+        Stream.of(aTarget.getHasFiles(), aOther.getHasFiles()) //
+                .filter(Objects::nonNull) //
+                .forEach(files::addAll);
+        aTarget.setHasFiles(new ArrayList<>(files));
+        aTarget.setDescription(joinDistinct(aTarget.getDescription(), aOther.getDescription()));
+        aTarget.setLicenseComments(
+                joinDistinct(aTarget.getLicenseComments(), aOther.getLicenseComments()));
+    }
+
+    private static String joinDistinct(String aOne, String aOther)
+    {
+        if (aOne == null || aOne.equals(aOther)) {
+            return aOther != null ? aOther : aOne;
+        }
+        return aOther == null ? aOne : aOne + " " + aOther;
     }
 
     static String embeddedLicense(SpdxPackage aPackage)
@@ -627,6 +744,8 @@ public class LegalDocumentationGenerator
             var entries = new ArrayList<ScannedEntry>();
             byte[] classesNpm = null;
             byte[] classesEmbedded = null;
+            byte[] classesDependencies = null;
+            var classesApplication = false;
             var loader = false;
             for (var entry = archive.getNextJarEntry(); entry != null; entry = archive
                     .getNextJarEntry()) {
@@ -641,6 +760,13 @@ public class LegalDocumentationGenerator
                         .anyMatch(d -> name.equals(d + EMBEDDED_DEPENDENCIES))) {
                     classesEmbedded = archive.readAllBytes();
                 }
+                else if (CLASSES_DIRS.stream()
+                        .anyMatch(d -> name.equals(d + APPLICATION_DEPENDENCIES))) {
+                    classesDependencies = archive.readAllBytes();
+                }
+                else if (CLASSES_DIRS.stream().anyMatch(d -> name.equals(d + APPLICATION_MARKER))) {
+                    classesApplication = true;
+                }
                 else if (name.startsWith(SPRING_BOOT_LOADER_PACKAGE)) {
                     loader = true;
                 }
@@ -648,11 +774,73 @@ public class LegalDocumentationGenerator
 
             if (classesNpm != null || classesEmbedded != null) {
                 entries.add(new ScannedEntry(aArtifact + "!classes", false, null, null, classesNpm,
-                        classesEmbedded, List.of()));
+                        classesEmbedded, List.of(), null));
             }
 
-            return new ArtifactContent(springBootVersion, loader, entries);
+            var applicationDependencies = classesApplication ? classesDependencies
+                    : applicationDependencies(entries);
+            return new ArtifactContent(springBootVersion, loader, entries, applicationDependencies,
+                    null);
         }
+    }
+
+    /**
+     * Reads what the generator needs from a folder, such as a jpackage application image: the jars
+     * in it, and the Java runtime bundled with it, recognised by its {@code release} file next to
+     * {@code lib/modules}. The runtime's own jars, such as {@code jrt-fs.jar}, belong to the
+     * runtime and are not libraries of the application.
+     */
+    static ArtifactContent scanDirectory(Path aDirectory) throws IOException
+    {
+        List<Path> files;
+        try (var walk = Files.walk(aDirectory)) {
+            files = walk.filter(Files::isRegularFile).sorted().toList();
+        }
+
+        var runtimes = new ArrayList<JavaRuntime>();
+        for (var file : files) {
+            if ("release".equals(file.getFileName().toString())
+                    && isRegularFile(file.getParent().resolve("lib/modules"))) {
+                runtimes.add(JavaRuntime.read(file.getParent(),
+                        relativePath(aDirectory, file.getParent())));
+            }
+        }
+        if (runtimes.size() > 1) {
+            throw new IOException("More than one Java runtime in " + aDirectory + ": "
+                    + runtimes.stream().map(JavaRuntime::path).toList());
+        }
+
+        var entries = new ArrayList<ScannedEntry>();
+        for (var file : files) {
+            var path = relativePath(aDirectory, file);
+            if (path.endsWith(".jar")
+                    && runtimes.stream().noneMatch(rt -> path.startsWith(rt.path() + "/"))) {
+                entries.add(scanJar(path, Files.readAllBytes(file)));
+            }
+        }
+
+        return new ArtifactContent(null, false, entries, applicationDependencies(entries),
+                runtimes.isEmpty() ? null : runtimes.get(0));
+    }
+
+    private static String relativePath(Path aBase, Path aFile)
+    {
+        return aBase.relativize(aFile).toString().replace(File.separatorChar, '/');
+    }
+
+    /**
+     * @return the {@code DEPENDENCIES.json} of the one jar that is the application, if any.
+     */
+    private static byte[] applicationDependencies(List<ScannedEntry> aEntries) throws IOException
+    {
+        var applications = aEntries.stream() //
+                .filter(e -> e.applicationDependencies() != null) //
+                .toList();
+        if (applications.size() > 1) {
+            throw new IOException("More than one jar in the artifact is an application: "
+                    + applications.stream().map(ScannedEntry::path).toList());
+        }
+        return applications.isEmpty() ? null : applications.get(0).applicationDependencies();
     }
 
     static ScannedEntry scanJar(String aPath, byte[] aJar) throws IOException
@@ -663,6 +851,8 @@ public class LegalDocumentationGenerator
             var pomProperties = new LinkedHashMap<String, Properties>();
             var pomXmls = new HashMap<String, byte[]>();
             var notices = new ArrayList<String>();
+            byte[] applicationDependencies = null;
+            var application = false;
             for (var entry = jar.getNextJarEntry(); entry != null; entry = jar.getNextJarEntry()) {
                 var name = entry.getName();
                 if (NPM_DEPENDENCIES.equals(name)) {
@@ -679,14 +869,20 @@ public class LegalDocumentationGenerator
                 else if (POM_XML.matcher(name).matches()) {
                     pomXmls.put(name.substring(0, name.lastIndexOf('/')), jar.readAllBytes());
                 }
-                else if (NOTICE.matcher(name).matches()) {
+                else if (NOTICE.matcher(name).matches() && !name.endsWith(".class")) {
                     notices.add(LibraryNotices.decode(jar.readAllBytes()));
+                }
+                else if (APPLICATION_DEPENDENCIES.equals(name)) {
+                    applicationDependencies = jar.readAllBytes();
+                }
+                else if (APPLICATION_MARKER.equals(name)) {
+                    application = true;
                 }
             }
 
             var pom = embeddedPom(aPath, pomProperties, pomXmls);
             return new ScannedEntry(aPath, true, pom, sha256(aJar), npmDependencies,
-                    embeddedDependencies, notices);
+                    embeddedDependencies, notices, application ? applicationDependencies : null);
         }
     }
 
@@ -776,7 +972,11 @@ public class LegalDocumentationGenerator
             var time = getLastModifiedTime(fs.getPath("META-INF/MANIFEST.MF"));
             for (var file : aFiles) {
                 var target = fs.getPath("META-INF", file);
-                createDirectories(target.getParent());
+                if (!exists(target.getParent())) {
+                    createDirectories(target.getParent());
+                    // A new folder entry would otherwise carry the current time
+                    setLastModifiedTime(target.getParent(), time);
+                }
                 copy(aDirectory.resolve(file), target, REPLACE_EXISTING);
                 setLastModifiedTime(target, time);
             }
@@ -845,7 +1045,7 @@ public class LegalDocumentationGenerator
     }
 
     private void writeNotice(List<Component> aMaven, List<SpdxPackage> aEmbedded,
-            LibraryNotices aNotices)
+            LibraryNotices aNotices, JavaRuntime aRuntime)
         throws IOException
     {
         var embedded = new StringBuilder();
@@ -876,7 +1076,8 @@ public class LegalDocumentationGenerator
             embedded.append("\n");
         }
 
-        var cryptography = aMaven.stream()
+        // A Java runtime always brings cryptography of its own (e.g. SunJCE, SunEC)
+        var cryptography = aRuntime != null || aMaven.stream()
                 .anyMatch(c -> c.groupId() != null && CRYPTOGRAPHY_GROUP_IDS.contains(c.groupId()))
                         ? CRYPTOGRAPHY_STATEMENT
                         : "";
@@ -888,10 +1089,22 @@ public class LegalDocumentationGenerator
         // Without cryptography, its placeholder goes with the blank lines after it.
         var notice = readResource(NOTICE_TEMPLATE_RESOURCE) //
                 .replace(PROP_EMBEDDED_CONTENT, embedded.toString().strip()) //
+                .replace(PROP_JAVA_RUNTIME + "\n\n",
+                        aRuntime == null ? "" : javaRuntimeSection(aRuntime) + "\n\n") //
                 .replace(PROP_CRYPTOGRAPHY + "\n\n",
                         cryptography.isEmpty() ? "" : cryptography.strip() + "\n\n") //
                 .replace(PROP_LIBRARY_NOTICES, libraryNotices);
         writeString(output.resolve(NOTICE_MD), notice.strip() + "\n", UTF_8);
+    }
+
+    private static String javaRuntimeSection(JavaRuntime aRuntime)
+    {
+        return "### Java runtime\n\n" //
+                + "The distribution includes the Java runtime " + aRuntime.displayName() //
+                + (aRuntime.implementor() != null ? " by " + aRuntime.implementor() : "") //
+                + ", licensed under " + JAVA_RUNTIME_LICENSE + ". The notices and licenses of "
+                + "the runtime and of the third-party content it includes are in the folder "
+                + aRuntime.path() + "/legal of the application.";
     }
 
     /**
@@ -964,15 +1177,21 @@ public class LegalDocumentationGenerator
 
     record Coordinates(String groupId, String artifactId, String version, List<String> licenses) {}
 
+    /**
+     * What was read from an artifact. The application dependencies are the
+     * {@code DEPENDENCIES.json} of the application itself; the Java runtime is the one bundled by
+     * an installer, if any.
+     */
     record ArtifactContent(String springBootVersion, boolean springBootLoader,
-            List<ScannedEntry> entries)
+            List<ScannedEntry> entries, byte[] applicationDependencies, JavaRuntime javaRuntime)
     {}
 
     /**
      * What was read from a library in the artifact, or from the application's own classes.
      */
     record ScannedEntry(String path, boolean library, Coordinates pom, String sha256,
-            byte[] npmDependencies, byte[] embeddedDependencies, List<String> notices)
+            byte[] npmDependencies, byte[] embeddedDependencies, List<String> notices,
+            byte[] applicationDependencies)
     {
         String fileName()
         {
@@ -982,25 +1201,43 @@ public class LegalDocumentationGenerator
 
     /**
      * A third-party component. The file name and checksum are those of the jar in the artifact; npm
-     * packages and the Spring Boot loader classes have none.
+     * packages, the Spring Boot loader classes and a bundled Java runtime have none. For a runtime,
+     * the group id holds its implementor.
      */
-    record Component(String kind, String groupId, String name, String version, String license,
-            String authority, String fileName, String sha256)
+    record Component(String kind, String groupId, String name, String version, String classifier,
+            String license, String authority, String fileName, String sha256)
     {
         static Component maven(String aGroupId, String aArtifactId, String aVersion,
-                String aLicense, String aAuthority, String aFileName, String aSha256)
+                String aClassifier, String aLicense, String aAuthority, String aFileName,
+                String aSha256)
         {
-            return new Component("maven", aGroupId, aArtifactId, aVersion, aLicense, aAuthority,
-                    aFileName, aSha256);
+            return new Component("maven", aGroupId, aArtifactId, aVersion, aClassifier, aLicense,
+                    aAuthority, aFileName, aSha256);
         }
 
         static Component npm(String aName, String aVersion, String aLicense, String aAuthority)
         {
-            return new Component("npm", null, aName, aVersion, aLicense, aAuthority, null, null);
+            return new Component("npm", null, aName, aVersion, null, aLicense, aAuthority, null,
+                    null);
+        }
+
+        /**
+         * The license of a runtime is taken from its own license file. The file name is the
+         * runtime's folder in the artifact.
+         */
+        static Component runtime(String aImplementor, String aVersion, String aLicense,
+                String aPath)
+        {
+            return new Component("runtime", aImplementor, "openjdk", aVersion, null, aLicense,
+                    "runtime", aPath, null);
         }
 
         String clearlyDefinedId()
         {
+            if ("runtime".equals(kind)) {
+                // ClearlyDefined has no coordinates for Java runtimes
+                return purl();
+            }
             if ("npm".equals(kind)) {
                 var slash = name.indexOf('/');
                 var namespace = name.startsWith("@") && slash > 0 ? name.substring(0, slash) : "-";
@@ -1013,10 +1250,14 @@ public class LegalDocumentationGenerator
 
         String purl()
         {
+            if ("runtime".equals(kind)) {
+                return "pkg:generic/" + name + "@" + version;
+            }
             if ("npm".equals(kind)) {
                 return "pkg:npm/" + name.replace("@", "%40") + "@" + version;
             }
-            return "pkg:maven/" + groupId + "/" + name + "@" + version;
+            return "pkg:maven/" + groupId + "/" + name + "@" + version
+                    + (classifier != null ? "?classifier=" + classifier : "");
         }
 
         String toDependenciesLine()

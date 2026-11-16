@@ -40,6 +40,8 @@ The following third-party content is embedded in the project's own code.
 
 ${embeddedContent}
 
+${javaRuntime}
+
 ${cryptography}
 
 ## Notices of the libraries
