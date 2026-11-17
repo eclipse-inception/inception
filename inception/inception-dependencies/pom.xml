@@ -649,6 +649,32 @@
         <artifactId>jinjava</artifactId>
         <version>${jinjava.version}</version>
       </dependency>
+      <!--
+        jinjava manages these versions in its own POM. Maven 4 applies that dependency management
+        to jinjava's dependencies, Maven 3 does not and falls back to the older versions that
+        com.hubspot:algebra declares (hubspot-style 1.4, without RosettaAnnotations). Managing them
+        here makes both Maven versions ship the same jars.
+      -->
+      <dependency>
+        <groupId>com.hubspot.immutables</groupId>
+        <artifactId>hubspot-style</artifactId>
+        <version>${jinjava.hubspot-immutables.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.hubspot.immutables</groupId>
+        <artifactId>immutable-collection-encodings</artifactId>
+        <version>${jinjava.hubspot-immutables.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.hubspot.rosetta</groupId>
+        <artifactId>RosettaAnnotations</artifactId>
+        <version>${jinjava.hubspot-rosetta.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.immutables</groupId>
+        <artifactId>encode</artifactId>
+        <version>${jinjava.immutables-encode.version}</version>
+      </dependency>
 
       <dependency>
         <groupId>com.googlecode.owasp-java-html-sanitizer</groupId>

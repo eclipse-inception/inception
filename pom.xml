@@ -187,6 +187,9 @@
     <txtmark.version>0.13</txtmark.version>
     <owasp-java-html-sanitizer.version>20260924.2</owasp-java-html-sanitizer.version>
     <jinjava.version>2.8.5</jinjava.version>
+    <jinjava.hubspot-immutables.version>1.9</jinjava.hubspot-immutables.version>
+    <jinjava.hubspot-rosetta.version>3.11.8</jinjava.hubspot-rosetta.version>
+    <jinjava.immutables-encode.version>2.10.1</jinjava.immutables-encode.version>
     <fastutil.version>8.5.19</fastutil.version>
     <zjsonpatch.version>0.6.4</zjsonpatch.version>
     <picocli.version>4.7.7</picocli.version>
