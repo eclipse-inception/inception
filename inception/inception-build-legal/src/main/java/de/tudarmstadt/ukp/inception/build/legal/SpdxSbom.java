@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -79,7 +80,8 @@ class SpdxSbom
     }
 
     static ObjectNode build(Project aProject, List<Component> aComponents,
-            List<SpdxPackage> aEmbedded, Map<String, byte[]> aLicenseTexts)
+            List<SpdxPackage> aEmbedded, List<ShadedContent> aShaded,
+            Map<String, byte[]> aLicenseTexts)
     {
         var mapper = getObjectMapper();
         var document = mapper.createObjectNode();
@@ -96,15 +98,49 @@ class SpdxSbom
 
         // Keyed and so sorted by SPDX id, so the document is reproducible
         var packages = new TreeMap<String, ObjectNode>();
+        var idsByPurl = new HashMap<String, String>();
         for (var component : aComponents) {
             var node = componentPackage(component);
-            packages.put(uniqueId(packages, node.get("SPDXID").asString()), node);
+            var id = uniqueId(packages, node.get("SPDXID").asString());
+            node.put("SPDXID", id);
+            packages.put(id, node);
+            idsByPurl.put(component.purl(), id);
+            // A library with a classifier (?classifier=...) is named by bundled code without it
+            var qualifiers = component.purl() == null ? -1 : component.purl().indexOf('?');
+            if (qualifiers > 0) {
+                idsByPurl.putIfAbsent(component.purl().substring(0, qualifiers), id);
+            }
         }
         for (var embedded : aEmbedded) {
             var node = embeddedPackage(embedded);
             var id = uniqueId(packages, node.get("SPDXID").asString());
             node.put("SPDXID", id);
             packages.put(id, node);
+        }
+
+        // Code bundled into a library is contained in that library, not in the distribution
+        var containedIn = new TreeMap<String, String>();
+        for (var shaded : aShaded) {
+            var node = embeddedPackage(shaded.spdxPackage());
+            node.put("SPDXID", "SPDXRef-shaded-"
+                    + node.get("SPDXID").asString().substring("SPDXRef-embedded-".length()));
+            shaded.purl().ifPresent(purl -> {
+                var ref = node.putArray("externalRefs").addObject();
+                ref.put("referenceCategory", "PACKAGE-MANAGER");
+                ref.put("referenceType", "purl");
+                ref.put("referenceLocator", purl);
+            });
+            var id = uniqueId(packages, node.get("SPDXID").asString());
+            node.put("SPDXID", id);
+            packages.put(id, node);
+            var container = idsByPurl.get(shaded.containerPurl());
+            if (container == null) {
+                // Only the entries of shipping libraries get here, so this is a bug, not data
+                throw new IllegalStateException(
+                        "The library [" + shaded.containerPurl() + "] containing ["
+                                + shaded.spdxPackage().getName() + "] is not among the components");
+            }
+            containedIn.put(id, container);
         }
 
         var packageArray = document.putArray("packages");
@@ -114,7 +150,8 @@ class SpdxSbom
         var relationships = document.putArray("relationships");
         relationships.add(relationship(DOCUMENT_ID, "DESCRIBES", DISTRIBUTION_ID));
         for (var id : packages.keySet()) {
-            relationships.add(relationship(DISTRIBUTION_ID, "CONTAINS", id));
+            relationships.add(
+                    relationship(containedIn.getOrDefault(id, DISTRIBUTION_ID), "CONTAINS", id));
         }
 
         // A license reference used in the document has to be defined in it
@@ -227,6 +264,10 @@ class SpdxSbom
                         ? licenseExpression(aPackage.getLicenseDeclared()).orElse(NOASSERTION)
                         : NOASSERTION);
         putIfNotNull(node, "licenseComments", aPackage.getLicenseComments());
+        if (aPackage.getAttributionTexts() != null && !aPackage.getAttributionTexts().isEmpty()) {
+            var texts = node.putArray("attributionTexts");
+            aPackage.getAttributionTexts().forEach(texts::add);
+        }
         putIfNotNull(node, "description", aPackage.getDescription());
         if (aPackage.getHasFiles() != null && !aPackage.getHasFiles().isEmpty()) {
             node.put("comment", "Embedded in: " + join(", ", aPackage.getHasFiles()));

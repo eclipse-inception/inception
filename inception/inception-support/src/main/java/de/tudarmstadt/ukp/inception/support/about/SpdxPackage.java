@@ -47,6 +47,8 @@ public class SpdxPackage
     private String licenseDeclared;
     private String licenseConcluded;
     private String licenseComments;
+    /** Notices that must be reproduced with the package, e.g. an Apache-2.0 NOTICE. */
+    private List<String> attributionTexts;
     private List<String> hasFiles;
     private List<SpdxExternalRef> externalRefs;
 
@@ -157,6 +159,16 @@ public class SpdxPackage
     public void setLicenseComments(String aLicenseComments)
     {
         licenseComments = aLicenseComments;
+    }
+
+    public List<String> getAttributionTexts()
+    {
+        return attributionTexts;
+    }
+
+    public void setAttributionTexts(List<String> aAttributionTexts)
+    {
+        attributionTexts = aAttributionTexts;
     }
 
     public List<String> getHasFiles()

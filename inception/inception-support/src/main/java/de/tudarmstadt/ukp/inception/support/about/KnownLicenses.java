@@ -39,6 +39,15 @@ public final class KnownLicenses
 
     private static final Set<String> OPERATORS = Set.of("AND", "OR", "WITH");
 
+    /**
+     * Licenses known only so that the dual licenses containing them are recognised. On their own,
+     * or combined in another way, they need a review, so a declaration using them like that is not
+     * recognised and the build asks for a concluded license.
+     */
+    private static final Set<String> ONLY_AS_ALTERNATIVE = Set.of("CDDL-1.0", "CDDL-1.1");
+    private static final Map<String, String> ONLY_WITH_EXCEPTION = Map.of("GPL-2.0-only",
+            "Classpath-exception-2.0");
+
     private static final Pattern TRAILING_URL = Pattern.compile("^(.+?) \\((https?://[^)]*)\\)$");
 
     private static final Pattern EXPRESSION_TOKEN = Pattern.compile("[()]|[^\\s()]+");
@@ -55,6 +64,11 @@ public final class KnownLicenses
                 ".*Apache License.*Version 2\\.0.*", //
                 ".* Apache Software License.*Version 2\\.0.*", //
                 ".*://www\\.apache\\.org/licenses/LICENSE-2\\.0.*");
+        // Only as SPDX ids: code bundled into libraries (the BCEL in AspectJ; code in Lucene
+        // derived from Python and ICU)
+        add("Apache-1.1", "Apache License 1.1 (https://www.apache.org/licenses/LICENSE-1.1)");
+        add("Python-2.0", "Python License 2.0 (https://spdx.org/licenses/Python-2.0.html)");
+        add("ICU", "ICU License (https://spdx.org/licenses/ICU.html)");
         add("ISC", "ISC License (https://spdx.org/licenses/ISC#licenseText)", //
                 "ISC");
         add("EPL-1.0",
@@ -109,6 +123,12 @@ public final class KnownLicenses
         add("MPL-2.0", "Mozilla Public License 2.0 (http://www.mozilla.org/MPL/2.0/index.txt)", //
                 "MPL 2.0.*", //
                 "Mozilla Public License.*2\\.0.*");
+        // The single licenses of the dual license below, so that expressions such as
+        // "CDDL-1.1 OR (GPL-2.0-only WITH Classpath-exception-2.0)" are recognised
+        add("CDDL-1.1", "CDDL 1.1 (https://spdx.org/licenses/CDDL-1.1.html)");
+        // The Java EE 5/6 XML schemas bundled into Tomcat: CDDL-1.0 OR GPL-2.0-only WITH ...
+        add("CDDL-1.0", "CDDL 1.0 (https://spdx.org/licenses/CDDL-1.0.html)");
+        add("GPL-2.0-only", "GPL 2.0 (https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)");
         add("CDDL-1.1 OR GPL-2.0-only WITH Classpath-exception-2.0",
                 "CDDL + GPLv2 with classpath exception (https://oss.oracle.com/licenses/CDDL+GPL-1.1)",
                 "CDDL \\+ GPLv2 with classpath exception.*", //
@@ -121,6 +141,8 @@ public final class KnownLicenses
                 "GNU General Public License, version 2 with the GNU Classpath Exception.*", //
                 "GPL-2\\.0-with-classpath-exception.*", //
                 "GPL2 w/ CPE.*");
+        add("BSL-1.0", "Boost Software License 1.0 (https://www.boost.org/LICENSE_1_0.txt)", //
+                "Boost Software License.*1\\.0.*");
         add("CC0-1.0", "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)", //
                 ".*://creativecommons\\.org/publicdomain/zero/1\\.0.*");
         add("CC-BY-2.5", "CC BY 2.5 (https://creativecommons.org/licenses/by/2.5/)");
@@ -271,7 +293,24 @@ public final class KnownLicenses
             previous = token;
         }
 
-        return depth == 0 && !expectOperand;
+        return depth == 0 && !expectOperand && isAcceptedCombination(tokens);
+    }
+
+    private static boolean isAcceptedCombination(List<String> aTokens)
+    {
+        for (var i = 0; i < aTokens.size(); i++) {
+            var token = aTokens.get(i);
+            var exception = ONLY_WITH_EXCEPTION.get(token);
+            if (exception != null && !(i + 2 < aTokens.size() && "WITH".equals(aTokens.get(i + 1))
+                    && exception.equals(aTokens.get(i + 2)))) {
+                return false;
+            }
+            if (ONLY_AS_ALTERNATIVE.contains(token) && !(i > 0 && "OR".equals(aTokens.get(i - 1)))
+                    && !(i + 1 < aTokens.size() && "OR".equals(aTokens.get(i + 1)))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static boolean isSingleLicenseId(String aToken)

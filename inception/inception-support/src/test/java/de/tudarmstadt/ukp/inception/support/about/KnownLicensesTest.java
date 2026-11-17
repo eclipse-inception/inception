@@ -68,4 +68,20 @@ class KnownLicensesTest
         assertThat(toSpdxId(" ")).isEmpty();
         assertThat(toSpdxId(null)).isEmpty();
     }
+
+    @Test
+    void thatLicensesKnownForDualLicensesNeedAReviewOtherwise()
+    {
+        // Accepted: as an alternative, or GPL with the Classpath exception
+        assertThat(toSpdxId("CDDL-1.1 OR GPL-2.0-only WITH Classpath-exception-2.0"))
+                .contains("CDDL-1.1 OR GPL-2.0-only WITH Classpath-exception-2.0");
+        assertThat(toSpdxId("EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0")).isPresent();
+        assertThat(toSpdxId("GPL-2.0-only WITH Classpath-exception-2.0")).isPresent();
+        // Not accepted: on their own or combined otherwise
+        assertThat(toSpdxId("GPL-2.0-only")).isEmpty();
+        assertThat(toSpdxId("MIT OR GPL-2.0-only")).isEmpty();
+        assertThat(toSpdxId("GPL-2.0-only AND Apache-2.0")).isEmpty();
+        assertThat(toSpdxId("CDDL-1.1")).isEmpty();
+        assertThat(toSpdxId("CDDL-1.0 AND MIT")).isEmpty();
+    }
 }

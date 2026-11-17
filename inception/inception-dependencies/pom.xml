@@ -648,6 +648,16 @@
         <groupId>com.hubspot.jinjava</groupId>
         <artifactId>jinjava</artifactId>
         <version>${jinjava.version}</version>
+        <exclusions>
+          <!--
+            Compile-time annotations only (JSR 305, FindBugs, JCIP), declared in compile scope;
+            nothing loads them at runtime. jsr305 is provided in every module anyway.
+          -->
+          <exclusion>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>annotations</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <!--
         jinjava manages these versions in its own POM. Maven 4 applies that dependency management

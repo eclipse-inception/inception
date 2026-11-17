@@ -127,20 +127,6 @@
       "licenseDeclared": "NOASSERTION",
       "licenseConcluded": "Apache-2.0",
       "licenseComments": "Added by the Spring Boot repackaging. The jar carries no POM; its META-INF/LICENSE.txt is the Apache License 2.0."
-    },
-    {
-      "name": "findbugs-annotations",
-      "versionInfo": "3.0.1",
-      "externalRefs": [
-        {
-          "referenceCategory": "PACKAGE-MANAGER",
-          "referenceType": "purl",
-          "referenceLocator": "pkg:maven/com.google.code.findbugs/annotations"
-        }
-      ],
-      "licenseDeclared": "NOASSERTION",
-      "licenseConcluded": "LGPL-2.1-or-later AND Apache-2.0 AND CC-BY-2.5",
-      "licenseComments": "The POM of version 3.0.1 declares \"GNU Lesser Public License\" with the versionless URL http://www.gnu.org/licenses/lgpl.html. The jar contains three parts, checked in its sources jar: edu.umd.cs.findbugs.annotations (headers: LGPL version 2.1 or any later version), javax.annotation from jsr305 (its embedded POM: Apache License 2.0) and net.jcip.annotations (headers: Creative Commons Attribution 2.5)."
     }
   ]
 }

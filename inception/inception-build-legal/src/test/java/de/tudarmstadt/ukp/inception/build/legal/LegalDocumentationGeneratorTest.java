@@ -17,13 +17,13 @@
  */
 package de.tudarmstadt.ukp.inception.build.legal;
 
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.zip.ZipEntry.STORED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.security.MessageDigest;
 import java.time.Instant;
 import java.nio.file.Files;
@@ -68,6 +68,7 @@ class LegalDocumentationGeneratorTest
     private Path output;
     private Path artifact;
     private Map<String, byte[]> artifactEntries;
+    private List<ShadedContent> shaded = List.of();
 
     @BeforeEach
     void setup() throws Exception
@@ -157,18 +158,20 @@ class LegalDocumentationGeneratorTest
                 .contains("* License: CC-BY-4.0") //
                 .contains("* Files: org/example/Icon.svg") //
                 .contains("* Originator: Example Inc.\n") //
-                .contains("* npm:lib-c:3.0.0\n\n```text\nLib C\nCopyright The Lib C Authors\n```") //
+                .contains("* npm:lib-c:3.0.0: LIBRARIES/npm-lib-c-3.0.0") //
                 .doesNotContain("${") //
                 .doesNotContain("## Cryptography");
     }
 
     @Test
-    void thatEachLibraryNoticeIsListedOnceWithItsLibraries() throws Exception
+    void thatNoticesAndNonStandardLicensesAreHoistedUnchanged() throws Exception
     {
+        var mit = readLicenseText("MIT");
+        // Standard MIT text, formatted differently: covered by LICENSES/MIT.txt, not copied
         artifactEntries.put("WEB-INF/lib/library-a-1.0.jar", jar(Map.of( //
-                "META-INF/NOTICE", "Shared notice\n  of a project\n")));
-        artifactEntries.put("WEB-INF/lib/library-b-2.0-classifier.jar", jar(Map.of( //
-                "notice.txt", "Shared notice of a project")));
+                "META-INF/LICENSE.txt", mit.replace("\n", "\n\n"), //
+                "META-INF/NOTICE", "Library A\nCopyright The Library A Authors\n")));
+        // MIT with its copyright line, and the license of code bundled into the library
         artifactEntries.put("WEB-INF/lib-provided/provided-x-1.5.jar", jar(Map.of( //
                 "META-INF/maven/org.example/provided-x/pom.properties", """
                         groupId=org.example
@@ -178,43 +181,116 @@ class LegalDocumentationGeneratorTest
                 "META-INF/maven/org.example/provided-x/pom.xml", """
                         <project><licenses><license><name>MIT</name></license></licenses></project>
                         """, //
-                "META-INF/NOTICE.md", "# Provided X\n\nUse ```code```.")));
+                "META-INF/LICENSE", mit.replace("<year> <copyright holders>", "2020 X Inc."), //
+                "META-INF/bundled/LICENSE", "Bundled code license", //
+                "org/example/License.class", "not a license", //
+                "META-INF/services/org.example.LicenseService", "not a license")));
+        // Our own modules' files are never copied
         artifactEntries.put("WEB-INF/lib/app-other-1.0.jar", jar(Map.of( //
                 "META-INF/NOTICE.txt", "Own notice")));
         listOwnModule("app-other");
 
-        generate(SPRING_BOOT_CONCLUSIONS);
+        generate(SPRING_BOOT_CONCLUSIONS, "--patch");
 
-        var notice = Files.readString(output.resolve("NOTICE.md"));
-        assertThat(notice) //
-                .contains("""
-                        * org.example:library-a:1.0
-                        * org.example:library-b:2.0
+        try (var files = Files.walk(output.resolve("LIBRARIES"))) {
+            assertThat(files.filter(Files::isRegularFile)
+                    .map(f -> output.resolve("LIBRARIES").relativize(f).toString()
+                            .replace(File.separatorChar, '/'))).containsExactlyInAnyOrder(
+                                    "library-a-1.0/META-INF/NOTICE",
+                                    "provided-x-1.5/META-INF/LICENSE",
+                                    "provided-x-1.5/META-INF/bundled/LICENSE",
+                                    "npm-lib-c-3.0.0/NOTICE");
+        }
+        // Unchanged, not reformatted
+        assertThat(output.resolve("LIBRARIES/library-a-1.0/META-INF/NOTICE"))
+                .hasContent("Library A\nCopyright The Library A Authors\n");
+        assertThat(output.resolve("NOTICE.md")).content() //
+                .contains("* org.example:library-a:1.0: LIBRARIES/library-a-1.0\n") //
+                .contains("* org.example:provided-x:1.5: LIBRARIES/provided-x-1.5\n") //
+                .contains("* npm:lib-c:3.0.0: LIBRARIES/npm-lib-c-3.0.0") //
+                .doesNotContain("Library B").doesNotContain("${");
 
-                        ```text
-                        Shared notice
-                          of a project
-                        ```""") //
-                .contains("""
-                        * org.example:provided-x:1.5
-
-                        ````text
-                        # Provided X
-
-                        Use ```code```.
-                        ````""") //
-                .doesNotContain("Own notice") //
-                .doesNotContain("${");
-        assertThat(notice.split("Shared notice", -1)).hasSize(2);
+        // Patched into the artifact, folders included, with the manifest's time
+        try (var zip = new ZipFile(artifact.toFile())) {
+            var manifestTime = zip.getEntry("META-INF/MANIFEST.MF").getTime();
+            for (var entry : List.of("META-INF/LIBRARIES/", "META-INF/LIBRARIES/provided-x-1.5/",
+                    "META-INF/LIBRARIES/provided-x-1.5/META-INF/bundled/",
+                    "META-INF/LIBRARIES/provided-x-1.5/META-INF/bundled/LICENSE")) {
+                assertThat(zip.getEntry(entry)).as(entry).isNotNull();
+                assertThat(zip.getEntry(entry).getTime()).as(entry).isEqualTo(manifestTime);
+            }
+        }
     }
 
     @Test
-    void thatNoticesThatAreNotUtf8AreReadAsLatin1()
+    void thatLegalFilesAreRecognisedByNameAndFolder()
     {
-        assertThat(LibraryNotices.decode("Universität".getBytes(ISO_8859_1))) //
-                .isEqualTo("Universität");
-        assertThat(LibraryNotices.decode("Universität".getBytes(UTF_8))) //
-                .isEqualTo("Universität");
+        assertThat(List.of( //
+                "META-INF/LICENSE", //
+                "META-INF/NOTICE.txt", //
+                "META-INF/hsqldb_lic.txt", // "lic" as a word of the name
+                "META-INF/licenses/ASM", // any file in a license folder
+                "about.html", // Eclipse projects
+                "about_files/LICENSE-ASM.txt", //
+                "META-INF/thirdparty-LICENSE")) //
+                        .allMatch(LibraryFiles::isLegalFile);
+        assertThat(List.of( //
+                "META-INF/public.txt", // "lic" inside a word
+                "org/example/License.class", //
+                "META-INF/services/org.example.LicenseService", //
+                "META-INF/licenses/schema.xsd", //
+                "META-INF/about.txt", //
+                "../LICENSE", //
+                "/LICENSE", //
+                "..\\..\\evil/LICENSE")) // a separator on Windows
+                        .noneMatch(LibraryFiles::isLegalFile);
+
+        assertThat(LibraryFiles.isLicenseFile("META-INF/hsqldb_lic.txt")).isTrue();
+        assertThat(LibraryFiles.isLicenseFile("META-INF/licenses/ASM")).isTrue();
+        // A notice, never replaced by a standard license text
+        assertThat(LibraryFiles.isLicenseFile("about.html")).isFalse();
+        assertThat(LibraryFiles.isLicenseFile("META-INF/NOTICE")).isFalse();
+    }
+
+    @Test
+    void thatStandardLicenseTextsAreRecognisedInTheirVariants() throws Exception
+    {
+        var apache = StandardLicenseTexts.normalize(readLicenseText("Apache-2.0"));
+        var terms = apache.substring(0, apache.indexOf("end of terms and conditions")
+                + "end of terms and conditions".length());
+
+        // http instead of https, {} instead of [] in the appendix
+        assertThat(StandardLicenseTexts.matches(apache,
+                StandardLicenseTexts
+                        .normalize(readLicenseText("Apache-2.0").replace("[yyyy]", "{yyyy}"))))
+                                .isTrue();
+        // Without the appendix on how to apply the license
+        assertThat(StandardLicenseTexts.matches(apache, terms)).isTrue();
+        // With the licenses of bundled code appended
+        assertThat(StandardLicenseTexts.matches(apache,
+                apache + " " + StandardLicenseTexts.normalize(readLicenseText("MIT")))).isFalse();
+        // With a short license appended instead of the appendix, shorter than the appendix
+        assertThat(StandardLicenseTexts.matches(apache, terms
+                + " this product bundles slf4j copyright c 2004 2017 qos ch released under the mit"
+                + " license")).isFalse();
+        // With the placeholder of the appendix filled in with a real copyright line
+        assertThat(StandardLicenseTexts.matches(apache,
+                StandardLicenseTexts.normalize(readLicenseText("Apache-2.0").replace(
+                        "[yyyy] [name of copyright owner]", "2015 SmartBear Software Inc."))))
+                                .isFalse();
+        // With a copyright line instead of the placeholder
+        var mit = StandardLicenseTexts.normalize(readLicenseText("MIT"));
+        assertThat(StandardLicenseTexts.matches(mit, StandardLicenseTexts.normalize(
+                readLicenseText("MIT").replace("<year> <copyright holders>", "2020 X Inc."))))
+                        .isFalse();
+    }
+
+    private static String readLicenseText(String aId) throws Exception
+    {
+        try (var is = LegalDocumentationGenerator.class.getResourceAsStream(
+                LegalDocumentationGenerator.LICENSE_TEXTS_RESOURCE + aId + ".txt")) {
+            return new String(is.readAllBytes(), UTF_8);
+        }
     }
 
     @Test
@@ -588,6 +664,201 @@ class LegalDocumentationGeneratorTest
     }
 
     @Test
+    void thatShadedCodeNeedsADeclaration() throws Exception
+    {
+        artifactEntries.put("WEB-INF/lib/library-a-1.0.jar", jar(Map.of( //
+                "org/example/a/shaded/other/Thing.class", "", //
+                "META-INF/versions/11/org/example/a/shaded/other/Thing.class", "")));
+
+        assertThatThrownBy(() -> generate(SPRING_BOOT_CONCLUSIONS)) //
+                .hasMessageContaining("[pkg:maven/org.example/library-a] contains code of other "
+                        + "projects (org/example/a/shaded/other/)");
+    }
+
+    @Test
+    void thatEmbeddedPomsOfOtherGroupsNeedADeclaration() throws Exception
+    {
+        artifactEntries.put("WEB-INF/lib-provided/provided-x-1.5.jar", jar(Map.of( //
+                "META-INF/maven/org.example/provided-x/pom.properties", """
+                        groupId=org.example
+                        artifactId=provided-x
+                        version=1.5
+                        """, //
+                "META-INF/maven/org.example/provided-x/pom.xml", """
+                        <project><licenses><license><name>MIT</name></license></licenses></project>
+                        """, //
+                // Same group: a module of the same project, no sign of other code
+                "META-INF/maven/org.example/provided-x-part/pom.properties", "version=1.5", //
+                "META-INF/maven/org.other/bundled/pom.properties", "version=2.0")));
+
+        assertThatThrownBy(() -> generate(SPRING_BOOT_CONCLUSIONS)) //
+                .hasMessageContaining("[pkg:maven/org.example/provided-x] contains code of other "
+                        + "projects (embedded POM of org.other)") //
+                .hasMessageNotContaining("embedded POM of org.example");
+    }
+
+    @Test
+    void thatDeclaredShadedCodeIsListedInsideItsLibrary() throws Exception
+    {
+        artifactEntries.put("WEB-INF/lib/library-a-1.0.jar", jar(Map.of( //
+                "org/example/a/shaded/other/Thing.class", "")));
+        shaded = shadedContent("pkg:maven/org.example/library-a@1.0");
+
+        generate(SPRING_BOOT_CONCLUSIONS);
+
+        assertThat(Files.readAllLines(output.resolve("DEPENDENCIES"), UTF_8)) //
+                .contains("maven/mavencentral/org.other/bundled/2.0, ISC, shaded, "
+                        + "pkg:maven/org.other/bundled@2.0");
+        assertThat(output.resolve("NOTICE.md")).content() //
+                .contains("#### Bundled library 2.0") //
+                .contains("* Contained in: pkg:maven/org.example/library-a@1.0") //
+                // Its notice, which the library does not carry itself
+                .contains("````\nBundled library\nCopyright Other Inc.\n````");
+        assertThat(output.resolve("LICENSES/ISC.txt")).exists();
+
+        var sbom = JSONUtil.getObjectMapper().readTree(output.resolve("sbom.spdx.json").toFile());
+        var ids = new HashMap<String, String>();
+        sbom.get("packages")
+                .forEach(p -> ids.put(p.get("name").asString(), p.get("SPDXID").asString()));
+        var container = ids.get("org.example:library-a");
+        var bundled = ids.get("Bundled library");
+        assertThat(sbom.get("packages")).anySatisfy(p -> {
+            assertThat(p.get("SPDXID").asString()).isEqualTo(bundled);
+            assertThat(p.get("attributionTexts").get(0).asString())
+                    .isEqualTo("Bundled library\nCopyright Other Inc.");
+        });
+        assertThat(sbom.get("relationships")).anySatisfy(rel -> {
+            assertThat(rel.get("spdxElementId").asString()).isEqualTo(container);
+            assertThat(rel.get("relationshipType").asString()).isEqualTo("CONTAINS");
+            assertThat(rel.get("relatedSpdxElement").asString()).isEqualTo(bundled);
+        });
+    }
+
+    @Test
+    void thatShadedCodeCheckedForAnotherVersionIsReported() throws Exception
+    {
+        shaded = shadedContent("pkg:maven/org.example/library-a@0.9");
+
+        assertThatThrownBy(() -> generate(SPRING_BOOT_CONCLUSIONS)) //
+                .hasMessageContaining("The code bundled into [pkg:maven/org.example/library-a] "
+                        + "was checked for another version than 1.0, which ships: "
+                        + "Bundled library (0.9)");
+    }
+
+    @Test
+    void thatCodeBundledIntoTwoLibrariesIsListedOnceAndContainedInEach() throws Exception
+    {
+        artifactEntries.put("WEB-INF/lib/library-a-1.0.jar", jar(Map.of( //
+                "org/example/a/shaded/other/Thing.class", "")));
+        // A library with a classifier, which the entry names without it
+        artifactEntries.put("WEB-INF/lib/library-b-2.0-classifier.jar", jar(Map.of( //
+                "org/example/b/shaded/other/Thing.class", "")));
+        shaded = new ArrayList<>(shadedContent("pkg:maven/org.example/library-a@1.0"));
+        shaded.addAll(shadedContent("pkg:maven/org.example/library-b@2.0", "Bundled library",
+                "org/example/b/shaded/other/"));
+
+        generate(SPRING_BOOT_CONCLUSIONS);
+
+        assertThat(Files.readAllLines(output.resolve("DEPENDENCIES"), UTF_8)) //
+                .containsOnlyOnce("maven/mavencentral/org.other/bundled/2.0, ISC, shaded, "
+                        + "pkg:maven/org.other/bundled@2.0");
+        var sbom = JSONUtil.getObjectMapper().readTree(output.resolve("sbom.spdx.json").toFile());
+        var ids = new HashMap<String, String>();
+        sbom.get("packages")
+                .forEach(p -> ids.put(p.get("name").asString(), p.get("SPDXID").asString()));
+        var containers = new ArrayList<String>();
+        sbom.get("relationships").forEach(rel -> {
+            if (rel.get("relatedSpdxElement").asString().startsWith("SPDXRef-shaded-")) {
+                containers.add(rel.get("spdxElementId").asString());
+            }
+        });
+        assertThat(containers).containsExactlyInAnyOrder(ids.get("org.example:library-a"),
+                ids.get("org.example:library-b"));
+    }
+
+    @Test
+    void thatPathsDifferingOnlyInCaseDoNotOverwriteEachOther() throws Exception
+    {
+        var files = new LibraryFiles();
+        files.add("lib", "lib-1.0", "META-INF/LICENSE", "a".getBytes(UTF_8));
+        files.add("lib", "lib-1.0", "META-INF/license", "b".getBytes(UTF_8));
+        // A file and a folder of the same name
+        files.add("lib", "lib-1.0", "META-INF/NOTICE", "c".getBytes(UTF_8));
+        files.add("lib", "lib-1.0", "META-INF/notice/extra.txt", "d".getBytes(UTF_8));
+
+        assertThat(files.writeTo(tempDir.resolve("out"))).containsExactlyInAnyOrder(
+                "LIBRARIES/lib-1.0/META-INF/LICENSE", "LIBRARIES/lib-1.0/META-INF/NOTICE",
+                "LIBRARIES/lib-1.0/case-2/META-INF/license",
+                "LIBRARIES/lib-1.0/case-2/META-INF/notice/extra.txt");
+    }
+
+    @Test
+    void thatTheCopyrightSignAndItsAbbreviationAreTheSame()
+    {
+        assertThat(StandardLicenseTexts.normalize("Copyright © 2020 X"))
+                .isEqualTo(StandardLicenseTexts.normalize("Copyright (c) 2020 X"));
+    }
+
+    @Test
+    void thatEveryEntryOfALibraryIsCheckedForTheShippedVersion() throws Exception
+    {
+        artifactEntries.put("WEB-INF/lib/library-a-1.0.jar", jar(Map.of( //
+                "org/example/a/shaded/other/Thing.class", "")));
+        // The first entry was updated for 1.0, the second not
+        shaded = new ArrayList<>(shadedContent("pkg:maven/org.example/library-a@1.0"));
+        shaded.addAll(shadedContent("pkg:maven/org.example/library-a@0.9", "Second library",
+                "org/example/a/shaded/second/"));
+
+        assertThatThrownBy(() -> generate(SPRING_BOOT_CONCLUSIONS)) //
+                .hasMessageContaining("which ships: Second library (0.9)") //
+                .hasMessageNotContaining("Bundled library (");
+    }
+
+    @Test
+    void thatNewShadedCodeInALibraryWithEntriesNeedsADeclaration() throws Exception
+    {
+        // The entry covers shaded/other/; the library now also bundles shaded/more/
+        artifactEntries.put("WEB-INF/lib/library-a-1.0.jar", jar(Map.of( //
+                "org/example/a/shaded/other/Thing.class", "", //
+                "org/example/a/shaded/more/Other.class", "")));
+        shaded = shadedContent("pkg:maven/org.example/library-a@1.0");
+
+        assertThatThrownBy(() -> generate(SPRING_BOOT_CONCLUSIONS)) //
+                .hasMessageContaining("[pkg:maven/org.example/library-a] contains code of other "
+                        + "projects (org/example/a/shaded/more/)") //
+                .hasMessageContaining("declares none covering it");
+    }
+
+    @Test
+    void thatTheBundledShadedContentIsValid() throws Exception
+    {
+        assertThat(ShadedContent.load()).isNotEmpty();
+    }
+
+    private static List<ShadedContent> shadedContent(String aContainerPurl) throws Exception
+    {
+        return shadedContent(aContainerPurl, "Bundled library", "org/example/a/shaded/other/");
+    }
+
+    private static List<ShadedContent> shadedContent(String aContainerPurl, String aName,
+            String aFolder)
+        throws Exception
+    {
+        return ShadedContent.load(new java.io.ByteArrayInputStream("""
+                { "packages": [ {
+                  "name": "%s", "versionInfo": "2.0", "hasFiles": [ "%s" ],
+                  "originator": "Organization: Other Inc.", "homepage": "https://other.example",
+                  "licenseConcluded": "ISC",
+                  "attributionTexts": [ "Bundled library\\nCopyright Other Inc." ],
+                  "externalRefs": [
+                    { "referenceCategory": "PACKAGE-MANAGER", "referenceType": "purl",
+                      "referenceLocator": "pkg:maven/org.other/bundled" },
+                    { "referenceCategory": "OTHER", "referenceType": "contained-in",
+                      "referenceLocator": "%s" } ] } ] }
+                """.formatted(aName, aFolder, aContainerPurl).getBytes(UTF_8)));
+    }
+
+    @Test
     void thatTheBundledConclusionsAreValid() throws Exception
     {
         assertThat(LegalDocumentationGenerator.loadConclusions()).isNotEmpty();
@@ -615,7 +886,7 @@ class LegalDocumentationGeneratorTest
                 "--output-timestamp", "2026-01-02T03:04:05Z"));
         args.addAll(List.of(aExtraArgs));
 
-        var generator = new LegalDocumentationGenerator(aConclusions);
+        var generator = new LegalDocumentationGenerator(aConclusions, shaded);
         new CommandLine(generator).parseArgs(args.toArray(String[]::new));
         generator.generate();
     }
