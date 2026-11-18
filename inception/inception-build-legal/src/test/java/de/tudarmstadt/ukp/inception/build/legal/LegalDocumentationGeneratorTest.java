@@ -145,6 +145,9 @@ class LegalDocumentationGeneratorTest
                         + "pkg:maven/org.springframework.boot/spring-boot-loader@9.9.9",
                 "npm/npmjs/-/lib-c/3.0.0, MIT OR Apache-2.0, npm, pkg:npm/lib-c@3.0.0",
                 "npm/npmjs/@example/lib-d/1.2.3, ISC, npm, pkg:npm/%40example/lib-d@1.2.3");
+        // "\n" on every platform, also where the platform's separator is "\r\n"
+        assertThat(output.resolve("DEPENDENCIES")).content().doesNotContain("\r");
+        assertThat(output.resolve("sbom.spdx.json")).content().doesNotContain("\r");
     }
 
     @Test

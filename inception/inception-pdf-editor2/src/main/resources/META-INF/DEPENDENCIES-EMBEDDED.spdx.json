@@ -24,6 +24,60 @@
       ]
     },
     {
+      "name": "Fluent bundle (@fluent/bundle)",
+      "versionInfo": "0.19.1",
+      "originator": "Organization: Mozilla Foundation",
+      "homepage": "https://projectfluent.org",
+      "licenseDeclared": "Apache-2.0",
+      "description": "Bundled into the PDF.js viewer (viewer.mjs), as its sourcemap shows; version from the package-lock.json of PDF.js 5.4.449",
+      "hasFiles": [
+        "src/main/ts/pdfjs-web/viewer.mjs"
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/%40fluent/bundle@0.19.1"
+        }
+      ]
+    },
+    {
+      "name": "Fluent DOM (@fluent/dom)",
+      "versionInfo": "0.10.2",
+      "originator": "Organization: Mozilla Foundation",
+      "homepage": "https://github.com/projectfluent/fluent.js",
+      "licenseDeclared": "Apache-2.0",
+      "description": "Bundled into the PDF.js viewer (viewer.mjs), as its sourcemap shows; version from the package-lock.json of PDF.js 5.4.449",
+      "hasFiles": [
+        "src/main/ts/pdfjs-web/viewer.mjs"
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/%40fluent/dom@0.10.2"
+        }
+      ]
+    },
+    {
+      "name": "cached-iterable",
+      "versionInfo": "0.3.0",
+      "originator": "Organization: Mozilla Foundation",
+      "homepage": "https://github.com/projectfluent/cached-iterable",
+      "licenseDeclared": "Apache-2.0",
+      "description": "Bundled into the PDF.js viewer (viewer.mjs), as its sourcemap shows; version from the package-lock.json of PDF.js 5.4.449",
+      "hasFiles": [
+        "src/main/ts/pdfjs-web/viewer.mjs"
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/cached-iterable@0.3.0"
+        }
+      ]
+    },
+    {
       "name": "OpenJPEG",
       "originator": "Organization: Universite catholique de Louvain (UCL), Belgium and contributors",
       "homepage": "https://www.openjpeg.org/",

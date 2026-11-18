@@ -37,6 +37,7 @@ import static java.nio.file.Files.list;
 import static java.nio.file.Files.newInputStream;
 import static java.nio.file.Files.setLastModifiedTime;
 import static java.nio.file.Files.write;
+import static java.util.stream.Collectors.joining;
 import static java.nio.file.Files.writeString;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Comparator.comparing;
@@ -83,6 +84,8 @@ import de.tudarmstadt.ukp.inception.support.about.MavenLicense;
 import de.tudarmstadt.ukp.inception.support.about.SpdxExternalRef;
 import de.tudarmstadt.ukp.inception.support.about.SpdxPackage;
 import de.tudarmstadt.ukp.inception.support.json.JSONUtil;
+import tools.jackson.core.util.DefaultIndenter;
+import tools.jackson.core.util.DefaultPrettyPrinter;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -393,8 +396,12 @@ public class LegalDocumentationGenerator
         var licenseFiles = writeLicenseTexts(licenses);
         deleteRecursively(output.resolve(LibraryFiles.LIBRARIES_DIR));
         var hoistedFiles = libraryFiles.writeTo(output);
-        JSONUtil.generatePrettyJson(JSONUtil.getObjectMapper(), sbom,
-                output.resolve(SBOM_FILE).toFile());
+        // "\n" on every platform, so that the files do not depend on where they were built (the
+        // default pretty printer and Files.write(lines) use the platform's line separator)
+        var printer = new DefaultPrettyPrinter()
+                .withObjectIndenter(new DefaultIndenter("  ", "\n"));
+        writeString(output.resolve(SBOM_FILE),
+                JSONUtil.getObjectMapper().writer().with(printer).writeValueAsString(sbom), UTF_8);
         if (sbomCopy != null) {
             copy(output.resolve(SBOM_FILE), sbomCopy, REPLACE_EXISTING);
         }
@@ -1198,8 +1205,8 @@ public class LegalDocumentationGenerator
         }
         // The same code bundled into two libraries (FastDoubleParser in Jackson 2 and 3) is one
         // component; DEPENDENCIES lists components, the SBOM where each copy is contained
-        write(output.resolve(DEPENDENCIES_FILE), lines.stream().distinct().sorted().toList(),
-                UTF_8);
+        writeString(output.resolve(DEPENDENCIES_FILE),
+                lines.stream().distinct().sorted().map(l -> l + "\n").collect(joining()), UTF_8);
     }
 
     private void writeNotice(List<Component> aMaven, List<SpdxPackage> aEmbedded,

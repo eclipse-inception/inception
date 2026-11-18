@@ -48,6 +48,21 @@
       "hasFiles": [
         "src/main/ts/src/util/ScrollbarWidth.ts"
       ]
+    },
+    {
+      "name": "core-js-pure",
+      "versionInfo": "3.49.0",
+      "originator": "Person: Denis Pushkarev",
+      "homepage": "https://core-js.io",
+      "licenseDeclared": "MIT",
+      "description": "Bundled into the prebuilt dist of @svgdotjs/svg.js 3.2.8, which the editor bundles; its sourcemap names core-js-pure 3.49.0, which is not installed itself",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/core-js-pure@3.49.0"
+        }
+      ]
     }
   ]
 }

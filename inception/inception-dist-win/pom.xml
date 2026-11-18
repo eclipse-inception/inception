@@ -58,6 +58,33 @@
           </plugin>
 
           <plugin>
+            <!--
+              copy-dependencies only adds jars. Without emptying the folder first, a dependency
+              removed since the last clean build would still be staged and ship in the installer.
+            -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>clean-jpackage-input</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>clean</goal>
+                </goals>
+                <configuration>
+                  <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                  <filesets>
+                    <fileset>
+                      <directory>${project.build.directory}/jpackage-input</directory>
+                      <followSymlinks>false</followSymlinks>
+                    </fileset>
+                  </filesets>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
             <executions>

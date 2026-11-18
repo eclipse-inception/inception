@@ -1088,16 +1088,20 @@
               <execution>
                 <!--
                   Lists the npm packages the module ships, with their licenses, for the About page
-                  and the legal documentation of the distributions.
+                  and the legal documentation of the distributions. It reads what the build wrote
+                  to target/js (its sourcemaps), so it runs after the module's own "bun build"
+                  execution, which is bound to ${ts-build-phase}, and writes straight into the
+                  classes folder.
                 -->
                 <id>bun generate license report</id>
                 <goals>
                   <goal>bun</goal>
                 </goals>
-                <phase>${ts-build-phase}</phase>
+                <phase>process-classes</phase>
                 <configuration>
                   <arguments>../../../../inception-build/src/main/resources/inception/npm-dependencies.mjs
-                    ${project.build.directory}/js/META-INF/NPM-DEPENDENCIES.json</arguments>
+                    ${project.build.outputDirectory}/META-INF/NPM-DEPENDENCIES.json
+                    ${project.build.directory}/js</arguments>
                 </configuration>
               </execution>
               <execution>
