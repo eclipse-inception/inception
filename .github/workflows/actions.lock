@@ -5,21 +5,21 @@ version: 'v0.0.3'
 workflows:
     '.github/workflows/dist-win.yml':
         - 'actions/checkout@v7.0.1'
-        - 'actions/setup-java@v6.2.0'
+        - 'actions/setup-java@v6.3.0'
         - 'actions/upload-artifact@v7.0.2'
         - 'stcarolas/setup-maven@v5.1'
-        - 'step-security/harden-runner@v2.22.4'
+        - 'step-security/harden-runner@v2.23.0'
     '.github/workflows/maven.yml':
         - 'actions/cache@v6.1.0'
         - 'actions/checkout@v7.0.1'
-        - 'actions/setup-java@v6.2.0'
+        - 'actions/setup-java@v6.3.0'
         - 'actions/upload-artifact@v7.0.2'
         - 'mikepenz/action-junit-report@v6.7.1'
         - 'stcarolas/setup-maven@v5.1'
-        - 'step-security/harden-runner@v2.22.4'
+        - 'step-security/harden-runner@v2.23.0'
     '.github/workflows/verify-lockfile.yml':
         - 'actions/checkout@v7.0.1'
-        - 'step-security/harden-runner@v2.22.4'
+        - 'step-security/harden-runner@v2.23.0'
 dependencies:
     'actions/cache@v6.1.0':
         ref: 'v6.1.0'
@@ -31,9 +31,9 @@ dependencies:
         commit: 'sha1-3d3c42e5aac5ba805825da76410c181273ba90b1'
         owner_id: 44036562
         repo_id: 197814629
-    'actions/setup-java@v6.2.0':
-        ref: 'v6.2.0'
-        commit: 'sha1-77dd5b2ce225ea11469928ac317850245a74ae78'
+    'actions/setup-java@v6.3.0':
+        ref: 'v6.3.0'
+        commit: 'sha1-d1374f8ac74474200d16ef8ecee22c7ae7a51880'
         owner_id: 44036562
         repo_id: 196057608
     'actions/upload-artifact@v7.0.2':
@@ -51,8 +51,8 @@ dependencies:
         commit: 'sha1-12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0'
         owner_id: 2007081
         repo_id: 226509858
-    'step-security/harden-runner@v2.22.4':
-        ref: 'v2.22.4'
-        commit: 'sha1-1d88384fd173af6ecb012dfd0264a306b711241a'
+    'step-security/harden-runner@v2.23.0':
+        ref: 'v2.23.0'
+        commit: 'sha1-aebdcf6156ab6691adf63218240e476564a1ed4c'
         owner_id: 88700172
         repo_id: 422287306
