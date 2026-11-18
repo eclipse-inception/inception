@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.dkpro</groupId>
     <artifactId>dkpro-parent-pom</artifactId>
-    <version>35</version>
+    <version>38</version>
   </parent>
 
   <groupId>de.tudarmstadt.ukp.inception.app</groupId>
@@ -72,14 +72,14 @@
 
   <properties>
     <build-ant-version>1.10.18</build-ant-version>
-    <build-groovy-version>5.0.8</build-groovy-version>
+    <build-groovy-version>5.1.3</build-groovy-version>
 
     <junit.version>6.1.3</junit.version>
     <mockito.version>5.24.0</mockito.version>
     <assertj.version>3.27.7</assertj.version>
     <xmlunit.version>2.14.0</xmlunit.version>
     <testcontainers.version>2.0.5</testcontainers.version>
-    <keycloak-admin-client.version>26.0.12</keycloak-admin-client.version>
+    <keycloak-admin-client.version>26.0.13</keycloak-admin-client.version>
     <testcontainers-keycloak.version>4.4.0</testcontainers-keycloak.version>
     <mock-oauth2-server.version>6.1.5</mock-oauth2-server.version>
 
@@ -92,12 +92,12 @@
 
     <pdfbox.version>3.0.8</pdfbox.version>
 
-    <spring.version>7.0.9</spring.version>
+    <spring.version>7.0.10</spring.version>
     <spring.boot.version>4.1.2</spring.boot.version>
     <spring.data.version>4.1.2</spring.data.version>
-    <spring.security.version>7.1.1</spring.security.version>
+    <spring.security.version>7.1.2</spring.security.version>
     <springdoc.version>3.1.1</springdoc.version>
-    <swagger.version>2.2.55</swagger.version>
+    <swagger.version>2.2.56</swagger.version>
     <jjwt.version>0.13.0</jjwt.version>
 
     <slf4j.version>2.0.20</slf4j.version>
@@ -105,15 +105,15 @@
     <jboss.logging.version>3.6.3.Final</jboss.logging.version>
     <sentry.version>8.58.0</sentry.version>
 
-    <tomcat.version>11.0.27</tomcat.version>
-    <jetty.version>12.1.13</jetty.version>
+    <tomcat.version>11.0.29</tomcat.version>
+    <jetty.version>12.1.15</jetty.version>
     <servlet-api.version>6.1.0</servlet-api.version>
 
     <mariadb.driver.version>3.5.11</mariadb.driver.version>
     <mssql.driver.version>13.6.2.jre11</mssql.driver.version>
     <mysql.driver.version>26.7.0</mysql.driver.version>
     <postgres.driver.version>42.7.14</postgres.driver.version>
-    <hibernate.version>7.4.15.Final</hibernate.version>
+    <hibernate.version>7.4.16.Final</hibernate.version>
     <hibernate.validator.version>9.1.6.Final</hibernate.validator.version>
     <liquibase.version>4.33.0</liquibase.version>
     <liquibase-slf4j.version>5.1.0</liquibase-slf4j.version>
@@ -144,10 +144,10 @@
 
     <ant-version>1.10.18</ant-version>
     <json.version>20240303</json.version>
-    <jackson.version>2.22.3</jackson.version>
-    <jackson3.version>3.2.3</jackson3.version>
+    <jackson.version>2.22.4</jackson.version>
+    <jackson3.version>3.2.4</jackson3.version>
     <snakeyaml.version>2.7</snakeyaml.version>
-    <okhttp.version>5.5.0</okhttp.version>
+    <okhttp.version>5.5.1</okhttp.version>
     <okio.version>3.18.2</okio.version>
     <byte-buddy.version>1.18.17</byte-buddy.version>
     <caffeine.version>3.3.1</caffeine.version>
@@ -170,7 +170,7 @@
     <flexmark.version>0.64.8</flexmark.version>
     <ivy.version>2.6.0</ivy.version>
     <imageio-tiff-version>3.15.3</imageio-tiff-version>
-    <opennlp.version>2.5.12</opennlp.version>
+    <opennlp.version>2.5.13</opennlp.version>
     <txtmark.version>0.13</txtmark.version>
     <owasp-java-html-sanitizer.version>20260924.2</owasp-java-html-sanitizer.version>
     <jinjava.version>2.8.5</jinjava.version>
@@ -230,7 +230,7 @@
     <omtd-share-annotations.version>3.0.2.7</omtd-share-annotations.version>
     <webstomp-client.version>1.2.6</webstomp-client.version>
 
-    <node.version>24.22.2</node.version>
+    <node.version>24.22.3</node.version>
     <apache-annotator.version>^0.2.0</apache-annotator.version>
     <bootstrap.version>^5.3.8</bootstrap.version>
     <cross-env.version>^10.1.0</cross-env.version>
@@ -328,7 +328,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>versions-maven-plugin</artifactId>
-          <version>2.25.1</version>
+          <version>2.25.2</version>
           <configuration>
             <rulesUri>file:${maven.multiModuleProjectDirectory}/inception/inception-build/src/main/resources/inception/rules.xml</rulesUri>
             <!--
@@ -384,7 +384,7 @@
             <plugin>
               <groupId>com.diffplug.spotless</groupId>
               <artifactId>spotless-maven-plugin</artifactId>
-              <version>3.10.4</version>
+              <version>3.11.0</version>
               <inherited>true</inherited>
               <configuration>
                 <java>
