@@ -17,6 +17,10 @@
 
 set -x
 
+if [ -n "$_JAVA_OPTIONS" ]; then
+  export _JAVA_OPTIONS="$_JAVA_OPTIONS -XX:-UseBASE64Intrinsics"
+fi
+
 if [ "$(id -u)" = "0" ]; then
   # Update the user and group IDs for an existing user
   echo "Updating UID [$APP_UID] and GID [$APP_GID] for user [$APP_USER] and group [$APP_GROUP]..."

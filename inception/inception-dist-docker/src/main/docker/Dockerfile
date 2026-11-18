@@ -60,4 +60,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
   CMD ["sh", "-c", "curl -sf http://localhost:8080/actuator/health | jq -e '.status==\"UP\"' || exit 1"]
 
 # Launch application
-CMD ["sh", "-c", "/opt/inception/launch.sh java ${JAVA_MEM_OPTS} ${JAVA_OPTS} --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED -Djava.awt.headless=true -Dinception.home=/export -jar inception-app-standalone.jar ${APP_ARGS}"]
+CMD ["sh", "-c", "/opt/inception/launch.sh java ${JAVA_MEM_OPTS} ${JAVA_OPTS} -XX:-UseBASE64Intrinsics --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED -Djava.awt.headless=true -Dinception.home=/export -jar inception-app-standalone.jar ${APP_ARGS}"]
