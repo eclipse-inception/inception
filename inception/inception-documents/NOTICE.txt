@@ -1,0 +1,14 @@
+NOTE: See META-INF/DEPENDENCIES-EMBEDDED.spdx.json
+
+== Universal Dependencies documentation
+
+Files: src/main/resources/tagsets/mul-pos-ud2.json
+       src/main/resources/tagsets/mul-dep-ud2.json
+
+The tag names, short tag descriptions and introductory texts of these tagsets are taken from the
+Universal Dependencies documentation, which is licensed under the Apache License 2.0.
+
+  Copyright 2014-2017 Universal Dependencies contributors
+
+Original source: https://universaldependencies.org
+                 https://github.com/UniversalDependencies/docs

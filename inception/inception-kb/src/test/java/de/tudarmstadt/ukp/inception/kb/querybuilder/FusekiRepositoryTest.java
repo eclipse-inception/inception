@@ -107,7 +107,8 @@ public class FusekiRepositoryTest
                 // These require additional configuration in Fuseki FTS
                 "thatMatchingAgainstAdditionalSearchPropertiesWorks", //
                 "testWithLabelMatchingExactlyAnyOf_subproperty", //
-                "testWithLabelStartingWith_OLIA",
+                "testWithLabelStartingWith_customLabelProperty",
+                "testWithLabelStartingWith_customLabelProperty_rdfXml",
                 // Not sure why this one does not work
                 "testWithLabelStartingWith_withLanguage_FTS_5",
                 // This test returns one match term less than in the RDF4J case - not clear why

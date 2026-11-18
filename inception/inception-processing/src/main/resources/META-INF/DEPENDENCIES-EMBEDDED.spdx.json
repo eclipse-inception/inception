@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/spdx/spdx-spec/v2.2.2/schemas/spdx-schema.json",
+  "packages": [
+    {
+      "name": "Font Awesome Free icons",
+      "versionInfo": "6.7.2",
+      "originator": "Fonticons, Inc.",
+      "homepage": "https://fontawesome.com",
+      "downloadLocation": "https://github.com/FortAwesome/Font-Awesome/tree/6.7.2",
+      "licenseDeclared": "CC-BY-4.0",
+      "licenseComments": "Font Awesome Free: icons under CC BY 4.0, fonts under SIL OFL 1.1, code under MIT. Only icons are used here. The modifications made for INCEpTION (Technische Universität Darmstadt) are also licensed under CC BY 4.0.",
+      "description": "Icons derived from the Font Awesome Free file, user-graduate and robot icons (classic solid).",
+      "hasFiles": [
+        "de/tudarmstadt/ukp/inception/processing/BulkProcessingSidebarIcon.svg",
+        "de/tudarmstadt/ukp/inception/processing/curation/BulkCurationProcessor.svg",
+        "de/tudarmstadt/ukp/inception/processing/recommender/BulkRecommenderProcessor.svg"
+      ]
+    }
+  ]
+}

@@ -280,19 +280,6 @@ public class WikiDataLinkingProjectInitializersAutoConfiguration
 
     @ConditionalOnBean(KnowledgeBaseService.class)
     @Bean
-    public ProfileBasedKnowledgeBaseInitializer wineOntologyKnowledgeBaseInitializer(
-            KnowledgeBaseService aKbService)
-    {
-        var thumbnail = new PackageResourceReference(WikiDataKnowledgeBaseInitializer.class,
-                "WineKnowledgeBase.svg");
-        return new ProfileBasedKnowledgeBaseInitializer(aKbService, PROFILES.get("wine_ontology"),
-                thumbnail)
-        {
-        };
-    }
-
-    @ConditionalOnBean(KnowledgeBaseService.class)
-    @Bean
     public ProfileBasedKnowledgeBaseInitializer yagoKnowledgeBaseInitializer(
             KnowledgeBaseService aKbService)
     {

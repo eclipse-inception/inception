@@ -205,4 +205,28 @@
       <artifactId>commons-lang3</artifactId>
     </dependency>
   </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.rat</groupId>
+          <artifactId>apache-rat-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>default</id>
+              <configuration>
+                <inputExcludes combine.children="append">
+                  <!-- Derived from Font Awesome Free, licensed as a whole under CC BY 4.0, see NOTICE.txt -->
+                  <inputExclude>**/processing/BulkProcessingSidebarIcon.svg</inputExclude>
+                  <inputExclude>**/processing/curation/BulkCurationProcessor.svg</inputExclude>
+                  <inputExclude>**/processing/recommender/BulkRecommenderProcessor.svg</inputExclude>
+                </inputExcludes>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 </project>

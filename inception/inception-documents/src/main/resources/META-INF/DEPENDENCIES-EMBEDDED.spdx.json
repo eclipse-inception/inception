@@ -1,0 +1,18 @@
+{
+  "$schema": "https://raw.githubusercontent.com/spdx/spdx-spec/v2.2.2/schemas/spdx-schema.json",
+  "packages": [
+    {
+      "name": "Universal Dependencies documentation",
+      "versionInfo": "2",
+      "originator": "Universal Dependencies contributors",
+      "homepage": "https://universaldependencies.org",
+      "downloadLocation": "https://github.com/UniversalDependencies/docs",
+      "licenseDeclared": "Apache-2.0",
+      "description": "Tag names, short tag descriptions and the introductory text of the UD v2 part-of-speech and dependency relation tagsets.",
+      "hasFiles": [
+        "tagsets/mul-pos-ud2.json",
+        "tagsets/mul-dep-ud2.json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/spdx/spdx-spec/v2.2.2/schemas/spdx-schema.json",
+  "packages": [
+    {
+      "name": "jsoup",
+      "versionInfo": "1.23.2",
+      "originator": "Jonathan Hedley",
+      "homepage": "https://jsoup.org",
+      "downloadLocation": "https://github.com/jhy/jsoup/tree/jsoup-1.23.2",
+      "licenseDeclared": "MIT",
+      "description": "Methods copied from jsoup because they are private there. The exact origin of each method is documented by a permalink in the source file.",
+      "hasFiles": [
+        "de/tudarmstadt/ukp/inception/io/html/dkprocore/internal/JSoupUtil.java"
+      ]
+    }
+  ]
+}

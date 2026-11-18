@@ -35,6 +35,7 @@ services:
       - INCEPTION_DB_URL=jdbc:mariadb://db:3306/inception?useSSL=false&useUnicode=true&characterEncoding=UTF-8
       - INCEPTION_DB_USERNAME=${DBUSER:-inception}
       - INCEPTION_DB_PASSWORD=${DBPASSWORD:-inception}
+      - JAVA_OPTS=${JAVA_OPTS:-}
     volumes:
       - ${INCEPTION_HOME:-app-data}:/export
     depends_on:

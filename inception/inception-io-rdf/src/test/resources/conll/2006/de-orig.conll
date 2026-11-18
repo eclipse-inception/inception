@@ -1,0 +1,20 @@
+1	Die	der	ART	ART	Nom Sg Fem	2	NK	_	_
+2	Gärtnerin	Gärtnerin	N	NN	Nom Sg Fem	3	SB	_	_
+3	pflanzt	pflanzen	V	VVFIN	Prs Act Sg3	0	ROOT	_	_
+4	im	in	APPRART	APPRART	Dat Sg Masc	3	MO	_	_
+5	Frühling	Frühling	N	NN	Dat Sg Masc	4	NK	_	_
+6	drei	drei	Num	CARD	Card	7	NK	_	_
+7	Bäume	Baum	N	NN	Acc Pl Masc	3	OA	_	_
+8	,	,	Punct	$,	Punct	_	_	_	_
+9	die	der	Pron	PRELS	Nom Pl Masc	11	SB	_	_
+10	schnell	schnell	Adj	ADJD	Pos	11	MO	_	_
+11	wachsen	wachsen	V	VVFIN	Prs Act Pl3	7	RC	_	_
+12	.	.	Punct	$.	Punct	_	_	_	_
+
+1	Der	der	ART	ART	Nom Sg Masc	2	NK	_	_
+2	Obstgarten	Obst#garten	N	NN	Nom Sg Masc	3	SB	_	_
+3	liegt	liegen	V	VVFIN	Prs Act Sg3	0	ROOT	_	_
+4	am	an	APPRART	APPRART	Dat Sg Masc	3	MO	_	_
+5	Fluss	Fluss	N	NN	Dat Sg Masc	4	NK	_	_
+6	.	.	Punct	$.	Punct	_	_	_	_
+

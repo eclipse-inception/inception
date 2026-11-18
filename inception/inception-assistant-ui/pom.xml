@@ -360,6 +360,21 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>org.apache.rat</groupId>
+          <artifactId>apache-rat-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>default</id>
+              <configuration>
+                <inputExcludes combine.children="append">
+                  <!-- Derived from Font Awesome Free, licensed as a whole under CC BY 4.0, see NOTICE.txt -->
+                  <inputExclude>**/assistant/sidebar/AssistantSidebarIcon.svg</inputExclude>
+                </inputExcludes>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
           <configuration>

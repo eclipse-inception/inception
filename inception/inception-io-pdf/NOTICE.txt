@@ -1,0 +1,16 @@
+NOTE: See META-INF/DEPENDENCIES-EMBEDDED.spdx.json
+
+== Apache PDFBox
+
+File: src/main/java/de/tudarmstadt/ukp/inception/io/pdf/pdfbox/GlyphPositionUtils.java
+
+Parts of this class are adapted from the DrawPrintTextLocations example of Apache PDFBox, which
+is licensed under the Apache License 2.0.
+
+  Apache PDFBox
+  Copyright 2002-2026 The Apache Software Foundation
+
+Original source: https://github.com/apache/pdfbox
+Version:         3.0.7
+
+The exact origin of each method is documented by a permalink in the source file itself.

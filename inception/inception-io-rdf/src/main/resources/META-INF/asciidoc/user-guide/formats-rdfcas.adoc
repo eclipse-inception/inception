@@ -36,35 +36,38 @@ This format provides a representation of the annotated document in RDF using the
 .Example
 [source,turtle]
 ----
-<doc:fi-orig.conll#6>
-        a                    cas:Sofa , rdfcas:View ;
-        cas:Sofa-mimeType    "text" ;
-        cas:Sofa-sofaID      "_InitialView" ;
+<doc:de-orig.conll#2>
+        a                    rdfcas:View , cas:Sofa ;
         cas:Sofa-sofaNum     "1"^^xsd:int ;
-        cas:Sofa-sofaString  "... here be document text ..." .
+        cas:Sofa-sofaID      "_InitialView" ;
+        cas:Sofa-mimeType    "text" ;
+        cas:Sofa-sofaString  """Die Gärtnerin pflanzt im Frühling drei Bäume , die schnell wachsen .
+Der Obstgarten liegt am Fluss .
+""" .
 
-<doc:fi-orig.conll#1182>
-        a                         rdfcas:FeatureStructure , segmentation:Token ;
-        rdfcas:indexedIn          <doc:fi-orig.conll#6> ;
-        segmentation:Token-lemma  <doc:fi-orig.conll#1362> ;
-        segmentation:Token-morph  <doc:fi-orig.conll#213> ;
-        segmentation:Token-pos    <doc:fi-orig.conll#1780> ;
-        cas:AnnotationBase-sofa   <doc:fi-orig.conll#6> ;
-        tcas:Annotation-begin     "173"^^xsd:int ;
-        tcas:Annotation-end       "183"^^xsd:int .
+<doc:de-orig.conll#27>
+        a                         segmentation:Token , rdfcas:FeatureStructure ;
+        rdfcas:indexedIn          <doc:de-orig.conll#2> ;
+        cas:AnnotationBase-sofa   <doc:de-orig.conll#2> ;
+        tcas:Annotation-begin     "39"^^xsd:int ;
+        tcas:Annotation-end       "44"^^xsd:int ;
+        segmentation:Token-lemma  <doc:de-orig.conll#28> ;
+        segmentation:Token-pos    <doc:de-orig.conll#29> ;
+        segmentation:Token-morph  <doc:de-orig.conll#30> ;
+        segmentation:Token-order  "0"^^xsd:int .
 
-<doc:fi-orig.conll#470>
+<doc:de-orig.conll#57>
         a                        syntax-dependency:Dependency , rdfcas:FeatureStructure ;
-        rdfcas:indexedIn         <doc:fi-orig.conll#6> ;
-        syntax-dependency:Dependency-DependencyType
-                "obj" ;
-        syntax-dependency:Dependency-Dependent
-                <doc:fi-orig.conll#1182> ;
+        rdfcas:indexedIn         <doc:de-orig.conll#2> ;
+        cas:AnnotationBase-sofa  <doc:de-orig.conll#2> ;
+        tcas:Annotation-begin    "39"^^xsd:int ;
+        tcas:Annotation-end      "44"^^xsd:int ;
         syntax-dependency:Dependency-Governor
-                <doc:fi-orig.conll#123> ;
+                <doc:de-orig.conll#11> ;
+        syntax-dependency:Dependency-Dependent
+                <doc:de-orig.conll#27> ;
+        syntax-dependency:Dependency-DependencyType
+                "OA" ;
         syntax-dependency:Dependency-flavor
-                "basic" ;
-        cas:AnnotationBase-sofa  <doc:fi-orig.conll#6> ;
-        tcas:Annotation-begin    "173"^^xsd:int ;
-        tcas:Annotation-end      "183"^^xsd:int .
+                "basic" .
 ----

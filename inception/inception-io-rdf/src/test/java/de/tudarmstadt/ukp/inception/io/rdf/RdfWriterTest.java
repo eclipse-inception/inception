@@ -38,7 +38,6 @@ import org.dkpro.core.io.conll.Conll2006Writer;
 import org.dkpro.core.testing.TestOptions;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -52,8 +51,8 @@ public class RdfWriterTest
     {
         testOneWay(Conll2006Reader.class, // the reader
                 RdfWriter.class, // the writer
-                "conll/2006/fi-ref.ttl", // the reference file for the output
-                "conll/2006/fi-orig.conll", // the input file for the test
+                "conll/2006/de-ref.ttl", // the reference file for the output
+                "conll/2006/de-orig.conll", // the input file for the test
                 new TestOptions().resultAssertor(this::assertModelEquals));
     }
 
@@ -62,8 +61,8 @@ public class RdfWriterTest
     {
         testOneWay(RdfReader.class, // the reader
                 Conll2006Writer.class, // the writer
-                "ttl/fi-ref.conll", // the reference file for the output
-                "ttl/fi-orig.ttl"); // the input file for the test
+                "ttl/de-ref.conll", // the reference file for the output
+                "ttl/de-orig.ttl"); // the input file for the test
     }
 
     @Test
@@ -105,14 +104,15 @@ public class RdfWriterTest
                 .containsExactly(tuple("iri:somewhere", "PER"));
     }
 
-    @Disabled("Currently does not work because IDs are not stable on round-trips")
     @Test
     void roundTrip() throws Exception
     {
+        // Uses the output of the current writer, so the ids are stable on the round trip. The
+        // file name must match the document ID in the data, because the writer names its output
+        // after it.
         testRoundTrip(RdfReader.class, // the reader
                 RdfWriter.class, // the writer
-                "ttl/fi-orig.ttl",
-                // "conll/2006/fi-ref.ttl",
+                "roundtrip/de-orig.ttl", //
                 new TestOptions().resultAssertor(this::assertModelEquals));
     }
 

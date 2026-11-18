@@ -26,12 +26,10 @@ import static java.net.HttpURLConnection.HTTP_MOVED_TEMP;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -76,6 +74,8 @@ import de.tudarmstadt.ukp.inception.kb.yaml.KnowledgeBaseProfile;
 
 public class TestFixtures
 {
+    private static final int MAX_REDIRECTS = 10;
+
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final Set<String> UNREACHABLE_ENDPOINTS = new LinkedHashSet<>();
@@ -152,7 +152,9 @@ public class TestFixtures
                     + profile.getAccess().getAccessUrl() + "] is not reachable");
 
             var repo = new SPARQLRepository(profile.getAccess().getAccessUrl());
-            repo.setHttpClient(newPerThreadSslCheckingHttpClient());
+            // Public endpoints such as AGROVOC rate-limit, so back off and retry instead of failing
+            repo.setHttpClient(new RateLimitRetryingHttpClient(newPerThreadSslCheckingHttpClient(),
+                    4, 5_000, 60_000));
             repo.setAdditionalHttpHeaders(Map.of("User-Agent", "INCEpTION/0.0.1-SNAPSHOT"));
             repo.init();
             return repo;
@@ -323,23 +325,59 @@ public class TestFixtures
         }
     }
 
-    private static InputStream openAsStream(String aUrl) throws MalformedURLException, IOException
+    private static InputStream openAsStream(String aUrl) throws IOException
     {
         if (aUrl.startsWith("classpath")) {
             return new PathMatchingResourcePatternResolver().getResource(aUrl).getInputStream();
         }
-        else {
-            if ("https://www.bbc.co.uk/ontologies/wo/1.1.ttl".equals(aUrl)) {
-                return new File("src/test/resources/upstream-data/1.1.ttl").toURI().toURL()
-                        .openStream();
-            }
-            else if ("http://purl.org/olia/penn.owl".equals(aUrl)) {
-                return new File("src/test/resources/upstream-data/penn.owl").toURI().toURL()
-                        .openStream();
-            }
-            else {
-                return new URL(aUrl).openStream();
-            }
+
+        var url = URI.create(aUrl).toURL();
+        if (!url.getProtocol().startsWith("http")) {
+            return url.openStream();
         }
+
+        // HttpURLConnection does not follow redirects that change the protocol, e.g. from http to
+        // https, which is common for PURLs. So we follow redirects ourselves. If the server cannot
+        // be reached, the test is skipped like it is for unreachable remote repositories.
+        for (var hop = 0; hop < MAX_REDIRECTS; hop++) {
+            HttpURLConnection con;
+            int status;
+            try {
+                con = (HttpURLConnection) url.openConnection();
+                con.setInstanceFollowRedirects(false);
+                con.setConnectTimeout(7_500);
+                con.setReadTimeout(30_000);
+                con.setRequestProperty("User-Agent", "INCEpTION/0.0.1-SNAPSHOT");
+                status = con.getResponseCode();
+            }
+            catch (IOException e) {
+                assumeTrue(false, "Data at [" + aUrl + "] is not reachable: " + e.getMessage());
+                throw e;
+            }
+
+            var location = con.getHeaderField("Location");
+            if (status >= 300 && status < 400 && location != null) {
+                con.disconnect();
+                url = URI.create(url.toString()).resolve(location).toURL();
+                continue;
+            }
+
+            if (status == HttpURLConnection.HTTP_OK) {
+                return con.getInputStream();
+            }
+
+            var proxyError = con.getHeaderField("X-Proxy-Error");
+            con.disconnect();
+
+            // Temporary conditions on the server or the network skip the test. Anything else, e.g.
+            // a 404 because the URL in a profile is no longer valid, is a real failure.
+            var temporary = status == 429 || status >= 500
+                    || (status == HttpURLConnection.HTTP_FORBIDDEN && proxyError != null);
+            assumeTrue(!temporary,
+                    "Data at [" + aUrl + "] is temporarily not available (HTTP " + status + ")");
+            throw new IOException("Unable to download [" + aUrl + "] (HTTP " + status + ")");
+        }
+
+        throw new IOException("Too many redirects when downloading [" + aUrl + "]");
     }
 }

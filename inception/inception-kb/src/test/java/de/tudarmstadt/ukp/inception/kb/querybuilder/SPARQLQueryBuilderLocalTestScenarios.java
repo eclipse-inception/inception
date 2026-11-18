@@ -262,8 +262,10 @@ public class SPARQLQueryBuilderLocalTestScenarios
                         SPARQLQueryBuilderLocalTestScenarios::testWithLabelStartingWith_withLanguage_noFTS),
                 new Scenario("testWithLabelContainingAnyOf_pets_ttl_noFTS",
                         SPARQLQueryBuilderLocalTestScenarios::testWithLabelContainingAnyOf_pets_ttl_noFTS),
-                new Scenario("thatRootsCanBeRetrieved_ontolex",
-                        SPARQLQueryBuilderLocalTestScenarios::thatRootsCanBeRetrieved_ontolex),
+                new Scenario("thatRootsCanBeRetrieved_owl",
+                        SPARQLQueryBuilderLocalTestScenarios::thatRootsCanBeRetrieved_owl),
+                new Scenario("thatIntersectionClassIsChildOfItsOperands_owl",
+                        SPARQLQueryBuilderLocalTestScenarios::thatIntersectionClassIsChildOfItsOperands_owl),
                 new Scenario("testWithLabelContainingAnyOf_withLanguage_noFTS",
                         SPARQLQueryBuilderLocalTestScenarios::testWithLabelContainingAnyOf_withLanguage_noFTS),
                 new Scenario("testWithLabelMatchingAnyOf_withFallbackLanguages",
@@ -350,8 +352,10 @@ public class SPARQLQueryBuilderLocalTestScenarios
                         SPARQLQueryBuilderLocalTestScenarios::thatItemQueryLimitedToChildrenDoesNotReturnOutOfScopeResults),
                 new Scenario("thatItemQueryLimitedToDescendantsDoesNotReturnOutOfScopeResults",
                         SPARQLQueryBuilderLocalTestScenarios::thatItemQueryLimitedToDescendantsDoesNotReturnOutOfScopeResults),
-                new Scenario("testWithLabelStartingWith_OLIA",
-                        SPARQLQueryBuilderLocalTestScenarios::testWithLabelStartingWith_OLIA));
+                new Scenario("testWithLabelStartingWith_customLabelProperty",
+                        SPARQLQueryBuilderLocalTestScenarios::testWithLabelStartingWith_customLabelProperty),
+                new Scenario("testWithLabelStartingWith_customLabelProperty_rdfXml",
+                        SPARQLQueryBuilderLocalTestScenarios::testWithLabelStartingWith_customLabelProperty_rdfXml));
     }
 
     static class Scenario
@@ -1410,12 +1414,13 @@ public class SPARQLQueryBuilderLocalTestScenarios
         });
     }
 
-    static void testWithLabelStartingWith_OLIA(Repository aRepository, KnowledgeBase aKB)
+    static void testWithLabelStartingWith_customLabelProperty(Repository aRepository,
+            KnowledgeBase aKB)
         throws Exception
     {
-        aKB.setLabelIri("http://purl.org/olia/system.owl#hasTag");
+        aKB.setLabelIri("http://example.org/test/tagset#hasTag");
 
-        importDataFromFile(aRepository, aKB, "src/test/resources/data/penn.owl");
+        importDataFromFile(aRepository, aKB, "src/test/resources/data/tagset_custom_label.ttl");
 
         var prefLabels = resolvePrefLabelProperties(aRepository, aKB);
         var results = asHandles(aRepository, SPARQLQueryBuilder //
@@ -1423,6 +1428,7 @@ public class SPARQLQueryBuilderLocalTestScenarios
                 .withPrefLabelProperties(prefLabels) //
                 .withLabelStartingWith("N"));
 
+        // "Number" is only an rdfs:label, not a tag, so it must not match
         assertThat(results).extracting(KBHandle::getIdentifier).doesNotHaveDuplicates();
         assertThat(results).isNotEmpty();
         assertThat(results).extracting(KBHandle::getUiLabel).containsExactlyInAnyOrder("NN", "NNP",
@@ -1451,11 +1457,10 @@ public class SPARQLQueryBuilderLocalTestScenarios
                 .containsExactlyInAnyOrder(new KBHandle("http://mbugert.de/pets#socke", "Socke"));
     }
 
-    static void thatRootsCanBeRetrieved_ontolex(Repository aRepository, KnowledgeBase aKB)
+    static void thatRootsCanBeRetrieved_owl(Repository aRepository, KnowledgeBase aKB)
         throws Exception
     {
-        importDataFromFile(aRepository, aKB,
-                "src/test/resources/data/wordnet-ontolex-ontology.owl");
+        importDataFromFile(aRepository, aKB, "src/test/resources/data/lexicon_ontology.ttl");
 
         initOwlMapping(aKB);
 
@@ -1464,10 +1469,62 @@ public class SPARQLQueryBuilderLocalTestScenarios
                 .roots() //
                 .retrieveLabel());
 
-        assertThat(results).isNotEmpty();
+        // Excluded: subclasses, the intersection class "Noun", the instance "dog" and the class
+        // "Lemma", whose only superclass is an anonymous restriction. Included: the undeclared
+        // external class "Morpheme", which is only used as a superclass.
+        assertThat(results).extracting(KBHandle::getUiLabel).containsExactlyInAnyOrder(
+                "Lexical entry", "Sense", "Concept", "Part of speech", "Morpheme");
+    }
 
-        assertThat(results).extracting(KBHandle::getUiLabel).contains("Adjective position",
-                "Lexical domain", "Part of speech", "Phrase type", "Synset");
+    static void thatIntersectionClassIsChildOfItsOperands_owl(Repository aRepository,
+            KnowledgeBase aKB)
+        throws Exception
+    {
+        importDataFromFile(aRepository, aKB, "src/test/resources/data/lexicon_ontology.ttl");
+
+        initOwlMapping(aKB);
+
+        for (var operand : List.of("http://example.org/test/lexicon#Word",
+                "http://example.org/test/lexicon#OpenClass")) {
+            var children = asHandles(aRepository, SPARQLQueryBuilder //
+                    .forClasses(aKB) //
+                    .childrenOf(operand) //
+                    .retrieveLabel());
+
+            assertThat(children).as("Children of %s", operand) //
+                    .extracting(KBHandle::getUiLabel) //
+                    .containsExactly("Noun");
+        }
+
+        var ancestors = asHandles(aRepository, SPARQLQueryBuilder //
+                .forClasses(aKB) //
+                .ancestorsOf("http://example.org/test/lexicon#Noun") //
+                .retrieveLabel());
+
+        // Known limitation: owl:intersectionOf is followed only one step, so the superclasses of
+        // the operands ("Lexical entry", "Part of speech") are not returned as ancestors
+        assertThat(ancestors).extracting(KBHandle::getUiLabel) //
+                .containsExactlyInAnyOrder("Word", "Open class");
+    }
+
+    static void testWithLabelStartingWith_customLabelProperty_rdfXml(Repository aRepository,
+            KnowledgeBase aKB)
+        throws Exception
+    {
+        aKB.setLabelIri("http://example.org/test/tagset#hasTag");
+
+        // RDF/XML with internal DOCTYPE entities, which the import must accept
+        importDataFromFile(aRepository, aKB, "src/test/resources/data/tagset_custom_label.rdf");
+
+        var prefLabels = resolvePrefLabelProperties(aRepository, aKB);
+        var results = asHandles(aRepository, SPARQLQueryBuilder //
+                .forInstances(aKB) //
+                .withPrefLabelProperties(prefLabels) //
+                .withLabelStartingWith("N"));
+
+        assertThat(results).extracting(KBHandle::getIdentifier).doesNotHaveDuplicates();
+        assertThat(results).extracting(KBHandle::getUiLabel).containsExactlyInAnyOrder("NN", "NNP",
+                "NNPS", "NNS");
     }
 
     static Set<String> resolvePrefLabelProperties(Repository aRepository, KnowledgeBase aKB)
