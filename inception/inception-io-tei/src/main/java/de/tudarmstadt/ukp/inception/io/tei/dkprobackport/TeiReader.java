@@ -33,6 +33,9 @@ import static de.tudarmstadt.ukp.inception.io.tei.dkprobackport.TeiConstants.TAG
 import static de.tudarmstadt.ukp.inception.io.tei.dkprobackport.TeiConstants.TAG_TITLE;
 import static de.tudarmstadt.ukp.inception.io.tei.dkprobackport.TeiConstants.TAG_U;
 import static de.tudarmstadt.ukp.inception.io.tei.dkprobackport.TeiConstants.TAG_WORD;
+import static de.tudarmstadt.ukp.inception.support.xml.XmlParserUtils.enableNamespaceSupport;
+import static de.tudarmstadt.ukp.inception.support.xml.XmlParserUtils.newSaxParser;
+import static de.tudarmstadt.ukp.inception.support.xml.XmlParserUtils.newSaxParserFactory;
 import static java.util.Arrays.asList;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -47,6 +50,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 import java.util.zip.GZIPInputStream;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -349,7 +354,8 @@ public class TeiReader
                 source.setPublicId(currentResource.getLocation());
                 source.setSystemId(currentResource.getLocation());
 
-                SAXReader reader = new SAXReader();
+                var parser = newSaxParser(enableNamespaceSupport(newSaxParserFactory()));
+                var reader = new SAXReader(parser.getXMLReader());
                 Document xml = reader.read(source);
 
                 final XPath teiPath = new Dom4jXPath("//tei:TEI");
@@ -363,7 +369,7 @@ public class TeiReader
                 teiElementIterator = teiElements.iterator();
                 currentTeiElementNumber = 0;
             }
-            catch (DocumentException e) {
+            catch (DocumentException | ParserConfigurationException | SAXException e) {
                 throw new IOException(e);
             }
             catch (JaxenException e) {
