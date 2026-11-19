@@ -21,7 +21,7 @@
   <parent>
     <groupId>de.tudarmstadt.ukp.inception.app</groupId>
     <artifactId>inception-app</artifactId>
-    <version>42.4-SNAPSHOT</version>
+    <version>42.5-SNAPSHOT</version>
   </parent>
 
   <artifactId>inception-io-perseus</artifactId>
@@ -36,6 +36,11 @@
     <dependency>
       <groupId>de.tudarmstadt.ukp.inception.app</groupId>
       <artifactId>inception-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>de.tudarmstadt.ukp.inception.app</groupId>
+      <artifactId>inception-support-xml</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -60,6 +65,10 @@
     <dependency>
       <groupId>org.dkpro.core</groupId>
       <artifactId>dkpro-core-io-perseus-asl</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.dkpro.core</groupId>
+      <artifactId>dkpro-core-api-resources-asl</artifactId>
     </dependency>
   </dependencies>
 </project>

@@ -226,6 +226,24 @@ you mount the data to folders on your host.
 
 NOTE: Mind that you cannot arbitrarily switch between volume-managed and host-stored data. Choose wisely.
 
+The Compose script also passes the `JAVA_OPTS` environment variable through to the {product-name}
+container, so you can supply additional options to the Java runtime (see above). Instead of exporting
+the variables in your shell, you can also place them into a file called `.env` next to the Compose
+script. Docker Compose picks this file up automatically.
+
+[source,shell,subs="+attributes"]
+.Example `.env` file
+----
+INCEPTION_HOME=/srv/inception/app-data
+INCEPTION_DB_HOME=/srv/inception/db-data
+JAVA_OPTS=-Dsome.property=value -XX:SomeJvmOption
+----
+
+NOTE: Multiple options in `JAVA_OPTS` are separated by spaces. Do not put quotes around the value.
+      The memory settings of the Java runtime are controlled separately via `JAVA_MEM_OPTS` which is
+      not passed through by the Compose script. If you want to change it, add it to the
+      `environment` section of the `app` service in the script.
+
 There is a lot more that you can do using Docker and Docker Compose. Please see the link:https://docs.docker.com/compose/[Docker Compose reference] for details.
 
 === Starting automatically after reboot

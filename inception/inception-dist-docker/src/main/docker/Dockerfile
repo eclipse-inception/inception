@@ -4,7 +4,7 @@
 #
 ############################################################
 
-FROM eclipse-temurin:25-jre-noble@sha256:a98128a57de944a72bd31fbc79b898edd5a5864d3652071d5bbd2160ab7d7dce
+FROM eclipse-temurin:25-jre-noble@sha256:e3b6f7887a50f20d8f07abf279d8a81a5953fb398a9555bd9edd56b9bd15968c
 
 LABEL maintainer="INCEpTION Team"
 
@@ -60,4 +60,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
   CMD ["sh", "-c", "curl -sf http://localhost:8080/actuator/health | jq -e '.status==\"UP\"' || exit 1"]
 
 # Launch application
-CMD ["sh", "-c", "/opt/inception/launch.sh java ${JAVA_MEM_OPTS} ${JAVA_OPTS} --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED -Djava.awt.headless=true -Dinception.home=/export -jar inception-app-standalone.jar ${APP_ARGS}"]
+CMD ["sh", "-c", "/opt/inception/launch.sh java ${JAVA_MEM_OPTS} ${JAVA_OPTS} -XX:-UseBASE64Intrinsics --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED -Djava.awt.headless=true -Dinception.home=/export -jar inception-app-standalone.jar ${APP_ARGS}"]

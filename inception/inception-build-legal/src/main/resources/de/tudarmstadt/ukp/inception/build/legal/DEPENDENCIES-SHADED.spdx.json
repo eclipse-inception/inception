@@ -362,7 +362,7 @@
         {
           "referenceCategory": "OTHER",
           "referenceType": "contained-in",
-          "referenceLocator": "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.22.3"
+          "referenceLocator": "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.22.4"
         }
       ],
       "hasFiles": [
@@ -381,7 +381,7 @@
         {
           "referenceCategory": "OTHER",
           "referenceType": "contained-in",
-          "referenceLocator": "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.22.3"
+          "referenceLocator": "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.22.4"
         }
       ],
       "hasFiles": [
@@ -406,7 +406,7 @@
         {
           "referenceCategory": "OTHER",
           "referenceType": "contained-in",
-          "referenceLocator": "pkg:maven/tools.jackson.core/jackson-core@3.2.3"
+          "referenceLocator": "pkg:maven/tools.jackson.core/jackson-core@3.2.4"
         }
       ],
       "hasFiles": [
@@ -425,7 +425,7 @@
         {
           "referenceCategory": "OTHER",
           "referenceType": "contained-in",
-          "referenceLocator": "pkg:maven/tools.jackson.core/jackson-core@3.2.3"
+          "referenceLocator": "pkg:maven/tools.jackson.core/jackson-core@3.2.4"
         }
       ],
       "hasFiles": [
@@ -724,7 +724,7 @@
         {
           "referenceCategory": "OTHER",
           "referenceType": "contained-in",
-          "referenceLocator": "pkg:maven/org.springframework/spring-core@7.0.9"
+          "referenceLocator": "pkg:maven/org.springframework/spring-core@7.0.10"
         }
       ],
       "hasFiles": [
@@ -749,7 +749,7 @@
         {
           "referenceCategory": "OTHER",
           "referenceType": "contained-in",
-          "referenceLocator": "pkg:maven/org.springframework/spring-core@7.0.9"
+          "referenceLocator": "pkg:maven/org.springframework/spring-core@7.0.10"
         }
       ],
       "hasFiles": [
@@ -774,7 +774,7 @@
         {
           "referenceCategory": "OTHER",
           "referenceType": "contained-in",
-          "referenceLocator": "pkg:maven/org.springframework/spring-core@7.0.9"
+          "referenceLocator": "pkg:maven/org.springframework/spring-core@7.0.10"
         }
       ],
       "hasFiles": [
@@ -814,7 +814,7 @@
       "downloadLocation": "NOASSERTION",
       "licenseDeclared": "NOASSERTION",
       "licenseConcluded": "Apache-2.0",
-      "licenseComments": "tomcat-embed-core includes the parts of BCEL it uses in org/apache/tomcat/util/bcel, with the ASF's Apache License 2.0 headers. Tomcat 11.0.27's MERGE.txt records rel/commons-bcel-6.12.0 as the last merged upstream tag, with unused code removed.",
+      "licenseComments": "tomcat-embed-core includes the parts of BCEL it uses in org/apache/tomcat/util/bcel, with the ASF's Apache License 2.0 headers. Tomcat 11.0.29's MERGE.txt records rel/commons-bcel-6.12.0 as the last merged upstream tag, with unused code removed.",
       "externalRefs": [
         {
           "referenceCategory": "PACKAGE-MANAGER",
@@ -824,7 +824,7 @@
         {
           "referenceCategory": "OTHER",
           "referenceType": "contained-in",
-          "referenceLocator": "pkg:maven/org.apache.tomcat.embed/tomcat-embed-core@11.0.27"
+          "referenceLocator": "pkg:maven/org.apache.tomcat.embed/tomcat-embed-core@11.0.29"
         }
       ],
       "hasFiles": [
@@ -1079,7 +1079,7 @@
         {
           "referenceCategory": "OTHER",
           "referenceType": "contained-in",
-          "referenceLocator": "pkg:maven/org.springframework/spring-aop@7.0.9"
+          "referenceLocator": "pkg:maven/org.springframework/spring-aop@7.0.10"
         }
       ],
       "hasFiles": [
@@ -1098,7 +1098,7 @@
         {
           "referenceCategory": "OTHER",
           "referenceType": "contained-in",
-          "referenceLocator": "pkg:maven/org.apache.tomcat.embed/tomcat-embed-core@11.0.27"
+          "referenceLocator": "pkg:maven/org.apache.tomcat.embed/tomcat-embed-core@11.0.29"
         }
       ],
       "hasFiles": [
@@ -1117,7 +1117,7 @@
         {
           "referenceCategory": "OTHER",
           "referenceType": "contained-in",
-          "referenceLocator": "pkg:maven/org.apache.tomcat.embed/tomcat-embed-core@11.0.27"
+          "referenceLocator": "pkg:maven/org.apache.tomcat.embed/tomcat-embed-core@11.0.29"
         }
       ],
       "hasFiles": [
@@ -1136,7 +1136,7 @@
         {
           "referenceCategory": "OTHER",
           "referenceType": "contained-in",
-          "referenceLocator": "pkg:maven/org.apache.tomcat.embed/tomcat-embed-core@11.0.27"
+          "referenceLocator": "pkg:maven/org.apache.tomcat.embed/tomcat-embed-core@11.0.29"
         }
       ],
       "hasFiles": [
@@ -1427,7 +1427,7 @@
         {
           "referenceCategory": "OTHER",
           "referenceType": "contained-in",
-          "referenceLocator": "pkg:maven/org.apache.opennlp/opennlp-tools@2.5.12"
+          "referenceLocator": "pkg:maven/org.apache.opennlp/opennlp-tools@2.5.13"
         }
       ]
     },

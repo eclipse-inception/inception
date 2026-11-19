@@ -127,6 +127,7 @@ jpackage_app() {
     --java-options -Dinception.app-bundle=true \
     --java-options "--add-modules jdk.incubator.vector" \
     --java-options "--enable-native-access=ALL-UNNAMED" \
+    --java-options -XX:-UseBASE64Intrinsics \
     --jlink-options "$JLINK_OPTIONS" \
     --icon "$ICON"
 }

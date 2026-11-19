@@ -17,15 +17,28 @@
  */
 package de.tudarmstadt.ukp.inception.io.perseus;
 
+import static de.tudarmstadt.ukp.inception.support.xml.XmlParserUtils.newSaxParser;
 import static org.apache.uima.fit.factory.CollectionReaderFactory.createReaderDescription;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.uima.cas.CAS;
+import org.apache.uima.collection.CollectionException;
 import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
+import org.dkpro.core.api.resources.CompressionUtils;
 import org.dkpro.core.io.perseus.PerseusReader;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import de.tudarmstadt.ukp.clarin.webanno.api.format.UimaReaderWriterFormatSupport_ImplBase;
 import de.tudarmstadt.ukp.clarin.webanno.model.Project;
+import de.tudarmstadt.ukp.clarin.webanno.model.SourceDocument;
 import de.tudarmstadt.ukp.inception.io.perseus.config.PerseusFormatAutoConfiguration;
 
 /**
@@ -70,5 +83,26 @@ public class PerseusFormatSupport
         throws ResourceInitializationException
     {
         return createReaderDescription(PerseusReader.class, aTSD);
+    }
+
+    @Override
+    public void read(SourceDocument aDocument, CAS aCas, File aFile)
+        throws ResourceInitializationException, IOException, CollectionException
+    {
+        validateXml(aFile);
+
+        super.read(aDocument, aCas, aFile);
+    }
+
+    static void validateXml(File aFile) throws IOException
+    {
+        try (var is = CompressionUtils.getInputStream(aFile.getName(),
+                Files.newInputStream(aFile.toPath()))) {
+            newSaxParser().parse(is, new DefaultHandler());
+        }
+        catch (ParserConfigurationException | SAXException e) {
+            throw new IOException("Unable to parse [" + aFile.getName()
+                    + "] - note that DOCTYPE declarations are not supported", e);
+        }
     }
 }
