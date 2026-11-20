@@ -16,7 +16,7 @@ regarding authorship of content, please consult the listed source code repositor
 
 Besides individual contributions, the copyright in this codebase largely belongs to:
 
-Copyright 2018-2021 Ubiquitous Knowledge Processing (UKP) Lab
+Copyright 2018-2026 Ubiquitous Knowledge Processing (UKP) Lab
                     Technische Universität Darmstadt
                     (in the context of the INCEpTION project)
 

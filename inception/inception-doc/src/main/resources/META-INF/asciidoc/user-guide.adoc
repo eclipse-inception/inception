@@ -21,6 +21,8 @@
 = {product-name} User Guide
 The {product-name} Team
 
+include::common/legal-notice.adoc[]
+
 = Getting Started
 
 include::{include-dir}intro-introduction.adoc[leveloffset=+1]
