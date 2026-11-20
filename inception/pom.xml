@@ -156,6 +156,7 @@
   <modules>
     <!-- Build infrastructure modules -->
     <module>inception-build</module>
+    <module>inception-build-legal</module>
     <module>inception-boot-loader</module>
     <!-- Core -->
     <module>inception-support-bootstrap</module>
@@ -1089,19 +1090,22 @@
                 </configuration>
               </execution>
               <execution>
+                <!--
+                  Lists the npm packages the module ships, with their licenses, for the About page
+                  and the legal documentation of the distributions. It reads what the build wrote
+                  to target/js (its sourcemaps), so it runs after the module's own "bun build"
+                  execution, which is bound to ${ts-build-phase}, and writes straight into the
+                  classes folder.
+                -->
                 <id>bun generate license report</id>
                 <goals>
                   <goal>bun</goal>
                 </goals>
-                <phase>${ts-build-phase}</phase>
+                <phase>process-classes</phase>
                 <configuration>
-                  <environmentVariables>
-                    <DEBUG>license-report*</DEBUG>
-                  </environmentVariables>
-                  <arguments>x license-checker --production --out
-                    ${project.build.directory}/js/META-INF/NPM-DEPENDENCIES.json --json --customPath
-                    ../../../../inception-build/src/main/resources/inception/licenseCheckerCustomFormat.json
-                    --excludePrivatePackages</arguments>
+                  <arguments>../../../../inception-build/src/main/resources/inception/npm-dependencies.mjs
+                    ${project.build.outputDirectory}/META-INF/NPM-DEPENDENCIES.json
+                    ${project.build.directory}/js</arguments>
                 </configuration>
               </execution>
               <execution>

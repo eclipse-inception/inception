@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/spdx/spdx-spec/v2.2.2/schemas/spdx-schema.json",
+  "packages": [
+    {
+      "name": "SPDX 2.3 JSON schema",
+      "versionInfo": "2.3",
+      "originator": "Organization: The Linux Foundation and its Contributors",
+      "homepage": "https://spdx.dev",
+      "downloadLocation": "https://github.com/spdx/spdx-spec/blob/v2.3/schemas/spdx-schema.json",
+      "licenseDeclared": "CC-BY-3.0",
+      "description": "JSON schema of the SPDX 2.3 specification, used unchanged to validate the generated SBOM.",
+      "hasFiles": [
+        "de/tudarmstadt/ukp/inception/build/legal/spdx-schema-2.3.json"
+      ]
+    }
+  ]
+}

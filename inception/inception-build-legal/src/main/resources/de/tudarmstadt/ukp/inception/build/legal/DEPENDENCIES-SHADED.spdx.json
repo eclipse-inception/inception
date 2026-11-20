@@ -1,0 +1,1455 @@
+{
+  "$schema": "https://raw.githubusercontent.com/spdx/spdx-spec/v2.2.2/schemas/spdx-schema.json",
+  "comment": "Third-party code shaded or copied into the third-party libraries we ship, which the libraries' own metadata does not list. Each package names the library it is contained in, by a purl with the version it was checked for (externalRef OTHER/contained-in); the build fails when that library ships in another version, and when a library shows signs of shaded code but has no entry here. The evidence for each package is in licenseComments.",
+  "packages": [
+    {
+      "name": "jsoup",
+      "versionInfo": "1.23.2",
+      "originator": "Person: Jonathan Hedley",
+      "homepage": "https://jsoup.org",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "MIT",
+      "licenseComments": "jinjava carries jsoup's POM (META-INF/maven/org.jsoup/jsoup, version 1.23.2, \"The MIT License\") and META-INF/jsoup/LICENSE, and the classes relocated to jinjava/org/jsoup.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/org.jsoup/jsoup"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.hubspot.jinjava/jinjava@2.8.5"
+        }
+      ],
+      "hasFiles": [
+        "jinjava/org/jsoup/",
+        "org/jsoup/helper/"
+      ]
+    },
+    {
+      "name": "gson",
+      "versionInfo": "2.14.0",
+      "originator": "Organization: Google LLC",
+      "homepage": "https://github.com/google/gson",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "nimbus-jose-jwt carries gson's POM (version 2.14.0, \"Apache-2.0\"), relocated to com/nimbusds/jose/shaded/gson.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.google.code.gson/gson"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.nimbusds/nimbus-jose-jwt@10.10"
+        }
+      ],
+      "hasFiles": [
+        "com/nimbusds/jose/shaded/gson/"
+      ]
+    },
+    {
+      "name": "jcip-annotations",
+      "versionInfo": "1.0-1",
+      "originator": "Person: Stephen Connolly",
+      "homepage": "https://github.com/stephenc/jcip-annotations",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "nimbus-jose-jwt carries the POM of this clean-room reimplementation (version 1.0-1, \"Apache License, Version 2.0\"), relocated to com/nimbusds/jose/shaded/jcip.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.github.stephenc.jcip/jcip-annotations"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.nimbusds/nimbus-jose-jwt@10.10"
+        }
+      ],
+      "hasFiles": [
+        "com/nimbusds/jose/shaded/jcip/"
+      ]
+    },
+    {
+      "name": "MSV core",
+      "versionInfo": "2022.7",
+      "originator": "Organization: Oracle and/or its affiliates",
+      "homepage": "https://github.com/xmlark/msv",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "BSD-3-Clause AND Apache-2.0",
+      "licenseComments": "woodstox-core's POM declares msv-core ${version.msv} for shading; its bundled xsdlib POM gives 2022.7. Relocated to com/ctc/wstx/shaded/msv_core. The POM says only \"BSD\"; the source headers of msv-core 2022.7 are the 3-clause BSD license (Oracle). One class, com.sun.msv.reader.xmlschema.DOMLSInputImpl, carries the ASF's Apache License 2.0 header. woodstox-core does not carry the BSD copyright notice (its META-INF/LICENSE is a Jackson text), so it is reproduced here.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/net.java.dev.msv/msv-core"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.fasterxml.woodstox/woodstox-core@7.3.0"
+        }
+      ],
+      "attributionTexts": [
+        "MSV core\nCopyright (c) 1998-2013 Oracle and/or its affiliates. All rights reserved."
+      ],
+      "hasFiles": [
+        "com/ctc/wstx/shaded/msv_core/"
+      ]
+    },
+    {
+      "name": "MSV XSD datatypes library (xsdlib)",
+      "versionInfo": "2022.7",
+      "originator": "Organization: Oracle and/or its affiliates",
+      "homepage": "https://github.com/xmlark/msv",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "BSD-3-Clause AND Apache-1.1",
+      "licenseComments": "woodstox-core carries xsdlib's POM (version 2022.7, \"BSD\"); the source headers are the 3-clause BSD license (Oracle). Relocated to com/ctc/wstx/shaded/msv. Its regular expression classes (com.sun.msv.datatype.regexp, relocated to com/ctc/wstx/shaded/msv_core/datatype/regexp) are Apache Xerces code under the Apache Software License, Version 1.1 (source headers: Copyright (c) 1999-2013 The Apache Software Foundation, originally based on software copyright (c) 1999 International Business Machines). woodstox-core carries none of these notices, so they are reproduced here.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/net.java.dev.msv/xsdlib"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.fasterxml.woodstox/woodstox-core@7.3.0"
+        }
+      ],
+      "attributionTexts": [
+        "MSV XSD datatypes library\nCopyright (c) 2001-2013 Oracle and/or its affiliates. All rights reserved.",
+        "Regular expression classes from Apache Xerces\nCopyright (c) 1999-2013 The Apache Software Foundation. All rights reserved.\nThis product includes software developed by the Apache Software Foundation (http://www.apache.org/).\nOriginally based on software copyright (c) 1999, International Business Machines, Inc., http://www.apache.org."
+      ],
+      "hasFiles": [
+        "com/ctc/wstx/shaded/msv_core/datatype/xsd/",
+        "com/ctc/wstx/shaded/msv_core/datatype/regexp/",
+        "com/ctc/wstx/shaded/msv/xsd_util/"
+      ]
+    },
+    {
+      "name": "ISO RELAX (isorelax)",
+      "versionInfo": "20090621",
+      "originator": "Person: Kohsuke Kawaguchi",
+      "homepage": "https://sourceforge.net/projects/iso-relax/",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "MIT",
+      "licenseComments": "woodstox-core carries isorelax's POM (version 20090621, no license); the source headers of isorelax 20090621 are the MIT license (Copyright 2001 Kohsuke KAWAGUCHI; some files Copyright 2001 MURATA Makoto, KAWAGUCHI Kohsuke). Relocated to com/ctc/wstx/shaded/msv/org_isorelax. woodstox-core does not carry the copyright notices, so they are reproduced here.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.sun.xml.bind.jaxb/isorelax"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.fasterxml.woodstox/woodstox-core@7.3.0"
+        }
+      ],
+      "attributionTexts": [
+        "ISO RELAX\nCopyright 2001 KAWAGUCHI Kohsuke\nCopyright 2001 MURATA Makoto, KAWAGUCHI Kohsuke"
+      ],
+      "hasFiles": [
+        "com/ctc/wstx/shaded/msv/org_isorelax/",
+        "com/ctc/wstx/shaded/msv/org_jp_gr_xml/"
+      ]
+    },
+    {
+      "name": "RELAX NG datatype library (relaxngDatatype)",
+      "versionInfo": "20020414",
+      "originator": "Organization: Thai Open Source Software Center Ltd",
+      "homepage": "https://sourceforge.net/projects/relaxng/",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseComments": "woodstox-core's POM declares relaxngDatatype 20020414 for shading; relocated to com/ctc/wstx/shaded/msv/relaxng_datatype. Its POM and jar state no license; in its sources, org/relaxng/datatype/helpers/DatatypeLibraryLoader.java carries the 3-clause BSD license (Copyright (c) 2001, Thai Open Source Software Center Ltd), the other files no header. The original distribution's copying.txt is the same license, as recorded in Debian's librelaxng-datatype-java packaging. woodstox-core does not carry the copyright notice, so it is reproduced here.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/relaxngDatatype/relaxngDatatype"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.fasterxml.woodstox/woodstox-core@7.3.0"
+        }
+      ],
+      "attributionTexts": [
+        "RELAX NG datatype library\nCopyright (c) 2001, Thai Open Source Software Center Ltd\nAll rights reserved."
+      ],
+      "hasFiles": [
+        "com/ctc/wstx/shaded/msv/relaxng_datatype/"
+      ]
+    },
+    {
+      "name": "jaxb-core (JAXB)",
+      "versionInfo": "2.3.0.1",
+      "originator": "Organization: Oracle and/or its affiliates",
+      "homepage": "https://github.com/eclipse-ee4j/jaxb-ri",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "CDDL-1.1 OR (GPL-2.0-only WITH Classpath-exception-2.0)",
+      "licenseComments": "com.sun.xml.bind:jaxb-core 2.3.0.1 bundles this artifact (its POM is in the jar, version 2.3.0.1). License of JAXB 2.3.0.1: \"CDDL+GPL License\" in the parent POM com.sun.xml.bind.mvn:jaxb-parent 2.3.0.1, the jar's Bundle-License CDDL+GPL_1_1.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/org.glassfish.jaxb/jaxb-core"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.sun.xml.bind/jaxb-core@2.3.0.1"
+        }
+      ],
+      "hasFiles": [
+        "com/sun/xml/bind/"
+      ]
+    },
+    {
+      "name": "txw2 (JAXB)",
+      "versionInfo": "2.3.0.1",
+      "originator": "Organization: Oracle and/or its affiliates",
+      "homepage": "https://github.com/eclipse-ee4j/jaxb-ri",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "CDDL-1.1 OR (GPL-2.0-only WITH Classpath-exception-2.0)",
+      "licenseComments": "com.sun.xml.bind:jaxb-core 2.3.0.1 bundles this artifact (its POM is in the jar, version 2.3.0.1). License of JAXB 2.3.0.1: \"CDDL+GPL License\" in the parent POM com.sun.xml.bind.mvn:jaxb-parent 2.3.0.1, the jar's Bundle-License CDDL+GPL_1_1.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/org.glassfish.jaxb/txw2"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.sun.xml.bind/jaxb-core@2.3.0.1"
+        }
+      ],
+      "hasFiles": [
+        "com/sun/xml/txw2/"
+      ]
+    },
+    {
+      "name": "istack-commons-runtime",
+      "versionInfo": "3.0.5",
+      "originator": "Organization: Oracle and/or its affiliates",
+      "homepage": "https://github.com/eclipse-ee4j/jaxb-istack-commons",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "CDDL-1.1 OR (GPL-2.0-only WITH Classpath-exception-2.0)",
+      "licenseComments": "com.sun.xml.bind:jaxb-core 2.3.0.1 bundles istack-commons-runtime (its POM is in the jar, version 3.0.5); the parent POM istack-commons 3.0.5 declares CDDL 1.1 and GPL2 with the Classpath exception.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.sun.istack/istack-commons-runtime"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.sun.xml.bind/jaxb-core@2.3.0.1"
+        }
+      ],
+      "hasFiles": [
+        "com/sun/istack/"
+      ]
+    },
+    {
+      "name": "jaxb-runtime (JAXB)",
+      "versionInfo": "2.3.9",
+      "originator": "Organization: Eclipse Foundation",
+      "homepage": "https://github.com/eclipse-ee4j/jaxb-ri",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseComments": "com.sun.xml.bind:jaxb-impl 2.3.9 bundles this artifact (its POM is in the jar, version 2.3.9). License: Eclipse Distribution License 1.0 in the parent POM com.sun.xml.bind.mvn:jaxb-parent 2.3.9, which is the 3-clause BSD license.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/org.glassfish.jaxb/jaxb-runtime"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.sun.xml.bind/jaxb-impl@2.3.9"
+        }
+      ],
+      "hasFiles": [
+        "com/sun/xml/bind/"
+      ]
+    },
+    {
+      "name": "txw2 (JAXB)",
+      "versionInfo": "2.3.9",
+      "originator": "Organization: Eclipse Foundation",
+      "homepage": "https://github.com/eclipse-ee4j/jaxb-ri",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseComments": "com.sun.xml.bind:jaxb-impl 2.3.9 bundles this artifact (its POM is in the jar, version 2.3.9). License: Eclipse Distribution License 1.0 in the parent POM com.sun.xml.bind.mvn:jaxb-parent 2.3.9, which is the 3-clause BSD license.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/org.glassfish.jaxb/txw2"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.sun.xml.bind/jaxb-impl@2.3.9"
+        }
+      ],
+      "hasFiles": [
+        "com/sun/xml/txw2/"
+      ]
+    },
+    {
+      "name": "istack-commons-runtime",
+      "versionInfo": "3.0.12",
+      "originator": "Organization: Eclipse Foundation",
+      "homepage": "https://github.com/eclipse-ee4j/jaxb-istack-commons",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseComments": "com.sun.xml.bind:jaxb-impl 2.3.9 bundles istack-commons-runtime (its POM is in the jar, version 3.0.12); the parent POM istack-commons 3.0.12 declares the Eclipse Distribution License 1.0, which is the 3-clause BSD license.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.sun.istack/istack-commons-runtime"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.sun.xml.bind/jaxb-impl@2.3.9"
+        }
+      ],
+      "hasFiles": [
+        "com/sun/istack/"
+      ]
+    },
+    {
+      "name": "FastDoubleParser",
+      "versionInfo": "2.0.1",
+      "originator": "Person: Werner Randelshofer",
+      "homepage": "https://github.com/wrandelshofer/FastDoubleParser",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "MIT AND BSL-1.0 AND BSD-2-Clause",
+      "licenseComments": "jackson-core's POM declares fastdoubleparser 2.0.1 for shading; relocated to com/fasterxml/jackson/core/internal/shaded/fdp. META-INF/FastDoubleParser-LICENSE is the MIT license (Werner Randelshofer); META-INF/FastDoubleParser-ThirdParty-LICENSE adds the Boost Software License 1.0 (Daniel Lemire), MIT (fast_float) and the 2-clause BSD license (bigint).",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/ch.randelshofer/fastdoubleparser"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.23.0"
+        }
+      ],
+      "hasFiles": [
+        "com/fasterxml/jackson/core/internal/shaded/fdp/"
+      ]
+    },
+    {
+      "name": "Schubfach",
+      "originator": "Person: Raffaello Giulietti",
+      "homepage": "https://github.com/c4f7fcce9cb06515/Schubfach",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "MIT",
+      "licenseComments": "jackson-core includes Raffaello Giulietti's Schubfach implementation in com/fasterxml/jackson/core/io/schubfach; META-INF/Schubfach-LICENSE is the MIT license (Copyright 2018-2020 Raffaello Giulietti).",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.fasterxml.jackson.core/jackson-core@2.23.0"
+        }
+      ],
+      "hasFiles": [
+        "com/fasterxml/jackson/core/io/schubfach/"
+      ]
+    },
+    {
+      "name": "FastDoubleParser",
+      "versionInfo": "2.0.1",
+      "originator": "Person: Werner Randelshofer",
+      "homepage": "https://github.com/wrandelshofer/FastDoubleParser",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "MIT AND BSL-1.0 AND BSD-2-Clause",
+      "licenseComments": "jackson-core's POM declares fastdoubleparser 2.0.1 for shading; relocated to tools/jackson/core/internal/shaded/fdp. META-INF/FastDoubleParser-LICENSE is the MIT license (Werner Randelshofer); META-INF/FastDoubleParser-ThirdParty-LICENSE adds the Boost Software License 1.0 (Daniel Lemire), MIT (fast_float) and the 2-clause BSD license (bigint).",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/ch.randelshofer/fastdoubleparser"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/tools.jackson.core/jackson-core@3.3.0"
+        }
+      ],
+      "hasFiles": [
+        "tools/jackson/core/internal/shaded/fdp/"
+      ]
+    },
+    {
+      "name": "jsoniter-scala (JsonWriter number formatting, ported to Java)",
+      "originator": "Person: Andriy Plokhotnyuk",
+      "homepage": "https://github.com/plokhotnyuk/jsoniter-scala",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "MIT",
+      "licenseComments": "jackson-core 3.3 replaced Schubfach with a Java port of jsoniter-scala's float/double-to-decimal-string code in tools/jackson/core/io/xjb. META-INF/NOTICE: \"jackson-core bundles a Java port of the float/double-to-decimal-string code from jsoniter-scala ... available under an MIT license\"; META-INF/jsoniter-scala-LICENSE is the MIT license (Copyright (c) 2017-2026 Andriy Plokhotnyuk, and respective contributors).",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/tools.jackson.core/jackson-core@3.3.0"
+        }
+      ],
+      "hasFiles": [
+        "tools/jackson/core/io/xjb/"
+      ]
+    },
+    {
+      "name": "xjb (Fast Float to String Algorithm)",
+      "originator": "Person: Xiang JunBo, Wang TieJun",
+      "homepage": "https://github.com/xjb714/xjb",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "The jsoniter-scala port in tools/jackson/core/io/xjb implements the xjb algorithm. META-INF/NOTICE: \"That reference implementation is available under the Apache License 2.0 ... Copyright 2026 xjb714 and contributors\"; META-INF/xjb-LICENSE is the Apache License 2.0.",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/tools.jackson.core/jackson-core@3.3.0"
+        }
+      ],
+      "hasFiles": [
+        "tools/jackson/core/io/xjb/"
+      ]
+    },
+    {
+      "name": "Protocol Buffers (protobuf-java)",
+      "versionInfo": "3.25.5",
+      "originator": "Organization: Google LLC",
+      "homepage": "https://protobuf.dev",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseComments": "kafka-clients relocates protobuf to org/apache/kafka/shaded/com/google/protobuf; the version is protobuf 3.25.5 from Kafka 4.2.2's gradle/dependencies.gradle (a dependency of opentelemetry-proto). protobuf-java is under the 3-clause BSD license. kafka-clients' NOTICE does not mention it, so the copyright notice of protobuf's LICENSE (tag v25.5, i.e. 3.25.5) is reproduced here.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.google.protobuf/protobuf-java"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.kafka/kafka-clients@4.2.2"
+        }
+      ],
+      "attributionTexts": [
+        "Protocol Buffers\nCopyright 2008 Google Inc.  All rights reserved."
+      ],
+      "hasFiles": [
+        "org/apache/kafka/shaded/com/google/protobuf/"
+      ]
+    },
+    {
+      "name": "OpenTelemetry protocol (opentelemetry-proto)",
+      "versionInfo": "1.3.2-alpha",
+      "originator": "Organization: The OpenTelemetry Authors",
+      "homepage": "https://github.com/open-telemetry/opentelemetry-proto-java",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "kafka-clients relocates the OpenTelemetry protocol classes to org/apache/kafka/shaded/io/opentelemetry/proto; the version is opentelemetry-proto 1.3.2-alpha from Kafka 4.2.2's gradle/dependencies.gradle.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/io.opentelemetry.proto/opentelemetry-proto"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.kafka/kafka-clients@4.2.2"
+        }
+      ],
+      "hasFiles": [
+        "org/apache/kafka/shaded/io/opentelemetry/proto/"
+      ]
+    },
+    {
+      "name": "scram-client",
+      "versionInfo": "3.2",
+      "originator": "Organization: OnGres, Inc.",
+      "homepage": "https://github.com/ongres/scram",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "BSD-2-Clause",
+      "licenseComments": "postgresql relocates it to org/postgresql/shaded/com/ongres/scram and carries its license as META-INF/licenses/com.ongres.scram/scram-client-3.2/META-INF/LICENSE, the 2-clause BSD license (OnGres, Inc.).",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.ongres.scram/scram-client"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.postgresql/postgresql@42.7.14"
+        }
+      ],
+      "hasFiles": [
+        "org/postgresql/shaded/com/ongres/scram/client/"
+      ]
+    },
+    {
+      "name": "scram-common",
+      "versionInfo": "3.2",
+      "originator": "Organization: OnGres, Inc.",
+      "homepage": "https://github.com/ongres/scram",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "BSD-2-Clause",
+      "licenseComments": "postgresql relocates it to org/postgresql/shaded/com/ongres/scram and carries its license as META-INF/licenses/com.ongres.scram/scram-common-3.2/META-INF/LICENSE, the 2-clause BSD license (OnGres, Inc.).",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.ongres.scram/scram-common"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.postgresql/postgresql@42.7.14"
+        }
+      ],
+      "hasFiles": [
+        "org/postgresql/shaded/com/ongres/scram/common/"
+      ]
+    },
+    {
+      "name": "saslprep",
+      "versionInfo": "2.2",
+      "originator": "Organization: OnGres, Inc.",
+      "homepage": "https://github.com/ongres/stringprep",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "BSD-2-Clause",
+      "licenseComments": "postgresql relocates it to org/postgresql/shaded/com/ongres/saslprep and carries its license as META-INF/licenses/com.ongres.stringprep/saslprep-2.2/META-INF/LICENSE, the 2-clause BSD license (OnGres, Inc.).",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.ongres.stringprep/saslprep"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.postgresql/postgresql@42.7.14"
+        }
+      ],
+      "hasFiles": [
+        "org/postgresql/shaded/com/ongres/saslprep/"
+      ]
+    },
+    {
+      "name": "stringprep",
+      "versionInfo": "2.2",
+      "originator": "Organization: OnGres, Inc.",
+      "homepage": "https://github.com/ongres/stringprep",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "BSD-2-Clause",
+      "licenseComments": "postgresql relocates it to org/postgresql/shaded/com/ongres/stringprep and carries its license as META-INF/licenses/com.ongres.stringprep/stringprep-2.2/META-INF/LICENSE, the 2-clause BSD license (OnGres, Inc.).",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.ongres.stringprep/stringprep"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.postgresql/postgresql@42.7.14"
+        }
+      ],
+      "hasFiles": [
+        "org/postgresql/shaded/com/ongres/stringprep/"
+      ]
+    },
+    {
+      "name": "Guava",
+      "versionInfo": "32.1.3-jre",
+      "originator": "Organization: Google LLC",
+      "homepage": "https://github.com/google/guava",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "jsonld-java's POM shades com.google.guava:guava (version 32.1.3-jre in jsonld-java-parent 0.13.6) and relocates com.google.common and com.google.thirdparty to com/github/jsonldjava/shaded.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.google.guava/guava"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.github.jsonld-java/jsonld-java@0.13.6"
+        }
+      ],
+      "hasFiles": [
+        "com/github/jsonldjava/shaded/com/google/common/"
+      ]
+    },
+    {
+      "name": "Guava failureaccess",
+      "versionInfo": "1.0.1",
+      "originator": "Organization: Google LLC",
+      "homepage": "https://github.com/google/guava",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "jsonld-java's POM shades com.google.guava:failureaccess; version 1.0.1 is the one Guava 32.1.3-jre's POM declares.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.google.guava/failureaccess"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.github.jsonld-java/jsonld-java@0.13.6"
+        }
+      ],
+      "hasFiles": [
+        "com/github/jsonldjava/shaded/com/google/common/util/concurrent/internal/"
+      ]
+    },
+    {
+      "name": "ASM",
+      "versionInfo": "9.8",
+      "originator": "Organization: INRIA, France Telecom",
+      "homepage": "https://asm.ow2.io",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseComments": "aspectjweaver relocates ASM to aj/org/objectweb/asm (including the commons package since 1.9.25). LICENSE-AspectJ.adoc: \"AspectJ includes a binary version of ASM v9.8\" and reproduces the ASM license, the 3-clause BSD license (INRIA, France Telecom); licenses/LICENSE-BSD-3-CLAUSE.txt carries it as well.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/org.ow2.asm/asm"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.aspectj/aspectjweaver@1.9.25.1"
+        }
+      ],
+      "hasFiles": [
+        "aj/org/objectweb/asm/"
+      ]
+    },
+    {
+      "name": "Apache Commons Validator (routines)",
+      "originator": "Organization: The Apache Software Foundation",
+      "homepage": "https://commons.apache.org/proper/commons-validator/",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "json-schema-validator includes copies of Commons Validator routines (EmailValidator, DomainValidator, ...) in com/networknt/org/apache/commons/validator; their source headers are the ASF's Apache License 2.0 header. The copied version is not stated. json-schema-validator carries no NOTICE, so Commons Validator's (from its current source tree, since the copied version is not stated) is reproduced here, as Apache-2.0 section 4(d) asks.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/commons-validator/commons-validator"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.networknt/json-schema-validator@3.0.9"
+        }
+      ],
+      "attributionTexts": [
+        "Apache Commons Validator\nCopyright 2002-2026 The Apache Software Foundation\n\nThis product includes software developed at\nThe Apache Software Foundation (https://www.apache.org/)."
+      ],
+      "hasFiles": [
+        "com/networknt/org/apache/commons/validator/"
+      ]
+    },
+    {
+      "name": "Public Suffix List data",
+      "originator": "Organization: Mozilla Foundation",
+      "homepage": "https://publicsuffix.org",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "Guava's com/google/thirdparty/publicsuffix holds PublicSuffixPatterns, a file generated from the Public Suffix List. The file carries only the Guava Authors' Apache License 2.0 header, and Debian's guava 33.7.1 packaging records it as Apache-2.0. The list itself is published under MPL-2.0 at publicsuffix.org.",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.google.guava/guava@33.8.0-jre"
+        }
+      ],
+      "hasFiles": [
+        "com/google/thirdparty/publicsuffix/"
+      ]
+    },
+    {
+      "name": "CGLIB",
+      "versionInfo": "3.3",
+      "originator": "Organization: The cglib project",
+      "homepage": "https://github.com/cglib/cglib",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "spring-core repackages CGLIB to org/springframework/cglib. Its META-INF/license.txt names \"CGLIB 3.3 (cglib:cglib:3.3)\", licensed under the Apache License, version 2.0, per the LICENSE file in the CGLIB distribution.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/cglib/cglib"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.springframework/spring-core@7.0.10"
+        }
+      ],
+      "hasFiles": [
+        "org/springframework/cglib/"
+      ]
+    },
+    {
+      "name": "JavaPoet",
+      "versionInfo": "0.10.0",
+      "originator": "Organization: Palantir Technologies Inc.",
+      "homepage": "https://github.com/palantir/javapoet",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "spring-core repackages JavaPoet to org/springframework/javapoet. Its META-INF/license.txt names \"JavaPoet 0.10.0 (com.palantir.javapoet:javapoet:0.10.0)\", licensed under the Apache License, version 2.0, per the LICENSE file in the JavaPoet distribution.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.palantir.javapoet/javapoet"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.springframework/spring-core@7.0.10"
+        }
+      ],
+      "hasFiles": [
+        "org/springframework/javapoet/"
+      ]
+    },
+    {
+      "name": "Objenesis",
+      "versionInfo": "3.5",
+      "originator": "Organization: The Objenesis project",
+      "homepage": "https://objenesis.org",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "spring-core repackages Objenesis to org/springframework/objenesis. Its META-INF/license.txt names \"Objenesis 3.5 (org.objenesis:objenesis:3.5)\", licensed under the Apache License, version 2.0, and reproduces the NOTICE of the Objenesis distribution (Copyright 2006-2026 Joe Walnes, Henri Tremblay, Leonardo Mesquita).",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/org.objenesis/objenesis"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.springframework/spring-core@7.0.10"
+        }
+      ],
+      "hasFiles": [
+        "org/springframework/objenesis/"
+      ]
+    },
+    {
+      "name": "BCEL (modified by AspectJ)",
+      "versionInfo": "5.1",
+      "originator": "Organization: The Apache Software Foundation",
+      "homepage": "https://commons.apache.org/proper/commons-bcel/",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-1.1",
+      "licenseComments": "aspectjweaver includes a modified BCEL in org/aspectj/apache/bcel. LICENSE-AspectJ.adoc: \"AspectJ includes a modified version of the Apache Jakarta Byte Code Engineering Library (BCEL) v5.1 ... made available under the Apache Software License v1.1\"; the source headers in aspectjweaver's sources jar are the Apache Software License, Version 1.1 (Copyright (c) 2001 The Apache Software Foundation).",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/bcel/bcel"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.aspectj/aspectjweaver@1.9.25.1"
+        }
+      ],
+      "hasFiles": [
+        "org/aspectj/apache/bcel/"
+      ]
+    },
+    {
+      "name": "BCEL",
+      "versionInfo": "6.12.0",
+      "originator": "Organization: The Apache Software Foundation",
+      "homepage": "https://commons.apache.org/proper/commons-bcel/",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "tomcat-embed-core includes the parts of BCEL it uses in org/apache/tomcat/util/bcel, with the ASF's Apache License 2.0 headers. Tomcat 11.0.29's MERGE.txt records rel/commons-bcel-6.12.0 as the last merged upstream tag, with unused code removed.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/org.apache.bcel/bcel"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.tomcat.embed/tomcat-embed-core@11.0.29"
+        }
+      ],
+      "hasFiles": [
+        "org/apache/tomcat/util/bcel/"
+      ]
+    },
+    {
+      "name": "JUEL API (juel-api)",
+      "versionInfo": "2.2.7",
+      "originator": "Organization: Odysseus Software GmbH",
+      "homepage": "https://github.com/beckchr/juel",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "jinjava's POM shades de.odysseus.juel:juel-api 2.2.7 and relocates javax.el to jinjava.javax.el. The juel-api POM declares \"The Apache Software License, Version 2.0\"; its source headers: Copyright 2006-2009 Odysseus Software GmbH, Apache License 2.0.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/de.odysseus.juel/juel-api"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.hubspot.jinjava/jinjava@2.8.5"
+        }
+      ],
+      "hasFiles": [
+        "jinjava/javax/el/"
+      ]
+    },
+    {
+      "name": "JUEL implementation (juel-impl)",
+      "versionInfo": "2.2.7",
+      "originator": "Organization: Odysseus Software GmbH",
+      "homepage": "https://github.com/beckchr/juel",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "jinjava's POM shades de.odysseus.juel:juel-impl 2.2.7 and relocates de.odysseus.el to jinjava.de.odysseus.el. The juel-impl POM declares \"The Apache Software License, Version 2.0\"; its source headers: Copyright 2006-2009 Odysseus Software GmbH, Apache License 2.0.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/de.odysseus.juel/juel-impl"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.hubspot.jinjava/jinjava@2.8.5"
+        }
+      ],
+      "hasFiles": [
+        "jinjava/de/odysseus/el/"
+      ]
+    },
+    {
+      "name": "HPPC",
+      "versionInfo": "0.10.0",
+      "originator": "Organization: Carrot Search s.c.",
+      "homepage": "https://github.com/carrotsearch/hppc",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "lucene-core's org/apache/lucene/internal/hppc is \"forked and trimmed from com.carrotsearch.hppc\", \"release 0.10.0\" (class comments in lucene-core's sources jar). The forked files carry the ASF's Apache License 2.0 header; HPPC itself is Apache License 2.0. Lucene's NOTICE.txt does not include HPPC's NOTICE.txt (tag 0.10.0), so it is reproduced here.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.carrotsearch/hppc"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.lucene/lucene-core@10.6.0"
+        }
+      ],
+      "attributionTexts": [
+        "HPPC\n\nACKNOWLEDGEMENT\n===============\n\nHPPC borrowed code, ideas or both from:\n\n * Apache Lucene, https://lucene.apache.org/\n   (Apache license)\n * Fastutil, https://fastutil.di.unimi.it/\n   (Apache license)\n * Koloboke, https://github.com/leventov/Koloboke\n   (Apache license)"
+      ],
+      "hasFiles": [
+        "org/apache/lucene/internal/hppc/"
+      ]
+    },
+    {
+      "name": "Google Data Java client library (escapers)",
+      "originator": "Organization: Google LLC",
+      "homepage": "https://github.com/google/gdata-java-client",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "snakeyaml includes Escaper, UnicodeEscaper and PercentEscaper from the Google Data client library in org/yaml/snakeyaml/external/com/google/gdata/util/common/base; their source headers: Copyright (c) 2008 Google Inc., Apache License 2.0. The copied version is not stated.",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.yaml/snakeyaml@2.7"
+        }
+      ],
+      "hasFiles": [
+        "org/yaml/snakeyaml/external/com/google/gdata/"
+      ]
+    },
+    {
+      "name": "Google Data Java client library (escapers)",
+      "originator": "Organization: Google LLC",
+      "homepage": "https://github.com/google/gdata-java-client",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "snakeyaml-engine includes Escaper, UnicodeEscaper and PercentEscaper from the Google Data client library in org/snakeyaml/engine/external/com/google/gdata/util/common/base; their source headers: Copyright (c) 2008 Google Inc., Apache License 2.0. The copied version is not stated.",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.snakeyaml/snakeyaml-engine@3.0.1"
+        }
+      ],
+      "hasFiles": [
+        "org/snakeyaml/engine/external/com/google/gdata/"
+      ]
+    },
+    {
+      "name": "Android org.json implementation",
+      "originator": "Organization: The Android Open Source Project",
+      "homepage": "https://android.googlesource.com/platform/libcore/+/refs/heads/main/json/",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "spring-boot-configuration-metadata includes Android's clean-room org.json implementation (JSON, JSONArray, JSONObject, JSONStringer, JSONTokener, JSONException) in org/springframework/boot/configurationmetadata/json; the source headers read \"Copyright (C) 2010 The Android Open Source Project\", and the jar is Apache License 2.0, as is Android's libcore. The copied version is not stated.",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.springframework.boot/spring-boot-configuration-metadata@4.1.2"
+        }
+      ],
+      "hasFiles": [
+        "org/springframework/boot/configurationmetadata/json/"
+      ]
+    },
+    {
+      "name": "Android org.json implementation",
+      "originator": "Organization: The Android Open Source Project",
+      "homepage": "https://android.googlesource.com/platform/libcore/+/refs/heads/main/json/",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "spring-data-commons includes the same classes (JSON, JSONArray, JSONObject, JSONStringer, JSONTokener, JSONException) in org/springframework/data/repository/aot/generate, with Android's note \"this class was written without inspecting the non-free org.json source code\"; the source headers were replaced by Spring's Apache License 2.0 header (\"Copyright 2025-present the original author or authors\"). The copied version is not stated.",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.springframework.data/spring-data-commons@4.1.2"
+        }
+      ],
+      "hasFiles": [
+        "org/springframework/data/repository/aot/generate/JSON.class",
+        "org/springframework/data/repository/aot/generate/JSONArray.class",
+        "org/springframework/data/repository/aot/generate/JSONException.class",
+        "org/springframework/data/repository/aot/generate/JSONObject.class",
+        "org/springframework/data/repository/aot/generate/JSONStringer.class",
+        "org/springframework/data/repository/aot/generate/JSONTokener.class"
+      ]
+    },
+    {
+      "name": "ConcurrentLinkedHashMap",
+      "originator": "Person: Ben Manes",
+      "homepage": "https://github.com/ben-manes/concurrentlinkedhashmap",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "mssql-jdbc includes ConcurrentLinkedHashMap in mssql/googlecode/concurrentlinkedhashmap; the source headers in mssql-jdbc's sources jar are Apache License 2.0 (Copyright 2010 Google Inc.), and the sources jar has the component's LICENSE (Apache-2.0) and NOTICE in that folder, the binary jar neither. The NOTICE is reproduced here. The copied version is not stated.",
+      "attributionTexts": [
+        "ConcurrentLinkedHashMap\nCopyright 2008, Ben Manes\nCopyright 2010, Google Inc.\n\nSome alternate data structures provided by JSR-166e\nfrom http://gee.cs.oswego.edu/dl/concurrency-interest/.\nWritten by Doug Lea and released as Public Domain."
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/com.googlecode.concurrentlinkedhashmap/concurrentlinkedhashmap-lru"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.microsoft.sqlserver/mssql-jdbc@13.6.2.jre11"
+        }
+      ],
+      "hasFiles": [
+        "mssql/googlecode/concurrentlinkedhashmap/"
+      ]
+    },
+    {
+      "name": "CityHash (Java port)",
+      "originator": "Person: tamtam180",
+      "homepage": "https://github.com/tamtam180/CityHash-For-Java",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "mssql-jdbc includes a Java port of Google's CityHash in mssql/googlecode/cityhash; the source headers in mssql-jdbc's sources jar read \"Copyright (C) 2012 tamtam180\", Apache License 2.0. The binary jar carries no license file. The copied version is not stated.",
+      "attributionTexts": [
+        "CityHash (Java port)\nCopyright (C) 2012 tamtam180"
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.microsoft.sqlserver/mssql-jdbc@13.6.2.jre11"
+        }
+      ],
+      "hasFiles": [
+        "mssql/googlecode/cityhash/"
+      ]
+    },
+    {
+      "name": "AOP Alliance interfaces (Spring's variant)",
+      "originator": "Organization: AOP Alliance",
+      "homepage": "https://aopalliance.sourceforge.net",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "spring-aop includes \"Spring's variant of the AOP Alliance interfaces\" (package-info) in org/aopalliance. The files carry Spring's Apache License 2.0 header; the original aopalliance 1.0 is in the public domain (its POM: \"Public Domain\").",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/aopalliance/aopalliance"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.springframework/spring-aop@7.0.10"
+        }
+      ],
+      "hasFiles": [
+        "org/aopalliance/"
+      ]
+    },
+    {
+      "name": "Java EE 5 and 6 XML schemas",
+      "originator": "Organization: Sun Microsystems, Inc.",
+      "homepage": "https://www.oracle.com/webfolder/technetwork/jsc/xml/ns/javaee/index.html",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "CDDL-1.0 OR GPL-2.0-only WITH Classpath-exception-2.0",
+      "licenseComments": "tomcat-embed-core ships the deployment descriptor schemas javaee_5.xsd, javaee_6.xsd, javaee_web_services_1_2.xsd, javaee_web_services_1_3.xsd, javaee_web_services_client_1_2.xsd, javaee_web_services_client_1_3.xsd, jsp_2_2.xsd, web-app_3_0.xsd, web-common_3_0.xsd and web-fragment_3_0.xsd in jakarta/servlet/resources. Their headers: Copyright 2003-2007/2003-2009 Sun Microsystems, Inc., \"GNU General Public License Version 2 only (\\\"GPL\\\") or the Common Development and Distribution License (\\\"CDDL\\\")\" (CDDL+GPL 1.0), with the Classpath exception. Tomcat's META-INF/LICENSE lists them under CDDL 1.0. The headers stay in the files.",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.tomcat.embed/tomcat-embed-core@11.0.29"
+        }
+      ],
+      "hasFiles": [
+        "jakarta/servlet/resources/"
+      ]
+    },
+    {
+      "name": "Java EE 7 and 8 XML schemas",
+      "originator": "Organization: Oracle and/or its affiliates",
+      "homepage": "https://www.oracle.com/webfolder/technetwork/jsc/xml/ns/javaee/index.html",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "CDDL-1.1 OR GPL-2.0-only WITH Classpath-exception-2.0",
+      "licenseComments": "tomcat-embed-core ships the deployment descriptor schemas javaee_7.xsd, javaee_8.xsd, javaee_web_services_1_4.xsd, javaee_web_services_client_1_4.xsd, jsp_2_3.xsd, web-app_3_1.xsd, web-app_4_0.xsd, web-common_3_1.xsd, web-common_4_0.xsd, web-fragment_3_1.xsd and web-fragment_4_0.xsd. Their headers: Copyright (c) 2009-2013/2009-2017 Oracle and/or its affiliates, GPL version 2 only or CDDL, with the license at glassfish.dev.java.net/public/CDDL+GPL_1_1.html, with the Classpath exception. Tomcat's META-INF/LICENSE lists them under CDDL 1.0, but the headers point to version 1.1. The headers stay in the files.",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.tomcat.embed/tomcat-embed-core@11.0.29"
+        }
+      ],
+      "hasFiles": [
+        "jakarta/servlet/resources/"
+      ]
+    },
+    {
+      "name": "Jakarta EE XML schemas",
+      "originator": "Organization: Oracle and/or its affiliates",
+      "homepage": "https://jakarta.ee/xml/ns/jakartaee/",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "EPL-2.0 OR GPL-2.0-only WITH Classpath-exception-2.0",
+      "licenseComments": "tomcat-embed-core ships the Jakarta EE deployment descriptor schemas jakartaee_9.xsd, jakartaee_10.xsd, jakartaee_11.xsd, jakartaee_web_services_2_0.xsd, jakartaee_web_services_client_2_0.xsd, jsp_3_0.xsd, jsp_3_1.xsd, jsp_4_0.xsd, web-app_5_0.xsd, web-app_6_0.xsd, web-app_6_1.xsd, web-common_5_0.xsd, web-common_6_0.xsd, web-common_6_1.xsd, web-fragment_5_0.xsd, web-fragment_6_0.xsd, web-fragment_6_1.xsd and web-jsptaglibrary_3_0.xsd to 4_0.xsd. Their headers: Copyright (c) 2009, 2020/2021 Oracle and/or its affiliates, \"SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0\" (GPL version 2). Tomcat's META-INF/LICENSE lists them under EPL 2.0. The headers stay in the files. The older schemas and DTDs Tomcat ships carry Tomcat's own Apache License 2.0 header.",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.tomcat.embed/tomcat-embed-core@11.0.29"
+        }
+      ],
+      "hasFiles": [
+        "jakarta/servlet/resources/"
+      ]
+    },
+    {
+      "name": "SHA-1 collision detection (UbcCheck)",
+      "originator": "Person: Marc Stevens",
+      "homepage": "https://github.com/cr-marcstevens/sha1collisiondetection",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "MIT",
+      "licenseComments": "org.eclipse.jgit's about.html: \"SHA-1 UbcCheck - MIT\", Copyright (c) 2017 Marc Stevens (Centrum Wiskunde & Informatica) and Dan Shumow (Microsoft Research); used by org/eclipse/jgit/util/sha1. The rest of jgit is BSD-3-Clause (Eclipse Distribution License 1.0). The about.html with the MIT notice ships in LIBRARIES/. The copied version is not stated.",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.eclipse.jgit/org.eclipse.jgit@7.8.1.202611041320-r"
+        }
+      ],
+      "hasFiles": [
+        "org/eclipse/jgit/util/sha1/"
+      ]
+    },
+    {
+      "name": "Snowball stemmers",
+      "originator": "Person: Martin Porter",
+      "homepage": "https://snowballstem.org/",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseComments": "lucene-analysis-common includes the Snowball stemmers in org/tartarus/snowball. Its META-INF/LICENSE.txt: \"The following license applies to the Snowball stemmers: Copyright (c) 2001, Dr Martin Porter, Copyright (c) 2002, Richard Boulton\", the 3-clause BSD license; its NOTICE.txt credits Martin Porter and Richard Boulton. The Snowball stopword lists in org/apache/lucene/analysis/snowball are by the same authors (NOTICE.txt). Both files ship in LIBRARIES/. The copied version is not stated.",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.lucene/lucene-analysis-common@10.6.0"
+        }
+      ],
+      "hasFiles": [
+        "org/tartarus/snowball/",
+        "org/apache/lucene/analysis/snowball/"
+      ]
+    },
+    {
+      "name": "Unicode conversion examples (ConvertUTF)",
+      "originator": "Organization: Unicode, Inc.",
+      "homepage": "http://www.unicode.org/Public/PROGRAMS/CVTUTF",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "LicenseRef-Unicode-ConvertUTF",
+      "licenseComments": "Lucene's LICENSE.txt: \"Some code in core/src/java/org/apache/lucene/util/UnicodeUtil.java was derived from unicode conversion examples available at http://www.unicode.org/Public/PROGRAMS/CVTUTF\", with Unicode, Inc.'s notice (Copyright 2001-2004), which is not on the SPDX license list and is reproduced as LicenseRef-Unicode-ConvertUTF. The LICENSE.txt ships in LIBRARIES/.",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.lucene/lucene-core@10.6.0"
+        }
+      ],
+      "hasFiles": [
+        "org/apache/lucene/util/UnicodeUtil.class"
+      ]
+    },
+    {
+      "name": "Python (code derived for ArrayUtil and UnicodeUtil)",
+      "originator": "Organization: Python Software Foundation",
+      "homepage": "https://www.python.org",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Python-2.0",
+      "licenseComments": "Lucene's LICENSE.txt: code in org/apache/lucene/util/ArrayUtil was derived from Python 2.4.2 sources, code in org/apache/lucene/util/UnicodeUtil from Python 3.1.2 sources, under their Python licenses (linked, not reproduced). The PSF license requires PSF's notice of copyright to be retained in derivative versions; the notices from the LICENSE files of CPython v2.4.2 and v3.1.2 are reproduced here.",
+      "attributionTexts": [
+        "Python 2.4.2\nCopyright (c) 2001, 2002, 2003, 2004 Python Software Foundation; All Rights Reserved",
+        "Python 3.1.2\nCopyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Python Software Foundation; All Rights Reserved"
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.lucene/lucene-core@10.6.0"
+        }
+      ],
+      "hasFiles": [
+        "org/apache/lucene/util/ArrayUtil.class",
+        "org/apache/lucene/util/UnicodeUtil.class"
+      ]
+    },
+    {
+      "name": "ICU (code derived for UnicodeUtil)",
+      "originator": "Organization: International Business Machines Corporation and others",
+      "homepage": "https://icu.unicode.org",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "ICU",
+      "licenseComments": "Lucene's LICENSE.txt: \"Some code in core/src/java/org/apache/lucene/util/UnicodeUtil.java was derived from ICU\", with ICU's copyright and permission notice (Copyright (C) 1999-2010, International Business Machines Corporation and others), the ICU License. The LICENSE.txt ships in LIBRARIES/.",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.lucene/lucene-core@10.6.0"
+        }
+      ],
+      "hasFiles": [
+        "org/apache/lucene/util/UnicodeUtil.class"
+      ]
+    },
+    {
+      "name": "Brics automaton",
+      "originator": "Person: Anders Møller",
+      "homepage": "https://www.brics.dk/automaton/",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseComments": "Lucene's LICENSE.txt and NOTICE.txt: code in org/apache/lucene/util/automaton was derived from Brics automaton sources, Copyright (c) 2001-2009 Anders Moeller, 3-clause BSD license. Both files ship in LIBRARIES/.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/dk.brics.automaton/automaton"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.lucene/lucene-core@10.6.0"
+        }
+      ],
+      "hasFiles": [
+        "org/apache/lucene/util/automaton/"
+      ]
+    },
+    {
+      "name": "moman/finenight (generated Levenshtein automata tables)",
+      "originator": "Person: Jean-Philippe Barrette-LaPierre",
+      "homepage": "https://github.com/jpbarrette/moman",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "MIT",
+      "licenseComments": "Lucene's LICENSE.txt and NOTICE.txt: the Levenshtein automata tables in org/apache/lucene/util/automaton (Lev1ParametricDescription and the like) were generated with the moman/finenight FSA package, Copyright (c) 2010 Jean-Philippe Barrette-LaPierre, MIT license. Both files ship in LIBRARIES/.",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.lucene/lucene-core@10.6.0"
+        }
+      ],
+      "hasFiles": [
+        "org/apache/lucene/util/automaton/"
+      ]
+    },
+    {
+      "name": "LZ4 (Java rewrite)",
+      "originator": "Person: Yann Collet",
+      "homepage": "https://github.com/lz4/lz4",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "BSD-2-Clause",
+      "licenseComments": "Lucene's LICENSE.txt and NOTICE.txt: org/apache/lucene/util/compress/LZ4 is a Java rewrite of the LZ4 compression library, Copyright (c) 2011-2016 Yann Collet, 2-clause BSD license. Both files ship in LIBRARIES/.",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.lucene/lucene-core@10.6.0"
+        }
+      ],
+      "hasFiles": [
+        "org/apache/lucene/util/compress/LZ4.class"
+      ]
+    },
+    {
+      "name": "Apache CXF (WeakIdentityMap)",
+      "originator": "Organization: The Apache Software Foundation",
+      "homepage": "https://cxf.apache.org",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "Lucene's NOTICE.txt: \"The class org.apache.lucene.util.WeakIdentityMap was derived from the Apache CXF project and is Apache License 2.0.\"",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.lucene/lucene-core@10.6.0"
+        }
+      ],
+      "hasFiles": [
+        "org/apache/lucene/util/WeakIdentityMap.class"
+      ]
+    },
+    {
+      "name": "KStem stemmer",
+      "originator": "Organization: Center for Intelligent Information Retrieval, University of Massachusetts Amherst",
+      "homepage": "https://ciir.cs.umass.edu",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseComments": "lucene-analysis-common includes the KStem stemmer (org/apache/lucene/analysis/en/KStemmer and related classes), developed by Bob Krovetz and Sergio Guzman-Lara (NOTICE.txt). Lucene's LICENSE.txt: Copyright (c) 2003, Center for Intelligent Information Retrieval, University of Massachusetts, Amherst, 3-clause BSD license. Both files ship in LIBRARIES/.",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.lucene/lucene-analysis-common@10.6.0"
+        }
+      ],
+      "hasFiles": [
+        "org/apache/lucene/analysis/en/"
+      ]
+    },
+    {
+      "name": "Light and minimal stemmers by Jacques Savoy",
+      "originator": "Person: Jacques Savoy",
+      "homepage": "http://members.unine.ch/jacques.savoy/clef/",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseComments": "lucene-analysis-common's German, Spanish, Finnish, French, Hungarian, Italian, Norwegian, Portuguese, Russian and Swedish light and minimal stemmers are based on Jacques Savoy's reference implementations; their source headers in lucene-analysis-common's sources jar reproduce \"Copyright (c) 2005, Jacques Savoy\" with the 3-clause BSD license. Neither the jar nor Lucene's LICENSE.txt carries this notice, so it is reproduced here. NOTICE.txt also names Ljiljana Dolamic.",
+      "attributionTexts": [
+        "Light and minimal stemmers\nCopyright (c) 2005, Jacques Savoy\nAll rights reserved."
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.lucene/lucene-analysis-common@10.6.0"
+        }
+      ],
+      "hasFiles": [
+        "org/apache/lucene/analysis/"
+      ]
+    },
+    {
+      "name": "Stopword lists by Jacques Savoy",
+      "originator": "Person: Jacques Savoy",
+      "homepage": "http://members.unine.ch/jacques.savoy/clef/index.html",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseComments": "lucene-analysis-common's Arabic, Bulgarian, Bengali, Persian, Hindi and Romanian stopwords.txt files begin: \"This file was created by Jacques Savoy and is distributed under the BSD license\", linking to opensource.org/licenses/bsd-license.html, which does not say which BSD variant; concluded as the 3-clause license under which the same author's stemmer code is published. No copyright line is given.",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.lucene/lucene-analysis-common@10.6.0"
+        }
+      ],
+      "hasFiles": [
+        "org/apache/lucene/analysis/ar/stopwords.txt",
+        "org/apache/lucene/analysis/bg/stopwords.txt",
+        "org/apache/lucene/analysis/bn/stopwords.txt",
+        "org/apache/lucene/analysis/fa/stopwords.txt",
+        "org/apache/lucene/analysis/hi/stopwords.txt",
+        "org/apache/lucene/analysis/ro/stopwords.txt"
+      ]
+    },
+    {
+      "name": "Public Suffix List data",
+      "originator": "Organization: Mozilla Foundation",
+      "homepage": "https://publicsuffix.org",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "jsonld-java's shaded Guava 32.1.3-jre (see its Guava entry) includes com/google/thirdparty/publicsuffix, relocated to com/github/jsonldjava/shaded/com/google/thirdparty/publicsuffix: the same generated file as in Guava itself. Guava's com/google/thirdparty/publicsuffix holds PublicSuffixPatterns, a file generated from the Public Suffix List. The file carries only the Guava Authors' Apache License 2.0 header, and Debian's guava 33.7.1 packaging records it as Apache-2.0. The list itself is published under MPL-2.0 at publicsuffix.org.",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/com.github.jsonld-java/jsonld-java@0.13.6"
+        }
+      ],
+      "hasFiles": [
+        "com/github/jsonldjava/shaded/com/google/thirdparty/publicsuffix/"
+      ]
+    },
+    {
+      "name": "Snowball stemmers",
+      "originator": "Person: Martin Porter",
+      "homepage": "https://snowballstem.org/",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseComments": "opennlp-tools includes the Snowball stemmers in opennlp/tools/stemmer/snowball; the source headers in its sources jar: Copyright (c) 2001, Dr Martin Porter, Copyright (c) 2002, Richard Boulton, the 3-clause BSD license. opennlp-tools carries only the standard Apache License and a NOTICE that does not mention them, so the copyright notice is reproduced here. Found by the Snowball fingerprint of ShadedReport. The copied version is not stated.",
+      "attributionTexts": [
+        "Snowball stemmers\nCopyright (c) 2001, Dr Martin Porter\nCopyright (c) 2002, Richard Boulton\nAll rights reserved."
+      ],
+      "hasFiles": [
+        "opennlp/tools/stemmer/snowball/"
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.opennlp/opennlp-tools@2.5.13"
+        }
+      ]
+    },
+    {
+      "name": "noggit",
+      "originator": "Person: Yonik Seeley",
+      "homepage": "https://github.com/yonik/noggit",
+      "downloadLocation": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "licenseConcluded": "Apache-2.0",
+      "licenseComments": "solr-solrj includes the noggit JSON parser in org/noggit (not relocated); the source headers in its sources jar: Copyright 2006- Yonik Seeley, Apache License 2.0. Its NOTICE.txt has a noggit section (\"The code is included into Solr codebase\") and ships in LIBRARIES/. noggit does not ship as a library of its own. The copied version is not stated.",
+      "hasFiles": [
+        "org/noggit/"
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:maven/org.noggit/noggit"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "contained-in",
+          "referenceLocator": "pkg:maven/org.apache.solr/solr-solrj@10.1.0"
+        }
+      ]
+    }
+  ]
+}

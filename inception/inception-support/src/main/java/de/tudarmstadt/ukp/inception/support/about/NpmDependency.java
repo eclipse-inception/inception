@@ -42,6 +42,17 @@ public class NpmDependency
     private String url;
     private String copyright;
     private String email;
+    private String noticeText;
+
+    public String getNoticeText()
+    {
+        return noticeText;
+    }
+
+    public void setNoticeText(String aNoticeText)
+    {
+        noticeText = aNoticeText;
+    }
 
     public void setName(String aName)
     {

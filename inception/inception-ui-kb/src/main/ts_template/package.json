@@ -14,7 +14,6 @@
   },
   "external": {},
   "devDependencies": {
-    "license-checker": "${license-checker.version}",
     "@inception-project/inception-support-bootstrap": "file:../../../../inception-support-bootstrap/src/main/ts",
     "bootstrap": "${bootstrap.version}",
     "eslint": "${eslint.version}",

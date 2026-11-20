@@ -14,7 +14,6 @@
   },
   "external": {},
   "devDependencies": {
-    "license-checker": "${license-checker.version}",
     "eslint": "${eslint.version}",
     "neostandard": "${neostandard.version}",
     "prettier": "${prettier.version}",

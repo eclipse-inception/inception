@@ -64,6 +64,33 @@
           </plugin>
 
           <plugin>
+            <!--
+              copy-dependencies only adds jars. Without emptying the folder first, a dependency
+              removed since the last clean build would still be staged and ship in the installer.
+            -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>clean-jpackage-input</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>clean</goal>
+                </goals>
+                <configuration>
+                  <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                  <filesets>
+                    <fileset>
+                      <directory>${project.build.directory}/jpackage-input</directory>
+                      <followSymlinks>false</followSymlinks>
+                    </fileset>
+                  </filesets>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
             <executions>
@@ -76,20 +103,6 @@
                 <configuration>
                   <outputDirectory>${project.build.directory}/jpackage-input</outputDirectory>
                   <includeScope>runtime</includeScope>
-                  <overWriteReleases>false</overWriteReleases>
-                  <overWriteSnapshots>true</overWriteSnapshots>
-                  <overWriteIfNewer>true</overWriteIfNewer>
-                </configuration>
-              </execution>
-              <execution>
-                <id>stage-provided-dependencies</id>
-                <phase>prepare-package</phase>
-                <goals>
-                  <goal>copy-dependencies</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${project.build.directory}/jpackage-input</outputDirectory>
-                  <includeScope>provided</includeScope>
                   <overWriteReleases>false</overWriteReleases>
                   <overWriteSnapshots>true</overWriteSnapshots>
                   <overWriteIfNewer>true</overWriteIfNewer>
@@ -147,7 +160,7 @@
                 </configuration>
               </execution>
               <execution>
-                <id>package-dmg-aarch64</id>
+                <id>package-app-image-aarch64</id>
                 <phase>package</phase>
                 <goals>
                   <goal>exec</goal>
@@ -156,6 +169,7 @@
                   <executable>bash</executable>
                   <arguments>
                     <argument>${project.basedir}/src/main/scripts/package-dmg.sh</argument>
+                    <argument>app-image</argument>
                     <argument>aarch64</argument>
                     <argument>${jdk.aarch64.home}</argument>
                     <argument>${mac.signing.identity}</argument>
@@ -170,6 +184,144 @@
                 </configuration>
               </execution>
               <execution>
+                <!--
+                  Analyses the application image built above, including the Java runtime jpackage
+                  bundled, and writes the legal documentation that package-dmg puts next to the
+                  app in the DMG window. Skipped along with a cross-arch build without a JDK.
+                -->
+                <id>generate-legal-documentation-aarch64</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>java</goal>
+                </goals>
+                <configuration>
+                  <mainClass>de.tudarmstadt.ukp.inception.build.legal.LegalDocumentationGenerator</mainClass>
+                  <includeProjectDependencies>false</includeProjectDependencies>
+                  <includePluginDependencies>true</includePluginDependencies>
+                  <arguments>
+                    <argument>--artifact</argument>
+                    <argument>${project.build.directory}/jpackage-aarch64/INCEpTION.app</argument>
+                    <argument>--distribution-name</argument>
+                    <argument>INCEpTION-${parsedVersion.majorVersion}.${parsedVersion.minorVersion}-aarch64.dmg</argument>
+                    <argument>--skip-if-missing</argument>
+                    <argument>--license</argument>
+                    <argument>${project.basedir}/../../LICENSE.txt</argument>
+                    <argument>--output</argument>
+                    <argument>${project.build.directory}/jpackage-aarch64/legal</argument>
+                    <argument>--own-group-id</argument>
+                    <argument>${project.groupId}</argument>
+                    <argument>--own-npm-scope</argument>
+                    <argument>@inception-project</argument>
+                    <argument>--project-name</argument>
+                    <argument>${product.name}</argument>
+                    <argument>--project-version</argument>
+                    <argument>${project.version}</argument>
+                    <argument>--project-license</argument>
+                    <argument>${project.licenses[0].name}</argument>
+                    <argument>--project-url</argument>
+                    <argument>${project.organization.url}</argument>
+                    <!--
+                      One argument: Maven 3 passes an unset property on its own as null, but leaves
+                      it as text inside a longer string, which the generator reads as not set.
+                    -->
+                    <argument>--output-timestamp=${project.build.outputTimestamp}</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>package-dmg-aarch64</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>bash</executable>
+                  <arguments>
+                    <argument>${project.basedir}/src/main/scripts/package-dmg.sh</argument>
+                    <argument>dmg</argument>
+                    <argument>aarch64</argument>
+                    <argument>${jdk.aarch64.home}</argument>
+                    <argument>${mac.signing.identity}</argument>
+                    <argument>${project.build.directory}/jpackage-input</argument>
+                    <argument>${project.build.directory}/jpackage-aarch64</argument>
+                    <argument>inception-app-webapp-${project.version}-lib.jar</argument>
+                    <argument>de.tudarmstadt.ukp.inception.INCEpTION</argument>
+                    <argument>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</argument>
+                    <argument>${project.build.directory}/icon.icns</argument>
+                    <argument>${project.basedir}/src/main/resources/entitlements.plist</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>package-app-image-x86_64</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>bash</executable>
+                  <arguments>
+                    <argument>${project.basedir}/src/main/scripts/package-dmg.sh</argument>
+                    <argument>app-image</argument>
+                    <argument>x86_64</argument>
+                    <argument>${jdk.x86_64.home}</argument>
+                    <argument>${mac.signing.identity}</argument>
+                    <argument>${project.build.directory}/jpackage-input</argument>
+                    <argument>${project.build.directory}/jpackage-x86_64</argument>
+                    <argument>inception-app-webapp-${project.version}-lib.jar</argument>
+                    <argument>de.tudarmstadt.ukp.inception.INCEpTION</argument>
+                    <argument>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}</argument>
+                    <argument>${project.build.directory}/icon.icns</argument>
+                    <argument>${project.basedir}/src/main/resources/entitlements.plist</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <!--
+                  Analyses the application image built above, including the Java runtime jpackage
+                  bundled, and writes the legal documentation that package-dmg puts next to the
+                  app in the DMG window. Skipped along with a cross-arch build without a JDK.
+                -->
+                <id>generate-legal-documentation-x86_64</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>java</goal>
+                </goals>
+                <configuration>
+                  <mainClass>de.tudarmstadt.ukp.inception.build.legal.LegalDocumentationGenerator</mainClass>
+                  <includeProjectDependencies>false</includeProjectDependencies>
+                  <includePluginDependencies>true</includePluginDependencies>
+                  <arguments>
+                    <argument>--artifact</argument>
+                    <argument>${project.build.directory}/jpackage-x86_64/INCEpTION.app</argument>
+                    <argument>--distribution-name</argument>
+                    <argument>INCEpTION-${parsedVersion.majorVersion}.${parsedVersion.minorVersion}-x86_64.dmg</argument>
+                    <argument>--skip-if-missing</argument>
+                    <argument>--license</argument>
+                    <argument>${project.basedir}/../../LICENSE.txt</argument>
+                    <argument>--output</argument>
+                    <argument>${project.build.directory}/jpackage-x86_64/legal</argument>
+                    <argument>--own-group-id</argument>
+                    <argument>${project.groupId}</argument>
+                    <argument>--own-npm-scope</argument>
+                    <argument>@inception-project</argument>
+                    <argument>--project-name</argument>
+                    <argument>${product.name}</argument>
+                    <argument>--project-version</argument>
+                    <argument>${project.version}</argument>
+                    <argument>--project-license</argument>
+                    <argument>${project.licenses[0].name}</argument>
+                    <argument>--project-url</argument>
+                    <argument>${project.organization.url}</argument>
+                    <!--
+                      One argument: Maven 3 passes an unset property on its own as null, but leaves
+                      it as text inside a longer string, which the generator reads as not set.
+                    -->
+                    <argument>--output-timestamp=${project.build.outputTimestamp}</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+              <execution>
                 <id>package-dmg-x86_64</id>
                 <phase>package</phase>
                 <goals>
@@ -179,6 +331,7 @@
                   <executable>bash</executable>
                   <arguments>
                     <argument>${project.basedir}/src/main/scripts/package-dmg.sh</argument>
+                    <argument>dmg</argument>
                     <argument>x86_64</argument>
                     <argument>${jdk.x86_64.home}</argument>
                     <argument>${mac.signing.identity}</argument>
@@ -193,6 +346,13 @@
                 </configuration>
               </execution>
             </executions>
+            <dependencies>
+              <dependency>
+                <groupId>de.tudarmstadt.ukp.inception.app</groupId>
+                <artifactId>inception-build-legal</artifactId>
+                <version>${project.version}</version>
+              </dependency>
+            </dependencies>
           </plugin>
         </plugins>
       </build>

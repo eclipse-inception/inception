@@ -17,8 +17,10 @@
  */
 package de.tudarmstadt.ukp.inception.support.about;
 
+import static de.tudarmstadt.ukp.inception.support.json.JSONUtil.fromJsonStream;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.list;
+import static org.apache.commons.lang3.Strings.CS;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,18 +38,17 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.tudarmstadt.ukp.inception.support.json.JSONUtil;
-
 public class ApplicationInformation
 {
     private static final Logger LOG = LoggerFactory.getLogger(ApplicationInformation.class);
 
-    private static final Map<String, Set<String>> LICENSES = new HashMap<>();
+    private static final String APPLICATION_MARKER = "META-INF/version.properties";
+    private static final String MAVEN_DEPENDENCIES = "DEPENDENCIES.json";
+
     private static final Map<String, Set<String>> SOURCES = new HashMap<>();
     private static final Map<String, Set<String>> SOURCE_BY_PACKAGE_NAME = new HashMap<>();
 
-    private static void populateNormalisation()
-    {
+    static {
         SOURCE_BY_PACKAGE_NAME.put("emotion", Set.of( //
                 "@emotion/.*"));
         SOURCE_BY_PACKAGE_NAME.put("Sven Sauleau", Set.of( //
@@ -70,60 +71,6 @@ public class ApplicationInformation
                 "max ogden"));
         SOURCES.put("Oracle Corporation", Set.of( //
                 "Oracle"));
-
-        LICENSES.put("Apache License 2.0 (http://www.apache.org/licenses/LICENSE-2.0)", Set.of( //
-                "ASF 2\\.0.*", //
-                "Apache-2\\.0.*", //
-                "Apache 2 .*", //
-                "Apache 2\\.0.*", //
-                ".*Apache License 2\\.0.*", //
-                ".*Apache License.*Version 2\\.0.*", //
-                ".* Apache Software License.*Version 2\\.0.*", //
-                ".*://www\\.apache\\.org/licenses/LICENSE-2\\.0.*", //
-                "Apache-2.0"));
-        LICENSES.put("ISC License (https://spdx.org/licenses/ISC#licenseText)", Set.of("ISC"));
-        LICENSES.put(
-                "Eclipse Public License 1.0 (https://www.eclipse.org/org/documents/epl-1.0/EPL-1.0.txt)",
-                Set.of("Eclipse Public License.*1\\.0.*"));
-        LICENSES.put(
-                "Eclipse Public License 2.0 (https://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.txt)",
-                Set.of( //
-                        "Eclipse Public License.*2\\.0.*", //
-                        "EPL 2\\.0.*", //
-                        "EPL-2\\.0.*"));
-        LICENSES.put("MIT (https://spdx.org/licenses/MIT#licenseText)", Set.of( //
-                "MIT", //
-                "MIT .*", //
-                ".*MIT License.*"));
-        // According to the SPDX folks EDL 1.0 is essentially BSD-3-Clause, so there is no SPDX for
-        // EDL 1.0. So we fold it into BSD-3-Clause as well.
-        // https://lists.spdx.org/g/Spdx-legal/topic/request_for_adding_eclipse/67981884
-        LICENSES.put("BSD 3-Clause (https://spdx.org/licenses/BSD 3-Clause#licenseText)", Set.of( //
-                ".*BSD.3.Clause.*", ".*://raw.github.com/jsonld-java/jsonld-java/master/LICENCE.*",
-                ".*://www.antlr.org/license.html.*",
-                ".*://raw.githubusercontent.com/jaxen-xpath/jaxen/master/LICENSE.txt.*",
-                "Eclipse Distribution License.*", "EDL 1\\.0.*"));
-        LICENSES.put("BSD 2-Clause (https://spdx.org/licenses/BSD-2-Clause#licenseText)", Set.of( //
-                ".*BSD.2.Clause.*", //
-                ".*://www.opensource.org/licenses/bsd-license.*"));
-        LICENSES.put("LGPL 2.1 (http://www.gnu.org/licenses/lgpl-2.1.html)", Set.of( //
-                "LGPL-2.1"));
-        LICENSES.put("LGPL 2.1 or later (http://www.gnu.org/licenses/lgpl-2.1.html)", Set.of( //
-                "GNU Library General Public License v2.1 or later.*"));
-        LICENSES.put("LGPL 3.0 (https://www.gnu.org/licenses/lgpl-3.0.html)", Set.of( //
-                ".*http://www.gnu.org/licenses/lgpl.html.*"));
-        LICENSES.put("Mozilla Public License 1.1 (http://www.mozilla.org/MPL/MPL-1.1.html)", Set.of( //
-                "MPL 1.1.*"));
-        LICENSES.put("Mozilla Public License 2.0 (http://www.mozilla.org/MPL/2.0/index.txt)",
-                Set.of( //
-                        "MPL 2.0.*", //
-                        "Mozilla Public License.*2\\.0.*"));
-        LICENSES.put(
-                "CDDL + GPLv2 with classpath exception (https://oss.oracle.com/licenses/CDDL+GPL-1.1)",
-                Set.of( //
-                        "CDDL \\+ GPLv2 with classpath exception.*", //
-                        "CDDL/GPLv2\\+CE.*", //
-                        ".*://oss.oracle.com/licenses/CDDL\\+GPL-1.1.*"));
     }
 
     public static String sourceFromPackageName(String aString)
@@ -141,19 +88,12 @@ public class ApplicationInformation
         return aString;
     }
 
+    /**
+     * @see KnownLicenses#toDisplayName(String)
+     */
     public static String normaliseLicense(String aString)
     {
-        if (aString == null) {
-            return null;
-        }
-
-        for (var entry : LICENSES.entrySet()) {
-            if (entry.getValue().stream().anyMatch(pattern -> Pattern.matches(pattern, aString))) {
-                return entry.getKey();
-            }
-        }
-
-        return aString;
+        return KnownLicenses.toDisplayName(aString);
     }
 
     public static String normaliseSource(String aString)
@@ -173,24 +113,33 @@ public class ApplicationInformation
 
     public static Set<Dependency> loadJsonDependencies()
     {
-        populateNormalisation();
+        return loadJsonDependencies(ApplicationInformation.class.getClassLoader());
+    }
 
+    static Set<Dependency> loadJsonDependencies(ClassLoader aClassLoader)
+    {
         try {
             var deps = new LinkedHashSet<Dependency>();
-            var cl = ApplicationInformation.class.getClassLoader();
 
-            for (URL mavenDeps : list(cl.getResources("META-INF/DEPENDENCIES.json"))) {
+            // The application's own DEPENDENCIES.json lists exactly what the application ships.
+            // Third-party jars built with the same tooling carry DEPENDENCIES.json files of their
+            // own, listing the versions they were built against, so merging all of them would
+            // over-report. Only fall back to merging if the application root cannot be found.
+            var applicationDeps = findApplicationResource(aClassLoader, MAVEN_DEPENDENCIES);
+            var mavenDepsFiles = applicationDeps.isPresent() ? List.of(applicationDeps.get())
+                    : list(aClassLoader.getResources("META-INF/" + MAVEN_DEPENDENCIES));
+            for (var mavenDeps : mavenDepsFiles) {
                 loadMavenDependencies(mavenDeps).getDependencies()
                         .forEach(dep -> deps.add(dep.toDependency()));
             }
 
-            for (URL npmDeps : list(cl.getResources("META-INF/NPM-DEPENDENCIES.json"))) {
+            for (var npmDeps : list(aClassLoader.getResources("META-INF/NPM-DEPENDENCIES.json"))) {
                 loadNpmDependencies(npmDeps).values() //
                         .forEach(dep -> deps.add(dep.toDependency()));
             }
 
-            for (URL embeddedDeps : list(
-                    cl.getResources("META-INF/DEPENDENCIES-EMBEDDED.spdx.json"))) {
+            for (var embeddedDeps : list(
+                    aClassLoader.getResources("META-INF/DEPENDENCIES-EMBEDDED.spdx.json"))) {
                 loadEmbeddedSpdxDependencies(embeddedDeps).getPackages() //
                         .forEach(dep -> deps.add(dep.toDependency()));
             }
@@ -203,10 +152,35 @@ public class ApplicationInformation
         }
     }
 
-    static EmbeddedSpdxDependencies loadEmbeddedSpdxDependencies(URL aDeps) throws IOException
+    /**
+     * Finds a resource in the application's own {@code META-INF} folder. The application root is
+     * the one holding {@code META-INF/version.properties}, which only the application module
+     * generates (see {@code SettingsUtil.getVersionProperties()}). Comparing URLs against it works
+     * for directories, jars and the nested jars of the standalone distribution alike.
+     */
+    static Optional<URL> findApplicationResource(ClassLoader aClassLoader, String aName)
+        throws IOException
     {
-        try (InputStream is = aDeps.openStream()) {
-            return JSONUtil.fromJsonStream(EmbeddedSpdxDependencies.class, is);
+        var marker = aClassLoader.getResource(APPLICATION_MARKER);
+        if (marker == null) {
+            return Optional.empty();
+        }
+
+        var expected = CS.removeEnd(marker.toString(), "version.properties") + aName;
+        for (var url : list(aClassLoader.getResources("META-INF/" + aName))) {
+            if (url.toString().equals(expected)) {
+                return Optional.of(url);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public static EmbeddedSpdxDependencies loadEmbeddedSpdxDependencies(URL aDeps)
+        throws IOException
+    {
+        try (var is = aDeps.openStream()) {
+            return loadEmbeddedSpdxDependencies(is);
         }
         catch (Exception e) {
             LOG.error("Unable to read [{}]", aDeps, e);
@@ -214,41 +188,59 @@ public class ApplicationInformation
         }
     }
 
-    static NpmDependencies loadNpmDependencies(URL npmDeps) throws IOException
+    public static EmbeddedSpdxDependencies loadEmbeddedSpdxDependencies(InputStream aIs)
+        throws IOException
     {
-        try (InputStream is = npmDeps.openStream()) {
-            var deps = JSONUtil.fromJsonStream(NpmDependencies.class, is);
-            for (var entry : deps.entrySet()) {
-                entry.getValue().setName(entry.getKey());
-            }
-            return deps;
+        return fromJsonStream(EmbeddedSpdxDependencies.class, aIs);
+    }
+
+    public static NpmDependencies loadNpmDependencies(URL npmDeps) throws IOException
+    {
+        try (var is = npmDeps.openStream()) {
+            return loadNpmDependencies(is);
         }
     }
 
-    static MavenDependencies loadMavenDependencies(URL mavenDeps) throws IOException
+    public static NpmDependencies loadNpmDependencies(InputStream aIs) throws IOException
     {
-        try (InputStream is = mavenDeps.openStream()) {
-            return JSONUtil.fromJsonStream(MavenDependencies.class, is);
+        var deps = fromJsonStream(NpmDependencies.class, aIs);
+        for (var entry : deps.entrySet()) {
+            entry.getValue().setName(entry.getKey());
         }
+        return deps;
+    }
+
+    public static MavenDependencies loadMavenDependencies(URL mavenDeps) throws IOException
+    {
+        try (var is = mavenDeps.openStream()) {
+            return loadMavenDependencies(is);
+        }
+    }
+
+    public static MavenDependencies loadMavenDependencies(InputStream aIs) throws IOException
+    {
+        return fromJsonStream(MavenDependencies.class, aIs);
     }
 
     public static String loadDependencies()
     {
         try {
-            List<URL> candidates = list(ApplicationInformation.class.getClassLoader()
-                    .getResources("META-INF/DEPENDENCIES.txt"));
+            var cl = ApplicationInformation.class.getClassLoader();
+            var webappDependencies = findApplicationResource(cl, "DEPENDENCIES.txt");
 
-            Optional<URL> webappDependencies = candidates.stream() //
-                    .filter(url -> //
-                    url.toString().contains("/WEB-INF/classes!/META-INF/DEPENDENCIES.txt") || //
-                            url.toString().contains("target/classes/META-INF/DEPENDENCIES.txt"))
-                    .findFirst();
+            if (webappDependencies.isEmpty()) {
+                webappDependencies = list(cl.getResources("META-INF/DEPENDENCIES.txt")).stream() //
+                        .filter(url -> //
+                        url.toString().contains("/WEB-INF/classes!/META-INF/DEPENDENCIES.txt") || //
+                                url.toString().contains("target/classes/META-INF/DEPENDENCIES.txt"))
+                        .findFirst();
+            }
 
             if (webappDependencies.isEmpty()) {
                 return "Unable to locate dependency information";
             }
 
-            try (InputStream is = webappDependencies.get().openStream()) {
+            try (var is = webappDependencies.get().openStream()) {
                 return IOUtils.toString(is, UTF_8);
             }
         }
