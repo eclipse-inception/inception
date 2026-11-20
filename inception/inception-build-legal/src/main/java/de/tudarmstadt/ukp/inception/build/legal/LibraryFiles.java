@@ -25,6 +25,7 @@ import static java.util.regex.Pattern.compile;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -74,6 +75,16 @@ class LibraryFiles
             ".*\\.(class|svg|png|gif|jpe?g|xsd|xml|json|js|css|properties|java)$",
             CASE_INSENSITIVE);
 
+    /**
+     * Leading folders that only say where a file sits in the jar, which the library's own folder
+     * makes redundant: the {@code META-INF/} of most jars, and the
+     * {@code META-INF/resources/webjars/<name>/<version>/} of WebJars. Folders below them are kept,
+     * as they tell the code bundled into a library apart (postgresql's
+     * {@code META-INF/licenses/com.ongres.scram/scram-client-3.2/META-INF/LICENSE}).
+     */
+    private static final Pattern REDUNDANT_PREFIX = compile(
+            "^META-INF/(?:resources/webjars/[^/]+/[^/]+/)?");
+
     private final Map<String, Library> libraries = new TreeMap<>();
 
     /**
@@ -115,28 +126,57 @@ class LibraryFiles
         return segments.subList(0, segments.size() - 1);
     }
 
+    /**
+     * @param aPath
+     *            the path of the file in the library's jar or package.
+     */
     void add(String aLibrary, String aFolder, String aPath, byte[] aContent)
     {
-        var files = libraries
-                .computeIfAbsent(aFolder, f -> new Library(aLibrary, f, new TreeMap<>())).files();
+        libraries.computeIfAbsent(aFolder, f -> new Library(aLibrary, f, new TreeMap<>())).files()
+                .put(aPath, aContent);
+    }
+
+    /**
+     * @return the files of a library by the path to write them to, relative to the library's
+     *         folder. The leading folders that only say where a file sits in the jar are dropped,
+     *         unless two files would then end up at the same path (a {@code LICENSE} at the jar's
+     *         root next to {@code META-INF/LICENSE}): then the library keeps the paths it has in
+     *         the jar.
+     */
+    private static Map<String, byte[]> outputFiles(Library aLibrary)
+    {
+        var files = aLibrary.files();
+        var shortened = new TreeMap<String, byte[]>();
+        for (var file : files.entrySet()) {
+            var path = REDUNDANT_PREFIX.matcher(file.getKey()).replaceFirst("");
+            if (clashes(shortened.keySet(), path)) {
+                shortened = null;
+                break;
+            }
+            shortened.put(path, file.getValue());
+        }
+        if (shortened != null) {
+            return shortened;
+        }
+
         // Paths that differ only in case (META-INF/LICENSE and META-INF/license, or a file and a
         // folder) would overwrite each other on a case-insensitive file system such as macOS';
         // such a file goes into a numbered folder of its own instead
-        var path = aPath;
-        for (var n = 2; clashes(files.keySet(), path); n++) {
-            path = "case-" + n + "/" + aPath;
+        var result = new LinkedHashMap<String, byte[]>();
+        for (var file : files.entrySet()) {
+            var path = file.getKey();
+            for (var n = 2; clashes(result.keySet(), path); n++) {
+                path = "case-" + n + "/" + file.getKey();
+            }
+            result.put(path, file.getValue());
         }
-        files.put(path, aContent);
+        return result;
     }
 
     private static boolean clashes(Set<String> aExisting, String aPath)
     {
         var lower = aPath.toLowerCase(Locale.ROOT);
         for (var existing : aExisting) {
-            if (existing.equals(aPath)) {
-                // The same entry again; a jar has each entry once
-                continue;
-            }
             var other = existing.toLowerCase(Locale.ROOT);
             if (other.equals(lower) || other.startsWith(lower + "/")
                     || lower.startsWith(other + "/")) {
@@ -168,7 +208,7 @@ class LibraryFiles
     {
         var files = new ArrayList<String>();
         for (var library : libraries.values()) {
-            for (var file : library.files().entrySet()) {
+            for (var file : outputFiles(library).entrySet()) {
                 var path = LIBRARIES_DIR + "/" + library.folder() + "/" + file.getKey();
                 var target = aOutput.resolve(path);
                 createDirectories(target.getParent());

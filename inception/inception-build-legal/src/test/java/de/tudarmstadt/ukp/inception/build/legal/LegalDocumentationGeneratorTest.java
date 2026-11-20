@@ -199,13 +199,11 @@ class LegalDocumentationGeneratorTest
             assertThat(files.filter(Files::isRegularFile)
                     .map(f -> output.resolve("LIBRARIES").relativize(f).toString()
                             .replace(File.separatorChar, '/'))).containsExactlyInAnyOrder(
-                                    "library-a-1.0/META-INF/NOTICE",
-                                    "provided-x-1.5/META-INF/LICENSE",
-                                    "provided-x-1.5/META-INF/bundled/LICENSE",
-                                    "npm-lib-c-3.0.0/NOTICE");
+                                    "library-a-1.0/NOTICE", "provided-x-1.5/LICENSE",
+                                    "provided-x-1.5/bundled/LICENSE", "npm-lib-c-3.0.0/NOTICE");
         }
         // Unchanged, not reformatted
-        assertThat(output.resolve("LIBRARIES/library-a-1.0/META-INF/NOTICE"))
+        assertThat(output.resolve("LIBRARIES/library-a-1.0/NOTICE"))
                 .hasContent("Library A\nCopyright The Library A Authors\n");
         assertThat(output.resolve("NOTICE.md")).content() //
                 .contains("* org.example:library-a:1.0: LIBRARIES/library-a-1.0\n") //
@@ -217,8 +215,8 @@ class LegalDocumentationGeneratorTest
         try (var zip = new ZipFile(artifact.toFile())) {
             var manifestTime = zip.getEntry("META-INF/MANIFEST.MF").getTime();
             for (var entry : List.of("META-INF/LIBRARIES/", "META-INF/LIBRARIES/provided-x-1.5/",
-                    "META-INF/LIBRARIES/provided-x-1.5/META-INF/bundled/",
-                    "META-INF/LIBRARIES/provided-x-1.5/META-INF/bundled/LICENSE")) {
+                    "META-INF/LIBRARIES/provided-x-1.5/bundled/",
+                    "META-INF/LIBRARIES/provided-x-1.5/bundled/LICENSE")) {
                 assertThat(zip.getEntry(entry)).as(entry).isNotNull();
                 assertThat(zip.getEntry(entry).getTime()).as(entry).isEqualTo(manifestTime);
             }
@@ -777,6 +775,38 @@ class LegalDocumentationGeneratorTest
         });
         assertThat(containers).containsExactlyInAnyOrder(ids.get("org.example:library-a"),
                 ids.get("org.example:library-b"));
+    }
+
+    @Test
+    void thatTheLeadingFoldersOfTheJarAreDropped() throws Exception
+    {
+        var files = new LibraryFiles();
+        files.add("lib", "lib-1.0", "META-INF/NOTICE", "a".getBytes(UTF_8));
+        files.add("lib", "lib-1.0", "META-INF/licenses/org.example/bundled-2.0/META-INF/LICENSE",
+                "b".getBytes(UTF_8));
+        files.add("web", "web-3.0", "META-INF/resources/webjars/web/3.0/dist/LICENSE.txt",
+                "c".getBytes(UTF_8));
+        files.add("eclipse", "eclipse-4.0", "about.html", "d".getBytes(UTF_8));
+
+        assertThat(files.writeTo(tempDir.resolve("out"))).containsExactlyInAnyOrder(
+                "LIBRARIES/lib-1.0/NOTICE",
+                "LIBRARIES/lib-1.0/licenses/org.example/bundled-2.0/META-INF/LICENSE",
+                "LIBRARIES/web-3.0/dist/LICENSE.txt", "LIBRARIES/eclipse-4.0/about.html");
+    }
+
+    @Test
+    void thatTheJarPathsAreKeptWhenDroppingTheLeadingFoldersMakesFilesClash() throws Exception
+    {
+        var files = new LibraryFiles();
+        files.add("lib", "lib-1.0", "META-INF/LICENSE", "a".getBytes(UTF_8));
+        files.add("lib", "lib-1.0", "LICENSE", "b".getBytes(UTF_8));
+        files.add("lib", "lib-1.0", "META-INF/NOTICE", "c".getBytes(UTF_8));
+
+        var output = tempDir.resolve("out");
+        assertThat(files.writeTo(output)).containsExactlyInAnyOrder("LIBRARIES/lib-1.0/LICENSE",
+                "LIBRARIES/lib-1.0/META-INF/LICENSE", "LIBRARIES/lib-1.0/META-INF/NOTICE");
+        assertThat(output.resolve("LIBRARIES/lib-1.0/LICENSE")).hasContent("b");
+        assertThat(output.resolve("LIBRARIES/lib-1.0/META-INF/LICENSE")).hasContent("a");
     }
 
     @Test
