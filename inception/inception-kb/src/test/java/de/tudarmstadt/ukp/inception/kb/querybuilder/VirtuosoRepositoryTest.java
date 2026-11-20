@@ -39,7 +39,10 @@ import org.eclipse.rdf4j.repository.base.RepositoryConnectionWrapper;
 import org.eclipse.rdf4j.repository.base.RepositoryWrapper;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -81,9 +84,26 @@ public class VirtuosoRepositoryTest
                     .waitingFor(Wait.forHttp("/sparql").forPort(VIRTUOSO_PORT)
                             .withStartupTimeout(ofMinutes(2)));
 
+    // Virtuoso's default authenticated endpoint /sparql-auth/ accepts only Digest authentication,
+    // but RDF4J 6 sends Basic credentials and does not answer a Digest challenge. The scenarios
+    // therefore run against an endpoint with the same definition that accepts Basic
+    // authentication. It still rejects wrong credentials.
+    private static final String BASIC_AUTH_ENDPOINT = "/sparql-basic";
+
+    private static final String DIGEST_AUTH_ENDPOINT = "/sparql-auth";
+
     private Repository repository;
 
     private KnowledgeBase kb;
+
+    @BeforeAll
+    public static void setUpEndpoint() throws Exception
+    {
+        virtuosoSqlCommand("DB.DBA.VHOST_DEFINE (lpath=>'" + BASIC_AUTH_ENDPOINT
+                + "', ppath=>'/!sparql/', is_dav=>1, vsp_user=>'dba', "
+                + "auth_fn=>'DB.DBA.HP_AUTH_SPARQL_USER', realm=>'SPARQL', sec=>'basic', "
+                + "opts=>vector('noinherit', 1));");
+    }
 
     @BeforeEach
     public void setUp(TestInfo aTestInfo) throws Exception
@@ -107,9 +127,7 @@ public class VirtuosoRepositoryTest
 
         SPARQLQueryBuilderLocalTestScenarios.initRdfsMapping(kb);
 
-        var sparqlRepository = SPARQLQueryBuilderLocalTestScenarios
-                .buildSparqlRepository("http://dba:secret@" + VIRTUOSO.getHost() + ":"
-                        + VIRTUOSO.getMappedPort(VIRTUOSO_PORT) + "/sparql-auth/");
+        var sparqlRepository = buildRepository(BASIC_AUTH_ENDPOINT);
 
         // Virtuoso adds new literals to its full text index only in batches, even with batch
         // updates switched off. Without updating the index after each import, the scenarios
@@ -137,6 +155,13 @@ public class VirtuosoRepositoryTest
             var ctx = SimpleValueFactory.getInstance().createIRI(kb.getDefaultDatasetIri());
             conn.clear(ctx);
         }
+    }
+
+    private static Repository buildRepository(String aEndpoint)
+    {
+        return SPARQLQueryBuilderLocalTestScenarios
+                .buildSparqlRepository("http://dba:secret@" + VIRTUOSO.getHost() + ":"
+                        + VIRTUOSO.getMappedPort(VIRTUOSO_PORT) + aEndpoint + "/");
     }
 
     private static void updateFullTextIndex() throws IOException
@@ -197,6 +222,21 @@ public class VirtuosoRepositoryTest
                 .filter(scenario -> !exclusions.contains(scenario.name)) //
                 .map(scenario -> Arguments.of(scenario.name, scenario)) //
                 .toList();
+    }
+
+    @Disabled("RDF4J 6 sends Basic credentials and does not answer the Digest challenge of "
+            + "Virtuoso's default authenticated endpoint")
+    @Test
+    public void thatUpdatesWorkWithDigestAuthentication() throws Exception
+    {
+        var digestRepository = buildRepository(DIGEST_AUTH_ENDPOINT);
+        try (var conn = digestRepository.getConnection()) {
+            var ctx = SimpleValueFactory.getInstance().createIRI(kb.getDefaultDatasetIri());
+            conn.clear(ctx);
+        }
+        finally {
+            digestRepository.shutDown();
+        }
     }
 
     @ParameterizedTest(name = "{index}: test {0}")
