@@ -1,0 +1,62 @@
+# Notices for INCEpTION
+
+This content is produced and maintained by the INCEpTION project.
+
+* Project home: https://inception-project.github.io
+
+## Copyright
+
+All content is the property of the respective authors or their employers. For more information
+regarding authorship of content, please consult the listed source code repository logs.
+
+## Declared Project Licenses
+
+This program and the accompanying materials are made available under the terms of the Apache
+License, Version 2.0 which is available at https://www.apache.org/licenses/LICENSE-2.0.
+
+SPDX-License-Identifier: Apache-2.0
+
+## Source Code
+
+The project maintains the following source code repository:
+
+* https://github.com/eclipse-inception/inception
+
+## Third-party Content
+
+This project includes third-party content.
+
+### Libraries
+
+The libraries included in the distribution are listed with their licenses in the file
+DEPENDENCIES, the texts of these licenses in the folder LICENSES, one file per SPDX license
+identifier. Where a library comes with notices or license texts of its own (NOTICE files,
+license texts with copyright lines or with the licenses of code bundled into the library), they
+are reproduced unchanged in the folder LIBRARIES, see the section "Notices and licenses of the
+libraries" below. The file sbom.spdx.json lists all third-party content as a software bill of
+materials in the SPDX 2.3 format.
+
+### Embedded content
+
+The following third-party content is embedded in the project's own code.
+
+${embeddedContent}
+
+### Code bundled into the libraries
+
+The following third-party code is shaded or copied into libraries of the distribution, which list
+it as a dependency of their own only partly or not at all. Where it has Maven coordinates and a
+known version, it is also listed in the file DEPENDENCIES; all of it is in sbom.spdx.json.
+
+${bundledContent}
+
+${javaRuntime}
+
+${cryptography}
+
+## Notices and licenses of the libraries
+
+The following libraries come with notices or license texts of their own, reproduced unchanged in
+the folder given for each.
+
+${libraryFiles}

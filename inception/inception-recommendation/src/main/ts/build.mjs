@@ -46,7 +46,7 @@ const defaults = {
     })
   ],
   bundle: true,
-  sourcemap: dev,
+  sourcemap: true,
   minify: !dev,
   target: 'es2020',
   loader: { '.ts': 'ts' },

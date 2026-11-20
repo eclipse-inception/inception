@@ -4,7 +4,7 @@
     {
       "name": "brat",
       "versionInfo": "1.3",
-      "originator": "brat project",
+      "originator": "Organization: brat project",
       "homepage": "https://github.com/nlplab/brat",
       "licenseDeclared": "(MIT AND Apache-2.0)",
       "description": "Heavily modified version of brat. The files are source files that are bundled into the editor JavaScript at build time.",
@@ -39,7 +39,7 @@
     {
       "name": "jQuery scrollbarWidth",
       "versionInfo": "0.2",
-      "originator": "Ben Alman",
+      "originator": "Person: Ben Alman",
       "homepage": "http://benalman.com/projects/jquery-misc-plugins/",
       "licenseDeclared": "(MIT OR GPL-2.0-only)",
       "licenseConcluded": "MIT",
@@ -47,6 +47,21 @@
       "description": "Ported to TypeScript. The file is a source file that is bundled into the editor JavaScript at build time.",
       "hasFiles": [
         "src/main/ts/src/util/ScrollbarWidth.ts"
+      ]
+    },
+    {
+      "name": "core-js-pure",
+      "versionInfo": "3.49.0",
+      "originator": "Person: Denis Pushkarev",
+      "homepage": "https://core-js.io",
+      "licenseDeclared": "MIT",
+      "description": "Bundled into the prebuilt dist of @svgdotjs/svg.js 3.2.8, which the editor bundles; its sourcemap names core-js-pure 3.49.0, which is not installed itself",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/core-js-pure@3.49.0"
+        }
       ]
     }
   ]

@@ -17,7 +17,6 @@
     "undici": "${undici.version}"
   },
   "devDependencies": {
-    "license-checker": "${license-checker.version}",
     "eslint": "${eslint.version}",
     "eslint-config-prettier": "${eslint-config-prettier.version}",
     "eslint-plugin-import-x": "${eslint-plugin-import-x.version}",

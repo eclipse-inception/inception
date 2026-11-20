@@ -25,7 +25,6 @@
     "@inception-project/inception-js-api": "file:../../../../inception-js-api/src/main/ts"
   },
   "devDependencies": {
-    "license-checker": "${license-checker.version}",
     "esbuild": "${esbuild.version}",
     "eslint": "${eslint.version}",
     "eslint-config-prettier": "${eslint-config-prettier.version}",

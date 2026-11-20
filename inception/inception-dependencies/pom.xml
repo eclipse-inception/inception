@@ -648,6 +648,42 @@
         <groupId>com.hubspot.jinjava</groupId>
         <artifactId>jinjava</artifactId>
         <version>${jinjava.version}</version>
+        <exclusions>
+          <!--
+            Compile-time annotations only (JSR 305, FindBugs, JCIP), declared in compile scope;
+            nothing loads them at runtime. jsr305 is provided in every module anyway.
+          -->
+          <exclusion>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>annotations</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <!--
+        jinjava manages these versions in its own POM. Maven 4 applies that dependency management
+        to jinjava's dependencies, Maven 3 does not and falls back to the older versions that
+        com.hubspot:algebra declares (hubspot-style 1.4, without RosettaAnnotations). Managing them
+        here makes both Maven versions ship the same jars.
+      -->
+      <dependency>
+        <groupId>com.hubspot.immutables</groupId>
+        <artifactId>hubspot-style</artifactId>
+        <version>${jinjava.hubspot-immutables.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.hubspot.immutables</groupId>
+        <artifactId>immutable-collection-encodings</artifactId>
+        <version>${jinjava.hubspot-immutables.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.hubspot.rosetta</groupId>
+        <artifactId>RosettaAnnotations</artifactId>
+        <version>${jinjava.hubspot-rosetta.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.immutables</groupId>
+        <artifactId>encode</artifactId>
+        <version>${jinjava.immutables-encode.version}</version>
       </dependency>
 
       <dependency>
@@ -793,6 +829,30 @@
         <groupId>jakarta.servlet</groupId>
         <artifactId>jakarta.servlet-api</artifactId>
         <version>${servlet-api.version}</version>
+      </dependency>
+
+      <!--
+        The wicket-parent POM imported below is Wicket's parent, not a BOM, and it manages the
+        provided scope for these artifacts, which leaks into our resolution: jakarta.annotation-api
+        and jakarta.validation-api, needed at runtime, ended up provided, and hamcrest, a test
+        library pulled in by awaitility, shipped in the distribution. Managing them here without
+        a scope takes precedence over the import. Drop these entries once Wicket publishes a
+        proper wicket-bom that does not manage scopes, and import that instead of wicket-parent.
+      -->
+      <dependency>
+        <groupId>jakarta.annotation</groupId>
+        <artifactId>jakarta.annotation-api</artifactId>
+        <version>${jakarta.annotation-api.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.validation</groupId>
+        <artifactId>jakarta.validation-api</artifactId>
+        <version>${jakarta.validation-api.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest</artifactId>
+        <version>${hamcrest.version}</version>
       </dependency>
 
       <dependency>
