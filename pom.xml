@@ -29,33 +29,33 @@
   <version>43.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>INCEpTION</name>
-  <description>INCEpTION provides a semantic annotation platform offering intelligent annotation assistance and knowledge management.</description>
-  <url>https://inception-project.github.io</url>
+  <name>Eclipse INCEpTION</name>
+  <description>Eclipse INCEpTION provides a semantic annotation platform offering intelligent annotation assistance and knowledge management.</description>
+  <url>https://eclipse-inception.github.io</url>
   <inceptionYear>2018</inceptionYear>
 
   <organization>
-    <name>The INCEpTION Project</name>
-    <url>https://inception-project.github.io</url>
+    <name>Eclipse INCEpTION</name>
+    <url>https://eclipse-inception.github.io</url>
   </organization>
 
   <licenses>
     <license>
-      <name>Apache License Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <name>Apache-2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
 
   <issueManagement>
-    <url>https://github.com/inception-project/inception/issues</url>
+    <url>https://github.com/eclipse-inception/inception/issues</url>
     <system>GitHub Issues</system>
   </issueManagement>
 
   <scm>
-    <connection>scm:git:https://github.com/inception-project/inception.git</connection>
-    <developerConnection>scm:git:https://github.com/inception-project/inception.git</developerConnection>
-    <url>https://github.com/inception-project/inception</url>
+    <connection>scm:git:https://github.com/eclipse-inception/inception.git</connection>
+    <developerConnection>scm:git:https://github.com/eclipse-inception/inception.git</developerConnection>
+    <url>https://github.com/eclipse-inception/inception</url>
     <tag>inception-41.0</tag>
   </scm>
 

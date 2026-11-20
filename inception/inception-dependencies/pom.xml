@@ -158,12 +158,6 @@
         <scope>import</scope>
       </dependency>
 
-      <!--
-        Keeps the Bouncy Castle artifacts on one version. Without it, mock-oauth2-server (test
-        scope) won the mediation for bcpkix and bcutil over the versions OpenSAML asks for, so
-        the standalone jar shipped them in another version than bcprov, and than the installers,
-        which resolve without the test dependencies.
-      -->
       <dependency>
         <groupId>org.bouncycastle</groupId>
         <artifactId>bc-jdk18on-bom</artifactId>

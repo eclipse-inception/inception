@@ -1,5 +1,18 @@
-The copyright of the code in this repository belongs to the respective contributors who
-license their contribution under the terms of the Apache License 2.0.
+# Notices for Eclipse INCEpTION
+
+This content is produced and maintained by the Eclipse INCEpTION project.
+
+* Project home: https://projects.eclipse.org/projects/technology.inception
+* Website: https://eclipse-inception.github.io
+
+## Trademarks
+
+Eclipse INCEpTION is a trademark of the Eclipse Foundation.
+
+## Copyright
+
+All content is the property of the respective authors or their employers. For more information
+regarding authorship of content, please consult the listed source code repository logs.
 
 Besides individual contributions, the copyright in this codebase largely belongs to:
 
@@ -11,4 +24,98 @@ Copyright 2012-2016 Ubiquitous Knowledge Processing (UKP) Lab and FG Language Te
                     Technische Universität Darmstadt
                     (in the context of the WebAnno project(s))
 
-For individual contributions, please check the history contained in this repository.
+## Declared Project Licenses
+
+This program and the accompanying materials are made available under the terms of the Apache
+License, Version 2.0 which is available at https://www.apache.org/licenses/LICENSE-2.0.
+
+SPDX-License-Identifier: Apache-2.0
+
+## Source Code
+
+The project maintains the following source code repositories:
+
+* https://github.com/eclipse-inception/inception
+* https://github.com/eclipse-inception/eclipse-inception.github.io
+
+## Third-party Content
+
+### Content in this repository
+
+The following third-party content is part of this repository. Each module declares its
+third-party content with license, origin and files in
+src/main/resources/META-INF/DEPENDENCIES-EMBEDDED.spdx.json, and gives further notices in its
+NOTICE.txt. These declarations are authoritative and ship in the module's jar.
+
+inception-assistant-ui
+* Font Awesome Free icons (CC-BY-4.0)
+
+inception-brat-editor
+* brat (MIT AND Apache-2.0), modified
+* jQuery scrollbarWidth (MIT)
+* core-js-pure (MIT)
+
+inception-build-legal (build only, not distributed)
+* SPDX 2.3 JSON schema (CC-BY-3.0)
+
+inception-documents
+* Universal Dependencies documentation (Apache-2.0)
+
+inception-io-brat, inception-io-nif, inception-io-rdf, inception-io-tei, inception-io-xmi
+* Code copied from, derived from or backported from DKPro Core (Apache-2.0)
+
+inception-io-html
+* Code derived from jsoup (MIT)
+
+inception-io-pdf
+* Apache PDFBox DrawPrintTextLocations example (Apache-2.0)
+
+inception-kb-lucene-sail
+* RDF4J Lucene SAIL (BSD-3-Clause), modified
+
+inception-pdf-editor2
+* PDFAnno (MIT), modified
+* PDF.js viewer (Apache-2.0), including Fluent bundle, Fluent DOM and cached-iterable
+  (Apache-2.0), OpenJPEG (BSD-2-Clause), qcms (MIT), ICC color profiles (CC0-1.0), Liberation
+  fonts (OFL-1.1), Foxit fonts (BSD-3-Clause) and Adobe CMap resources (BSD-3-Clause)
+
+inception-processing
+* Font Awesome Free icons (CC-BY-4.0)
+
+inception-project-initializers-phi
+* GraSCCo_PHI sample documents (CC-BY-4.0)
+
+inception-project-initializers-wikidatalinking
+* Foodista sample documents (CC-BY-3.0)
+
+inception-search-mtas-upstream
+* MTAS (Apache-2.0), modified
+* Code from Apache Solr (Apache-2.0)
+
+inception-security
+* Code adapted from Spring Security (Apache-2.0)
+
+inception-support
+* Code from Apache Wicket and Wicketstuff (Apache-2.0)
+* AnnoLab Trie (Apache-2.0)
+
+notebooks/data
+* Foodista sample documents (CC-BY-3.0), see notebooks/data/NOTICE.txt
+
+### Libraries and distributions
+
+The third-party libraries the project uses are declared as dependencies in the pom.xml and
+package.json files of the modules, and are not part of this repository. Each distribution (the
+standalone jar, the Windows and macOS installers and the Docker image) contains a NOTICE.md
+generated during the build, which lists the third-party content of that distribution, together
+with the files DEPENDENCIES and sbom.spdx.json (SPDX 2.3) and the license texts in the folder
+LICENSES.
+
+## Cryptography
+
+Content may contain encryption software. The country in which you are currently
+may have restrictions on the import, possession, and use, and/or re-export to
+another country, of encryption software. BEFORE using any encryption software,
+please check the country's laws, regulations and policies concerning the import,
+possession, or use, and re-export of encryption software, to see if this is
+permitted.
