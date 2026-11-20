@@ -99,7 +99,7 @@ Please use the following citation:
 ## Contributing
 
 Do you miss a feature? We very much appreciate your contribution! Please open an issue before sending a pull request.
-INCEpTION uses the [DKPro Contribution Guidelines](https://dkpro.github.io/contributing).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute.
 
 1. Create a fork
 2. Create your feature branch: `git checkout -b my-feature`
