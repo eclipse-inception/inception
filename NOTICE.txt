@@ -11,5 +11,4 @@ Copyright 2012-2016 Ubiquitous Knowledge Processing (UKP) Lab and FG Language Te
                     Technische Universität Darmstadt
                     (in the context of the WebAnno project(s))
 
-For individual contributions, please check the CONTRIBITORS.txt file as well as the history
-contained in this repository.
+For individual contributions, please check the history contained in this repository.
