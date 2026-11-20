@@ -52,7 +52,6 @@ public class IriConstants
     public static final String PREFIX_QLEVER = "http://qlever.cs.uni-freiburg.de/builtin-functions/";
     public static final String PREFIX_MARKLOGIC = "http://marklogic.com/cts#";
 
-    public static final String UKP_WIKIDATA_SPARQL_ENDPOINT = "http://knowledgebase.ukp.informatik.tu-darmstadt.de:8890/sparql";
     public static final Set<String> IMPLICIT_NAMESPACES = Set.of(RDF.NAMESPACE, RDFS.NAMESPACE,
             XSD.NAMESPACE, OWL.NAMESPACE, INCEPTION_SCHEMA_NAMESPACE);
 
