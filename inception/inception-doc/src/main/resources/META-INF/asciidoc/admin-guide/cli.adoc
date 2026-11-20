@@ -35,7 +35,7 @@ For example:
 
 [source,shell,subs="+attributes"]
 ----
-$ docker run -e APP_ARGS="--help" ghcr.io/inception-project/inception:{revnumber}
+$ docker run -e APP_ARGS="--help" ghcr.io/eclipse-inception/inception:{revnumber}
 ----
 
 Note that if you usually pass other parameters startup, make sure you also pass them when you want to use the CLI - in particular the `inception.home` system property, database-related properties/variables or volume mounts.
