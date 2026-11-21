@@ -76,6 +76,12 @@
       documentation. Not project.name, which each module overrides with its own.
     -->
     <product.name>INCEpTION</product.name>
+    <!--
+      The formal name of the product, used at its first prominent mention, e.g. in the titles of
+      the guides. Eclipse Foundation branding rules ask for the formal name there and allow the
+      short name (product.name) elsewhere.
+    -->
+    <product.formal.name>Eclipse INCEpTION</product.formal.name>
 
     <build-ant-version>1.10.18</build-ant-version>
     <build-groovy-version>5.1.3</build-groovy-version>

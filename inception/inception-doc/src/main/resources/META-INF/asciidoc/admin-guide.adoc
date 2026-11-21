@@ -17,8 +17,8 @@
 :include-dir: admin-guide/
 :imagesdir: admin-guide/
 
-= {product-name} Administrator Guide
-The {product-name} Team
+= {product-formal-name} Administrator Guide
+Contributors to {product-formal-name}
 
 This guide covers handling {product-name} from an administrator's perspective.
 

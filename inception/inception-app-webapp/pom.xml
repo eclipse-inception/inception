@@ -1097,6 +1097,7 @@
               <revnumber>${project.version}</revnumber>
               <min-java-version>${maven.compiler.release}</min-java-version>
               <product-name>${product.name}</product-name>
+              <product-formal-name>${product.formal.name}</product-formal-name>
               <product-website-url>${project.organization.url}</product-website-url>
               <!-- Set by the parent POM, from the reproducible build timestamp if pinned -->
               <copyright-year>${dkpro.copyright.year}</copyright-year>

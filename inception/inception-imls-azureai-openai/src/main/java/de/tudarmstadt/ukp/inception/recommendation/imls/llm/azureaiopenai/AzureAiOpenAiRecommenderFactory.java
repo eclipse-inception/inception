@@ -64,7 +64,7 @@ public class AzureAiOpenAiRecommenderFactory
     @Override
     public String getName()
     {
-        return "Azure AI OpenAI Recommender";
+        return "LLM via Azure OpenAI";
     }
 
     @Override

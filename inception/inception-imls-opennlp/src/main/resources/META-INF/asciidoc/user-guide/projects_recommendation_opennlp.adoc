@@ -14,19 +14,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-== Sentence Classifier (OpenNLP Document Categorizer)
+== Sentence Classifier (Apache OpenNLP Document Categorizer)
 
 This recommender is available for sentence-level annotation layers where cross-sentence annotations
 are disabled. It learns labels using a sentence-level bag-of-word model using the OpenNLP Document Categorizer. 
 
-== Token Sequence Classifier (OpenNLP POS)
+== Token Sequence Classifier (Apache OpenNLP POS)
 
 This recommender uses the OpenNLP Part-of-Speech Tagger to learn a token-level sequence tagging
 model for layers that anchor to single tokens. The model will attempt to assign a label to every
 single token. The model considers all sentences for training in which at least a one annotation
 with a feature value exists. 
 
-== Multi-Token Sequence Classifier (OpenNLP NER)
+== Multi-Token Sequence Classifier (Apache OpenNLP NER)
 
 This recommender uses the OpenNLP Name Finder to learn a sequence tagging model for multi-token
 annotations. The model generates a BIO-encoded representation of the annotations in the sentence.
