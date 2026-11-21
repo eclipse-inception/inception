@@ -15,13 +15,14 @@
 // limitations under the License.
 
 [[sect_imls_azureai_openai]]
-== 🧪 AzureAI OpenAI
+== 🧪 LLM via Azure OpenAI
 
 ====
 CAUTION: Experimental feature. To use this functionality, you need to enable it first by adding `recommender.azureai-openai.enabled=true` to the `settings.properties` file (see the <<admin-guide.adoc#sect_settings, Admin Guide>>).
 ====
 
-This recommender allows to obtain annotation suggestions using large language models (LLMs) supported by link:https://learn.microsoft.com/en-us/azure/ai-services/openai/overview[Azure AI OpenAI]. In order to use it, you need an Azure AI account, deploy an OpenAI model there and obtain an API key for accessing that deployment. 
+This recommender allows to obtain annotation suggestions using large language models (LLMs) supported by link:https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/models-sold-directly-by-azure[Azure OpenAI]
+in Microsoft Foundry. In order to use it, you need an Azure account, deploy an OpenAI model there and obtain an API key for accessing that deployment. 
 
 For further information on how to configure the modes of the recommender, please refer to <<sect_imls_ollama>>.
 

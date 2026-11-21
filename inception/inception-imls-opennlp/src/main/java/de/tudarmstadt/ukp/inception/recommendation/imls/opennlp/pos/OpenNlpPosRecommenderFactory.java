@@ -56,7 +56,7 @@ public class OpenNlpPosRecommenderFactory
     @Override
     public String getName()
     {
-        return "Token Sequence Classifier (OpenNLP POS)";
+        return "Token Sequence Classifier (Apache OpenNLP POS)";
     }
 
     @Override

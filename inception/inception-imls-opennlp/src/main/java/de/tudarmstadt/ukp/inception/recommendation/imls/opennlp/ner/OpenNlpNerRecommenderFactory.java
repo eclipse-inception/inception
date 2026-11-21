@@ -61,7 +61,7 @@ public class OpenNlpNerRecommenderFactory
     @Override
     public String getName()
     {
-        return "Multi-Token Sequence Classifier (OpenNLP NER)";
+        return "Multi-Token Sequence Classifier (Apache OpenNLP NER)";
     }
 
     @Override

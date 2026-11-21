@@ -9,7 +9,7 @@
   <p>
     <a href="https://inception-project.github.io/"><strong>Homepage</strong></a> ·
     <a href="https://inception-project.github.io/documentation/latest/user-guide"><strong>Usage</strong></a> ·
-    <a href="https://morbo.ukp.informatik.tu-darmstadt.de/demo"><strong>Demo</strong></a>  ·  
+    <a href="https://morbo.ukp.informatik.tu-darmstadt.de/demo" title="Demo server operated by TU Darmstadt"><strong>Demo</strong></a> (TU Darmstadt) ·
     <a href="https://inception-project.github.io/documentation/latest/user-guide#sect_faq"><strong>FAQ</strong></a>
   </p>
   <p>
@@ -59,7 +59,8 @@ The best way to get started is to
 watch [our tutorial videos](https://www.youtube.com/watch?v=Ely8eBKqiSI&list=PL5Hz5pttaj96SlXHGRZf8KzlYvpVHIoL-),
 working through
 the [Getting Started Guide](https://inception-project.github.io/documentation/latest/user-guide#sect_core_funct) and
-playing with INCEpTION on the [demo server](https://morbo.ukp.informatik.tu-darmstadt.de/demo).
+playing with INCEpTION on the [demo server](https://morbo.ukp.informatik.tu-darmstadt.de/demo)
+operated by TU Darmstadt.
 
 ## Documentation
 

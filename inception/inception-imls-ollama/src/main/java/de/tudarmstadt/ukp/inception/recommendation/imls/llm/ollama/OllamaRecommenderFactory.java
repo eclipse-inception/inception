@@ -64,7 +64,7 @@ public class OllamaRecommenderFactory
     @Override
     public String getName()
     {
-        return "Ollama Recommender";
+        return "LLM via Ollama";
     }
 
     @Override

@@ -79,7 +79,7 @@ Do this when you want to do a feature release.
 
 [arabic]
 . Sign the standalone jar using `gpg --detach-sign --armor`. This creates the signature in a separate file. Attach both files to
-the link:https://github.com/inception-project/inception/releases[GitHub release] that
+the link:https://github.com/eclipse-inception/inception/releases[GitHub release] that
 you are currently preparing. GitHub automatically creates a stub release for every tag
 and the Maven release process has automatically created such a tag for your release. The issues
 that were solved with this release can be found by filtering issues by milestones.
@@ -96,7 +96,7 @@ of the running inception instance will show the release version.
 
 == Updating documentation
 
-Checkout or go into the `inception-project.github.io` repository and
+Checkout or go into the `eclipse-inception.github.io` repository and
 create a new branch. In order to publish the documentation for this new
 release, copy the data from the INCEpTION repository that was just
 released under

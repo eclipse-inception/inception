@@ -58,7 +58,7 @@ public class OpenNlpDoccatRecommenderFactory
     @Override
     public String getName()
     {
-        return "Sentence Classifier (OpenNLP Document Categorizer)";
+        return "Sentence Classifier (Apache OpenNLP Document Categorizer)";
     }
 
     @Override
