@@ -182,7 +182,7 @@ This migration can be performed by invoking {product-name} from the command line
 
 [source,shell,indent=0,subs="+attributes"]
 ----
-java -jar inception-app-webapp-{revnumber}-standalone.jar users migrate-preauthenticated-users --dry-run
+java -jar eclipse-inception-incubation-{revnumber}-standalone.jar users migrate-preauthenticated-users --dry-run
 ----
 
 This command only works if {product-name} is configured for external pre-authentication. If you keep

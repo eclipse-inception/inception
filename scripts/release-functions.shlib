@@ -143,7 +143,8 @@ warn_if_checkout_published() {
 
 # Native installers are named after the base version *without* any beta
 # suffix, e.g. the inception-41.0-beta-2 release contains
-# INCEpTION-41.0-x86_64.msi, while the JAR keeps the full version.
+# eclipse-inception-incubation-41.0-x86_64.msi, while the JAR keeps the full
+# version.
 base_version_for() { printf '%s\n' "${1%%-beta*}"; }
 
 is_beta_version() { [ "$(base_version_for "$1")" != "$1" ]; }
@@ -178,25 +179,25 @@ expected_artifacts() {
   local base; base="$(base_version_for "$version")"
 
   printf 'macOS DMG (Apple Silicon)|%s|%s\n' \
-    "$MACOS_TARGET/jpackage-aarch64/INCEpTION-$base-aarch64.dmg" \
-    "INCEpTION-$base-aarch64.dmg"
+    "$MACOS_TARGET/jpackage-aarch64/eclipse-inception-incubation-$base-aarch64.dmg" \
+    "eclipse-inception-incubation-$base-aarch64.dmg"
   printf 'macOS DMG (Intel)|%s|%s\n' \
-    "$MACOS_TARGET/jpackage-x86_64/INCEpTION-$base-x86_64.dmg" \
-    "INCEpTION-$base-x86_64.dmg"
+    "$MACOS_TARGET/jpackage-x86_64/eclipse-inception-incubation-$base-x86_64.dmg" \
+    "eclipse-inception-incubation-$base-x86_64.dmg"
   printf 'Windows MSI|%s|%s\n' \
-    "$WIN_TARGET/jpackage-x86_64/INCEpTION-$base-x86_64.msi" \
-    "INCEpTION-$base-x86_64.msi"
+    "$WIN_TARGET/jpackage-x86_64/eclipse-inception-incubation-$base-x86_64.msi" \
+    "eclipse-inception-incubation-$base-x86_64.msi"
   printf 'Executable JAR|%s|%s\n' \
-    "$WEBAPP_TARGET/inception-app-webapp-$version-standalone.jar" \
-    "inception-app-webapp-$version-standalone.jar"
+    "$WEBAPP_TARGET/eclipse-inception-incubation-$version-standalone.jar" \
+    "eclipse-inception-incubation-$version-standalone.jar"
   printf 'JAR signature|%s|%s\n' \
-    "$WEBAPP_TARGET/inception-app-webapp-$version-standalone.jar.asc" \
-    "inception-app-webapp-$version-standalone.jar.asc"
+    "$WEBAPP_TARGET/eclipse-inception-incubation-$version-standalone.jar.asc" \
+    "eclipse-inception-incubation-$version-standalone.jar.asc"
   # Written by the legal documentation generator; the same SBOM is inside the
   # jar as META-INF/sbom.spdx.json.
   printf 'SBOM (SPDX)|%s|%s\n' \
-    "$WEBAPP_TARGET/inception-app-webapp-$version-standalone.spdx.json" \
-    "inception-app-webapp-$version-standalone.spdx.json"
+    "$WEBAPP_TARGET/eclipse-inception-incubation-$version-standalone.spdx.json" \
+    "eclipse-inception-incubation-$version-standalone.spdx.json"
 
   # The generated example scripts, so users can grab a compose file pinned to
   # this release instead of copying one out of the documentation. Note releases

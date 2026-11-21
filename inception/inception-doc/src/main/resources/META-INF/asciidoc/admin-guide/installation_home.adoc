@@ -25,7 +25,7 @@ home folder using the system property `inception.home`.
 .Passing a custom home folder location to INCEpTION when starting from the command line
 [source,bash,subs="+attributes"]
 ----
-$ java -Dinception.home="/srv/inception" -jar inception-app-webapp-{revnumber}-standalone.jar
+$ java -Dinception.home="/srv/inception" -jar eclipse-inception-incubation-{revnumber}-standalone.jar
 ----
 
 If you want to use a `settings.properties` file, you need to place it into the {product-name} home folder yourself. 
