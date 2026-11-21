@@ -42,11 +42,11 @@ INCEpTION works best with Chrome and Safari.
 
 -- The INCEpTION developer team
 
-[1] https://github.com/inception-project/inception/issues?q=milestone%3A{{VERSION}}
-[2] https://github.com/inception-project/inception/issues
-[3] https://inception-project.github.io/downloads/
-[4] https://inception-project.github.io/releases/{{VERSION}}/docs/admin-guide.html#_backup_your_data
-[5] https://inception-project.github.io/publications/
-[6] https://inception-project.github.io/releases/{{VERSION}}/docs/admin-guide.html#_running_the_behind_a_reverse_proxy_jar
-[7] https://inception-project.github.io/releases/{{VERSION}}/docs/admin-guide.html#_upgrade_notes
-[8] https://github.com/inception-project/inception/pkgs/container/inception
+[1] https://github.com/eclipse-inception/inception/issues?q=milestone%3A{{VERSION}}
+[2] https://github.com/eclipse-inception/inception/issues
+[3] https://eclipse-inception.github.io/downloads/
+[4] https://eclipse-inception.github.io/releases/{{VERSION}}/docs/admin-guide.html#sect_system_level_backup
+[5] https://eclipse-inception.github.io/publications/
+[6] https://eclipse-inception.github.io/releases/{{VERSION}}/docs/admin-guide.html#sect_reverse_proxy
+[7] https://eclipse-inception.github.io/releases/{{VERSION}}/docs/admin-guide.html#_upgrade_notes
+[8] https://github.com/orgs/eclipse-inception/packages/container/package/inception

@@ -61,10 +61,17 @@ ENTITLEMENTS="${11}"
 # The name shown in the Applications folder, the Dock and the menu bar. The DMG
 # itself gets a download name without spaces.
 APP_NAME="Eclipse INCEpTION"
+# Same wording as the About page; the end year is the year of the build.
+COPYRIGHT="Copyright (c) 2012, $(date +%Y) Contributors to the Eclipse Foundation"
 
 APP_IMAGE="$DEST_DIR/$APP_NAME.app"
 DMG="$DEST_DIR/eclipse-inception-incubation-$APP_VERSION-$TARGET_ARCH.dmg"
 LEGAL_DIR="$DEST_DIR/legal"
+
+# Background and layout of the window that opens when the DMG is mounted. jpackage
+# picks them up from its resource dir under names that start with the app name.
+DMG_SOURCES="$(cd "$(dirname "$0")/../dmg" && pwd)"
+RESOURCE_DIR="$DEST_DIR/dmg-resources"
 
 # A new application image, or none if this architecture is skipped below: an
 # image left from an earlier build must not be analysed as if it were current.
@@ -134,6 +141,7 @@ JLINK_OPTIONS="$JLINK_OPTIONS --release-info \"$DEST_DIR/jdk-release\""
 jpackage_app() {
   "$JPACKAGE" "$@" \
     --name "$APP_NAME" \
+    --copyright "$COPYRIGHT" \
     --mac-package-identifier org.eclipse.inception \
     --app-version "$APP_VERSION" \
     --input "$INPUT_DIR" \
@@ -170,6 +178,11 @@ echo "Building ${TARGET_ARCH} DMG via $JPACKAGE..."
 # A DMG left from an earlier build would be signed a second time below
 rm -f "$DEST_DIR"/*.dmg
 
+rm -rf "$RESOURCE_DIR"
+mkdir -p "$RESOURCE_DIR"
+cp "$DMG_SOURCES/background.tiff" "$RESOURCE_DIR/$APP_NAME-background.tiff"
+cp "$DMG_SOURCES/dmg-setup.scpt" "$RESOURCE_DIR/$APP_NAME-dmg-setup.scpt"
+
 # Built again rather than from the application image of the first step: an
 # application image that is signed before it is packed (jpackage --app-image
 # with an unsigned image leaves it ad-hoc signed only) lacks app/.package, the
@@ -178,6 +191,7 @@ rm -f "$DEST_DIR"/*.dmg
 jpackage_app \
   --type dmg \
   --dest "$DEST_DIR" \
+  --resource-dir "$RESOURCE_DIR" \
   --mac-dmg-content "$LEGAL_DIR" \
   --app-content "$LEGAL_DIR" \
   --mac-sign \

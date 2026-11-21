@@ -94,7 +94,7 @@ sidebar; click the arrow at the top to close it again.
 
 Beyond the *Entity annotation* template, additional example projects covering
 other annotation tasks are available on our
-https://inception-project.github.io/example-projects/[example projects page^].
+https://eclipse-inception.github.io/example-projects/[example projects page^].
 
 To try one of them:
 

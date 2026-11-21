@@ -29,7 +29,7 @@ code for this example can be found in the **inception-example-imls-data-majority
 == Setting up the environment
 
 To get started, check out the most recent source code of {product-name} from
-https://github.com/inception-project/inception[Github] and import it as a Maven project in the IDE
+https://github.com/eclipse-inception/inception[Github] and import it as a Maven project in the IDE
 of your choice. Add a new module to the INCEpTION project itself, we will call it
 **inception-example-imls-data-majority**.
 
@@ -99,7 +99,7 @@ methods.
 
 === RecommenderContext
 
-Instances of https://github.com/inception-project/inception/blob/master/inception-recommendation-api/src/main/java/de/tudarmstadt/ukp/inception/recommendation/api/recommender/RecommenderContext.java[RecommendationEngine] itself are stateless. If data like trained models need to be
+Instances of https://github.com/eclipse-inception/inception/blob/main/inception/inception-recommendation-api/src/main/java/de/tudarmstadt/ukp/inception/recommendation/api/recommender/RecommenderContext.java[RecommendationEngine] itself are stateless. If data like trained models need to be
 saved and loaded, it can be saved in the `RecommenderContext` that is given in the interface methods.
 When needed again, e.g. for prediction, it then can be loaded again. The `Key` class is used in order
 to ensure type safety.

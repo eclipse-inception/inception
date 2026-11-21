@@ -11,7 +11,7 @@ info:
     the UIMA Java SDK, the other one dkpro-cassis (Python).
   version: "1.0.0"
   title: "INCEpTION external recommender"
-  termsOfService: "https://inception-project.github.io"
+  termsOfService: "https://eclipse-inception.github.io"
   contact:
     email: "inception-users@googlegroups.com"
   license:

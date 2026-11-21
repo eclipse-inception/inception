@@ -3,6 +3,15 @@
   "version": "${semver}",
   "author": "INCEpTION Team",
   "license": "Apache-2.0",
+  "private": true,
+  "homepage": "https://github.com/eclipse-inception/inception#readme",
+  "bugs": {
+    "url": "https://github.com/eclipse-inception/inception/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eclipse-inception/inception.git"
+  },
   "scripts": {
     "build": "esbuild src/main.ts --target=es6 --bundle --sourcemap --global-name=ExternalEditor --outfile=../../../target/js/de/tudarmstadt/ukp/inception/externaleditor/resources/ExternalEditor.js",
     "build-minified": "esbuild src/main.ts --minify --target=es6 --bundle --sourcemap --global-name=ExternalEditor --outfile=../../../target/js/de/tudarmstadt/ukp/inception/externaleditor/resources/ExternalEditor.min.js",

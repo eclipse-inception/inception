@@ -26,7 +26,7 @@ There is also the option to place a file called `bootstrap.css` into the applica
 file is present, the built-in customized Bootstrap styles of {product-name} are not loaded and this
 file is loaded instead. For the application to work, the custom `bootstrap.css` must be fully 
 compatible with the built-in styles. To create such a file, obtain the `scss` files from the
-link:https://github.com/inception-project/inception/tree/main/inception/inception-bootstrap/src/main/ts/bootstrap[inception-bootstrap] module for the {product-name} version that you are using, adjust
+link:https://github.com/eclipse-inception/inception/tree/main/inception/inception-support-bootstrap/src/main/ts/bootstrap[inception-support-bootstrap] module for the {product-name} version that you are using, adjust
 them, and use SCSS to compile them from the root `bootstrap.scss` file into a customized
 `bootstrap.css` file. 
 

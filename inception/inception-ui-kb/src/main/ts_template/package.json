@@ -3,8 +3,15 @@
   "version": "${semver}",
   "author": "INCEpTION Team",
   "license": "Apache-2.0",
-  "description": "INCEpTION Knowledge Base UI",
-  "keywords": [],
+  "private": true,
+  "homepage": "https://github.com/eclipse-inception/inception#readme",
+  "bugs": {
+    "url": "https://github.com/eclipse-inception/inception/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eclipse-inception/inception.git"
+  },
   "scripts": {
     "build": "sass --load-path=node_modules scss/inception-ui-kbp.scss ../../../target/js/de/tudarmstadt/ukp/inception/ui/kb/sass/inception-ui-kbp.css",
     "build:minified": "sass --load-path=node_modules scss/inception-ui-kbp.scss ../../../target/js/de/tudarmstadt/ukp/inception/ui/kb/sass/inception-ui-kbp.min.css --style compressed",
@@ -12,7 +19,6 @@
     "format": "prettier --write \"**/*.{js,ts,svelte,css,scss,json}\"",
     "format:check": "prettier --check \"**/*.{js,ts,svelte,css,scss,json}\""
   },
-  "external": {},
   "devDependencies": {
     "@inception-project/inception-support-bootstrap": "file:../../../../inception-support-bootstrap/src/main/ts",
     "bootstrap": "${bootstrap.version}",

@@ -52,6 +52,8 @@ UPGRADE_UUID="E40AC09B-E14F-3283-8444-9CB0B3E0CDCD"
 # The name shown in the Start Menu, the installed programs and the default
 # installation folder. The MSI itself gets a download name without spaces.
 APP_NAME="Eclipse INCEpTION"
+# Same wording as the About page; the end year is the year of the build.
+COPYRIGHT="Copyright (c) 2012, $(date +%Y) Contributors to the Eclipse Foundation"
 
 STEP="$1"
 TARGET_ARCH="$2"
@@ -131,6 +133,8 @@ JLINK_OPTIONS="$JLINK_OPTIONS --release-info \"$DEST_DIR/jdk-release\""
 jpackage_app() {
   "$JPACKAGE" "$@" \
     --name "$APP_NAME" \
+    --copyright "$COPYRIGHT" \
+    --vendor "Eclipse Foundation" \
     --app-version "$APP_VERSION" \
     --input "$INPUT_DIR" \
     --main-jar "$MAIN_JAR" \
@@ -174,6 +178,7 @@ cp -R "$LEGAL_DIR" "$APP_IMAGE/legal"
 "$JPACKAGE" \
   --type msi \
   --name "$APP_NAME" \
+  --vendor "Eclipse Foundation" \
   --win-upgrade-uuid "$UPGRADE_UUID" \
   --app-version "$APP_VERSION" \
   --app-image "$APP_IMAGE" \

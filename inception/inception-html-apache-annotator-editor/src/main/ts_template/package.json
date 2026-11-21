@@ -5,9 +5,9 @@
   "author": "INCEpTION Team",
   "license": "Apache-2.0",
   "private": true,
-  "homepage": "https://github.com/inception-project/inception#readme",
+  "homepage": "https://github.com/eclipse-inception/inception#readme",
   "bugs": {
-    "url": "https://github.com/inception-project/issues"
+    "url": "https://github.com/eclipse-inception/inception/issues"
   },
   "scripts": {
     "build": "node build.mjs",
@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/inception-project/inception.git"
+    "url": "git+https://github.com/eclipse-inception/inception.git"
   },
   "dependencies": {
     "@inception-project/inception-js-api": "file:../../../../inception-js-api/src/main/ts",
