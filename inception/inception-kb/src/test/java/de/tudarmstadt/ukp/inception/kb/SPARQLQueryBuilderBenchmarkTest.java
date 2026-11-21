@@ -23,7 +23,6 @@ import static de.tudarmstadt.ukp.inception.kb.http.PerThreadSslCheckingHttpClien
 import static de.tudarmstadt.ukp.inception.kb.http.PerThreadSslCheckingHttpClientUtils.suspendSslVerification;
 import static de.tudarmstadt.ukp.inception.kb.util.TestFixtures.assumeEndpointIsAvailable;
 import static org.junit.jupiter.api.Assumptions.abort;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -205,8 +204,9 @@ public class SPARQLQueryBuilderBenchmarkTest
     {
         var kb = aConfig.kb;
 
-        assumeTrue(kb.getType() != REMOTE || TestFixtures.isReachable(aConfig.url),
-                "Remote repository at [" + aConfig.url + "] is not reachable");
+        if (kb.getType() == REMOTE) {
+            assumeEndpointIsAvailable(aConfig.url);
+        }
 
         var repoProps = new RepositoryPropertiesImpl();
         repoProps.setPath(repoPath);

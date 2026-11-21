@@ -23,7 +23,6 @@ import static de.tudarmstadt.ukp.inception.kb.http.PerThreadSslCheckingHttpClien
 import static de.tudarmstadt.ukp.inception.kb.http.PerThreadSslCheckingHttpClientUtils.suspendSslVerification;
 import static de.tudarmstadt.ukp.inception.kb.util.TestFixtures.assumeEndpointIsAvailable;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD;
 
 import java.io.File;
@@ -103,10 +102,9 @@ public class KnowledgeBaseServiceRemoteTest
 
     public void setUp(TestConfiguration aSutConfig) throws Exception
     {
-        assumeTrue(
-                aSutConfig.getKnowledgeBase().getType() != REMOTE
-                        || TestFixtures.isReachable(aSutConfig.getDataUrl()),
-                "Remote repository at [" + aSutConfig.getDataUrl() + "] is not reachable");
+        if (aSutConfig.getKnowledgeBase().getType() == REMOTE) {
+            assumeEndpointIsAvailable(aSutConfig.getDataUrl());
+        }
 
         var kb = aSutConfig.getKnowledgeBase();
 

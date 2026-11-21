@@ -23,6 +23,7 @@ import static de.tudarmstadt.ukp.inception.kb.IriConstants.INCEPTION_NAMESPACE;
 import static de.tudarmstadt.ukp.inception.kb.http.PerThreadSslCheckingHttpClientUtils.newPerThreadSslCheckingHttpClient;
 import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_MOVED_TEMP;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.BufferedInputStream;
@@ -74,6 +75,12 @@ import de.tudarmstadt.ukp.inception.kb.yaml.KnowledgeBaseProfile;
 
 public class TestFixtures
 {
+    /**
+     * System property which, when set to {@code true}, makes tests against unreachable remote
+     * endpoints fail instead of being skipped.
+     */
+    public static final String PROP_REQUIRE_REACHABLE = "inception.kb.test.require-reachable";
+
     private static final int MAX_REDIRECTS = 10;
 
     private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -148,8 +155,7 @@ public class TestFixtures
             return repo;
         }
         case REMOTE: {
-            assumeTrue(isReachable(profile.getAccess().getAccessUrl()), "Remote repository at ["
-                    + profile.getAccess().getAccessUrl() + "] is not reachable");
+            assumeEndpointIsAvailable(profile.getAccess().getAccessUrl());
 
             var repo = new SPARQLRepository(profile.getAccess().getAccessUrl());
             // Public endpoints such as AGROVOC rate-limit, so back off and retry instead of failing
@@ -286,15 +292,28 @@ public class TestFixtures
 
     /**
      * Tries to connect to the given endpoint url and assumes that the connection is successful with
-     * {@link org.junit.jupiter.api.Assumptions#assumeTrue(boolean, String)}
-     * 
+     * {@link org.junit.jupiter.api.Assumptions#assumeTrue(boolean, String)}, so that a test against
+     * an unreachable endpoint is skipped.
+     * <p>
+     * If the system property {@value #PROP_REQUIRE_REACHABLE} is set to {@code true}, an
+     * unreachable endpoint fails the test instead. Use this when the point of the run is to check
+     * that the endpoints still work, e.g. when checking the knowledge base profiles for outdated
+     * endpoints.
+     *
      * @param aEndpointURL
      *            the url to check
      */
     public static void assumeEndpointIsAvailable(String aEndpointURL)
     {
-        assumeTrue(isReachable(aEndpointURL),
-                "Remote repository at [" + aEndpointURL + "] is not reachable");
+        var reachable = isReachable(aEndpointURL);
+        var message = "Remote repository at [" + aEndpointURL + "] is not reachable";
+
+        if (Boolean.getBoolean(PROP_REQUIRE_REACHABLE)) {
+            assertTrue(reachable, message);
+        }
+        else {
+            assumeTrue(reachable, message);
+        }
     }
 
     @SuppressWarnings("resource")
