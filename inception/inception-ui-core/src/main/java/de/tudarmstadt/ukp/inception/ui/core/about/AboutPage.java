@@ -17,6 +17,8 @@
  */
 package de.tudarmstadt.ukp.inception.ui.core.about;
 
+import static de.tudarmstadt.ukp.inception.support.about.ApplicationInformation.LOGO;
+import static de.tudarmstadt.ukp.inception.support.about.ApplicationInformation.LOGO_2X;
 import static de.tudarmstadt.ukp.inception.support.about.ApplicationInformation.loadJsonDependencies;
 import static java.lang.String.CASE_INSENSITIVE_ORDER;
 import static java.lang.String.join;
@@ -29,11 +31,14 @@ import static org.apache.wicket.RuntimeConfigurationType.DEVELOPMENT;
 import java.time.Year;
 
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.request.resource.PackageResourceReference;
 import org.wicketstuff.annotation.mount.MountPath;
 
 import de.tudarmstadt.ukp.clarin.webanno.ui.core.page.ApplicationPageBase;
+import de.tudarmstadt.ukp.inception.support.about.ApplicationInformation;
 import de.tudarmstadt.ukp.inception.support.about.Dependency;
 
 @MountPath("/about")
@@ -94,6 +99,12 @@ public class AboutPage
             }
             buf.append("\n");
         }
+
+        var logo = new Image("logo",
+                new PackageResourceReference(ApplicationInformation.class, LOGO),
+                new PackageResourceReference(ApplicationInformation.class, LOGO_2X));
+        logo.setXValues("1x", "2x");
+        add(logo);
 
         add(new Label("dependencies", buf));
         var copyright = new Label("copyright", new StringResourceModel("copyright")

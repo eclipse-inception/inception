@@ -42,6 +42,13 @@ public class ApplicationInformation
 {
     private static final Logger LOG = LoggerFactory.getLogger(ApplicationInformation.class);
 
+    /**
+     * Logo with the Eclipse and incubation marks, shown on the startup splash screen and the About
+     * page. Package resources next to this class.
+     */
+    public static final String LOGO = "splash.png";
+    public static final String LOGO_2X = "splash@2x.png";
+
     private static final String APPLICATION_MARKER = "META-INF/version.properties";
     private static final String MAVEN_DEPENDENCIES = "DEPENDENCIES.json";
 

@@ -86,8 +86,8 @@ mvn -pl inception/inception-dist-macos -am package -Pdist-macos \
 
 Outputs:
 
-- `target/jpackage-aarch64/INCEpTION-<version>-aarch64.dmg`
-- `target/jpackage-x86_64/INCEpTION-<version>-x86_64.dmg`
+- `target/jpackage-aarch64/eclipse-inception-incubation-<version>-aarch64.dmg`
+- `target/jpackage-x86_64/eclipse-inception-incubation-<version>-x86_64.dmg`
 
 (only the arches with a configured JDK are produced)
 

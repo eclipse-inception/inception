@@ -19,7 +19,7 @@
 # Builds a per-arch Windows MSI via jpackage, in two steps so that the legal
 # documentation can be generated from the application in between:
 #
-#   app-image: builds the application image INCEpTION in the destination dir,
+#   app-image: builds the application image in the destination dir,
 #              for the legal documentation to be generated from
 #   msi:       adds the legal documentation from <destination dir>/legal to
 #              that application image and packs it into the MSI, so that it
@@ -42,6 +42,17 @@
 
 set -eu
 
+# The upgrade code lets Windows Installer replace an older version instead of
+# installing beside it. jpackage derives it from the vendor and the name
+# unless it is given, so it is pinned to the value every release up to 42.x
+# shipped with (derived from vendor "Unknown" and name "INCEpTION"). Changing
+# the name or setting a vendor then leaves upgrades working. Never change it.
+UPGRADE_UUID="E40AC09B-E14F-3283-8444-9CB0B3E0CDCD"
+
+# The name shown in the Start Menu, the installed programs and the default
+# installation folder. The MSI itself gets a download name without spaces.
+APP_NAME="Eclipse INCEpTION"
+
 STEP="$1"
 TARGET_ARCH="$2"
 JDK_HOME="$3"
@@ -52,7 +63,8 @@ MAIN_CLASS="$7"
 APP_VERSION="$8"
 ICON="$9"
 
-APP_IMAGE="$DEST_DIR/INCEpTION"
+APP_IMAGE="$DEST_DIR/$APP_NAME"
+MSI="$DEST_DIR/eclipse-inception-incubation-$APP_VERSION-$TARGET_ARCH.msi"
 LEGAL_DIR="$DEST_DIR/legal"
 
 # A new application image, or none if this architecture is skipped below: an
@@ -118,7 +130,7 @@ JLINK_OPTIONS="$JLINK_OPTIONS --release-info \"$DEST_DIR/jdk-release\""
 
 jpackage_app() {
   "$JPACKAGE" "$@" \
-    --name INCEpTION \
+    --name "$APP_NAME" \
     --app-version "$APP_VERSION" \
     --input "$INPUT_DIR" \
     --main-jar "$MAIN_JAR" \
@@ -161,7 +173,8 @@ cp -R "$LEGAL_DIR" "$APP_IMAGE/legal"
 
 "$JPACKAGE" \
   --type msi \
-  --name INCEpTION \
+  --name "$APP_NAME" \
+  --win-upgrade-uuid "$UPGRADE_UUID" \
   --app-version "$APP_VERSION" \
   --app-image "$APP_IMAGE" \
   --dest "$DEST_DIR" \
@@ -169,13 +182,10 @@ cp -R "$LEGAL_DIR" "$APP_IMAGE/legal"
   --win-menu \
   --win-shortcut
 
-# Tag the produced MSI with the target arch so multiple builds can coexist.
+# jpackage names the MSI after the application and the version only; the
+# download name adds the incubation status and the architecture. The MSIs were
+# deleted above, so the one found here is the one just built.
 for f in "$DEST_DIR"/*.msi; do
-  [ -e "$f" ] || continue
-  base=$(basename "$f" .msi)
-  case "$base" in
-    *-"$TARGET_ARCH") tagged="$f" ;;
-    *) tagged="$DEST_DIR/$base-$TARGET_ARCH.msi"; mv "$f" "$tagged" ;;
-  esac
-  echo "Wrote $tagged"
+  mv "$f" "$MSI"
 done
+echo "Wrote $MSI"
