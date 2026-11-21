@@ -220,7 +220,7 @@ jobs:
       uses: actions/upload-artifact@v7.0.2
       with:
         name: build-artifacts
-        path: inception/inception-app-webapp/target/inception-app-webapp-*-standalone.jar
+        path: inception/inception-app-webapp/target/eclipse-inception-incubation-*-standalone.jar
 
     - name: Capture RAT reports
       if: failure()

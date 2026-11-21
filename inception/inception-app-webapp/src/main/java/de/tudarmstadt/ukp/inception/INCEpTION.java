@@ -175,7 +175,7 @@ public class INCEpTION
         }
         else {
             builder.web(SERVLET);
-            splash = LoadingSplashScreen.setupScreen("INCEpTION");
+            splash = LoadingSplashScreen.setupScreen("Eclipse INCEpTION");
             builder.headless(splash.isEmpty());
             builder.profiles(DeploymentModeService.PROFILE_APPLICATION_MODE);
 

@@ -27,7 +27,7 @@ Details may vary on other OSes and Linux distributions.
 To set it up as a service, you can do the following steps.
 For the following example, we assume that you install {product-name} in `/srv/inception`:
 
-* Copy the standalone JAR file `inception-app-standalone-{revnumber}.jar` to `/srv/inception/inception.jar`.
+* Copy the standalone JAR file `eclipse-inception-incubation-{revnumber}-standalone.jar` to `/srv/inception/inception.jar`.
 Note the change of the filename to `inception.jar`.
 * Create the file `/srv/inception/inception.conf` with the following content
 +

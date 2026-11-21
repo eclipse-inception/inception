@@ -19,7 +19,7 @@
 # Builds a per-arch macOS DMG via jpackage, in two steps so that the legal
 # documentation can be generated from the finished application in between:
 #
-#   app-image: builds INCEpTION.app in the destination dir, unsigned, for the
+#   app-image: builds the app in the destination dir, unsigned, for the
 #              legal documentation to be generated from
 #   dmg:       builds and signs the app again from the same input and packs it
 #              into the DMG, with the legal documentation from
@@ -58,7 +58,12 @@ APP_VERSION="$9"
 ICON="${10}"
 ENTITLEMENTS="${11}"
 
-APP_IMAGE="$DEST_DIR/INCEpTION.app"
+# The name shown in the Applications folder, the Dock and the menu bar. The DMG
+# itself gets a download name without spaces.
+APP_NAME="Eclipse INCEpTION"
+
+APP_IMAGE="$DEST_DIR/$APP_NAME.app"
+DMG="$DEST_DIR/eclipse-inception-incubation-$APP_VERSION-$TARGET_ARCH.dmg"
 LEGAL_DIR="$DEST_DIR/legal"
 
 # A new application image, or none if this architecture is skipped below: an
@@ -123,9 +128,13 @@ JLINK_OPTIONS="$JLINK_OPTIONS --release-info \"$DEST_DIR/jdk-release\""
 
 # Both steps build the application from the same JDK, input and options, so
 # the image analysed in the app-image step is what the dmg step packs.
+# The bundle identifier is set explicitly: jpackage would otherwise use the
+# package of the main class, which a package rename would change. Releases up
+# to 42.x carry de.tudarmstadt.ukp.inception.
 jpackage_app() {
   "$JPACKAGE" "$@" \
-    --name INCEpTION \
+    --name "$APP_NAME" \
+    --mac-package-identifier org.eclipse.inception \
     --app-version "$APP_VERSION" \
     --input "$INPUT_DIR" \
     --main-jar "$MAIN_JAR" \
@@ -175,17 +184,14 @@ jpackage_app \
   --mac-signing-key-user-name "$SIGNING_IDENTITY" \
   --mac-entitlements "$ENTITLEMENTS"
 
-# Tag the produced DMG with the target arch so multiple builds can coexist,
-# then codesign the DMG itself. jpackage signs the .app inside the DMG but
-# leaves the DMG container unsigned, which Gatekeeper/notarization requires.
+# jpackage names the DMG after the application and the version only; the
+# download name adds the incubation status and the architecture. The DMGs were
+# deleted above, so the one found here is the one just built. Then codesign the
+# DMG itself: jpackage signs the .app inside the DMG but leaves the DMG
+# container unsigned, which Gatekeeper/notarization requires.
 for f in "$DEST_DIR"/*.dmg; do
-  [ -e "$f" ] || continue
-  base=$(basename "$f" .dmg)
-  case "$base" in
-    *-"$TARGET_ARCH") tagged="$f" ;;
-    *) tagged="$DEST_DIR/$base-$TARGET_ARCH.dmg"; mv "$f" "$tagged" ;;
-  esac
-  echo "Signing DMG: $tagged"
-  codesign --sign "$SIGNING_IDENTITY" --timestamp "$tagged"
-  echo "Wrote $tagged"
+  mv "$f" "$DMG"
 done
+echo "Signing DMG: $DMG"
+codesign --sign "$SIGNING_IDENTITY" --timestamp "$DMG"
+echo "Wrote $DMG"

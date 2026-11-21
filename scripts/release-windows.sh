@@ -57,7 +57,7 @@ The MSI is built from the release tag recorded there."
 
 tag="$(tag_for "$version")"
 # The MSI carries the base version, dropping any beta suffix.
-msi="INCEpTION-$(base_version_for "$version")-x86_64.msi"
+msi="eclipse-inception-incubation-$(base_version_for "$version")-x86_64.msi"
 dest="$WIN_TARGET/jpackage-x86_64"
 
 # Latest run of the workflow for this tag, whatever its state.

@@ -191,9 +191,9 @@
                   <includePluginDependencies>true</includePluginDependencies>
                   <arguments>
                     <argument>--artifact</argument>
-                    <argument>${project.build.directory}/jpackage-x86_64/INCEpTION</argument>
+                    <argument>${project.build.directory}/jpackage-x86_64/Eclipse INCEpTION</argument>
                     <argument>--distribution-name</argument>
-                    <argument>INCEpTION-${parsedVersion.majorVersion}.${parsedVersion.minorVersion}-x86_64.msi</argument>
+                    <argument>eclipse-inception-incubation-${parsedVersion.majorVersion}.${parsedVersion.minorVersion}-x86_64.msi</argument>
                     <argument>--skip-if-missing</argument>
                     <argument>--license</argument>
                     <argument>${project.basedir}/../../LICENSE.txt</argument>

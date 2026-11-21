@@ -38,7 +38,7 @@ If you locked yourself out of {product-name}, you can reset/recreated the defaul
 
 [source,bash,subs="+attributes"]
 ----
-$ java -DrestoreDefaultAdminAccount -jar inception-app-webapp-{revnumber}-standalone.jar
+$ java -DrestoreDefaultAdminAccount -jar eclipse-inception-incubation-{revnumber}-standalone.jar
 ----
 
 NOTE: Mind that if you are using a non-default `inception.home`, you also have to specify this system property.
