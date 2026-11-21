@@ -39,7 +39,7 @@ NOTE: *Hey system operators and admins!* If you are installing {product-name}
 == Windows (MSI)
 
 . Download the `eclipse-inception-incubation-{revnumber}-x86_64.msi` file from the
-  link:https://inception-project.github.io/downloads/[downloads page].
+  link:https://eclipse-inception.github.io/downloads/[downloads page].
 . Double-click the installer and follow the prompts. By default,
   {product-name} is installed under `C:\Program Files\Eclipse INCEpTION` and a
   Start Menu shortcut is created.
@@ -62,7 +62,7 @@ your system. If you do not have Java installed, you can obtain it for example
 from link:https://adoptium.net[Adoptium].
 
 . Download the `eclipse-inception-incubation-{revnumber}-standalone.jar` file from the
-  link:https://inception-project.github.io/downloads/[downloads page].
+  link:https://eclipse-inception.github.io/downloads/[downloads page].
 . Start {product-name} by double-clicking the downloaded JAR file.
   A splash screen is shown while the application is loading.
 +

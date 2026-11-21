@@ -30,11 +30,11 @@
 # Configuration
 # ---------------------------------------------------------------------------
 
-REPO="inception-project/inception"
+REPO="eclipse-inception/inception"
 
 # The GitHub Pages site lives in a separate repository. It carries the release
 # index (`releases.yml`) and a per-release copy of the documentation.
-PAGES_REPO="inception-project/inception-project.github.io"
+PAGES_REPO="eclipse-inception/eclipse-inception.github.io"
 PAGES_RELEASES_YML="_data/releases.yml"
 
 # Resolve the project root from *this file's* location, so it is correct no

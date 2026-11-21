@@ -21,7 +21,7 @@ CAUTION: This is a **very rough** guide on how {product-name} could be deployed 
       Kubernetes. If you are familiar with Kubernetes and cloud deployment, you will
       probably find a lot here that can be improved. Great! Best help us improving this
       guide by sending us your improvement suggestions through 
-      link:https://github.com/inception-project/inception[GitHub].
+      link:https://github.com/eclipse-inception/inception[GitHub].
       
 The following Kubernetes file sets up {product-name} along with a few volumes.
 It does currently **NOT** set up a database container but instead uses the built-in

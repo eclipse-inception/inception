@@ -5,7 +5,7 @@
   "author": "INCEpTION Team",
   "license": "Apache-2.0",
   "private": true,
-  "homepage": "https://github.com/inception-project/inception#readme",
+  "homepage": "https://github.com/eclipse-inception/inception#readme",
   "scripts": {
     "build": "node build.mjs",
     "test": "vitest run --reporter=junit --outputFile=\"../../../target/surefire-reports/vitest-test-report.xml\"",
@@ -15,10 +15,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/inception-project/inception.git"
+    "url": "git+https://github.com/eclipse-inception/inception.git"
   },
   "bugs": {
-    "url": "https://github.com/inception-project/issues"
+    "url": "https://github.com/eclipse-inception/inception/issues"
   },
   "dependencies": {
     "echarts": "${echarts.version}",

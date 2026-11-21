@@ -48,14 +48,14 @@ TIP: Short video walkthroughs are available on our https://www.youtube.com/playl
 
 * For most questions, the *main documentation* has the answer: <<sect_core_funct,Core Functionalities>>. In the application itself, click any *blue question mark* to jump to the matching section.
 * Join the *Google group* https://groups.google.com/forum/#!forum/inception-users[inception-users^] (mailing list: inception-users@googlegroups.com).
-* Open an issue on https://github.com/inception-project/inception/issues[GitHub^].
+* Open an issue on https://github.com/eclipse-inception/inception/issues[GitHub^].
 
 == Further reading
 
 The full documentation consists of three guides:
 
 * *User Guide* — for everyone who uses {product-name}. The main part starts right after this _Getting Started_ section: <<sect_core_funct,Core Functionalities>>.
-* *Admin Guide* — for setting up {product-name} on a server for multiple users, plus advanced topics like logging, monitoring, and backup. See the https://inception-project.github.io/documentation/latest/admin-guide[Admin Guide^].
-* *Developer Guide* — for contributors. {product-name} is open source; see the https://inception-project.github.io/documentation/latest/developer-guide[Developer Guide^].
+* *Admin Guide* — for setting up {product-name} on a server for multiple users, plus advanced topics like logging, monitoring, and backup. See the https://eclipse-inception.github.io/documentation/latest/admin-guide[Admin Guide^].
+* *Developer Guide* — for contributors. {product-name} is open source; see the https://eclipse-inception.github.io/documentation/latest/developer-guide[Developer Guide^].
 
 All materials are available from the link:{product-website-url}[{product-name} homepage^].

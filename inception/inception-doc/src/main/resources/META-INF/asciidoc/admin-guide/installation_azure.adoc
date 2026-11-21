@@ -16,7 +16,7 @@
 
 = Running on Azure
 
-CAUTION: This section has been compiled from community feedback. If you find that required settings are missing from this section or that any items described here are outdated or inaccurate, please link:https://github.com/inception-project/inception/discussions[help us updating the section].
+CAUTION: This section has been compiled from community feedback. If you find that required settings are missing from this section or that any items described here are outdated or inaccurate, please link:https://github.com/eclipse-inception/inception/discussions[help us updating the section].
 
 There are various options for deploying {product-name} in the cloud. This section will not discuss all of them. Instead refer to the other sections regarding running as a JAR (on a VM), via Docker, etc.
 
