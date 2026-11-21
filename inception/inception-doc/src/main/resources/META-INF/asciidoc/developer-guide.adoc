@@ -22,6 +22,8 @@ The {product-name} Team
 
 This document targets developers working on {product-name}.
 
+include::common/legal-notice.adoc[]
+
 include::{include-dir}introduction.adoc[]
 
 include::common/systemrequirements.adoc[leveloffset=+1]

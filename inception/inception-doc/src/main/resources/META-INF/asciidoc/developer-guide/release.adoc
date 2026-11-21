@@ -118,7 +118,7 @@ Make sure that you configured your docker user in your Maven settings:
 </server>
 ----
 
-Also, your user needs to have push rights to the `ghcr.io/inception-project` GitHub package repository.
+Also, your user needs to have push rights to the `ghcr.io/eclipse-inception` GitHub package repository.
 If you have just made a release, change to `target/checkout/inception-dist-docker`. Otherwise check out the release
 tag e.g. via `git checkout tags/inception-app-0.18.0`.
 Make sure that in the top-level POM, the version is set to a release version (no snapshot suffix).
@@ -126,8 +126,8 @@ Then go to the `inception-dist-docker` module folder and there run the following
 
 [source,xml]
 ----
-mvn -Pdocker clean docker:build -Ddocker.image.name="ghcr.io/inception-project/inception"
-mvn -Pdocker docker:push -Ddocker.image.name="ghcr.io/inception-project/inception"
+mvn -Pdocker clean docker:build -Ddocker.image.name="ghcr.io/eclipse-inception/inception"
+mvn -Pdocker docker:push -Ddocker.image.name="ghcr.io/eclipse-inception/inception"
 ----
 
 After successfully publishing, the GitHub package repository will show your released

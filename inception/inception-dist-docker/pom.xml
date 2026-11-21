@@ -51,7 +51,7 @@
       <id>dist-docker</id>
 
       <properties>
-        <docker.image.name>ghcr.io/inception-project/inception-snapshots</docker.image.name>
+        <docker.image.name>ghcr.io/eclipse-inception/inception-snapshots</docker.image.name>
         <docker.platform>linux/amd64</docker.platform>
         <docker.skip.build>false</docker.skip.build>
         <docker.skip.push>true</docker.skip.push>

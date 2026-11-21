@@ -149,18 +149,19 @@ base_version_for() { printf '%s\n' "${1%%-beta*}"; }
 is_beta_version() { [ "$(base_version_for "$1")" != "$1" ]; }
 
 # Betas are published to the snapshots repository, not to the release one:
-# only final releases go to ghcr.io/inception-project/inception. Verified
-# against ghcr.io -- 41.0-beta-1 and 41.0-beta-2 exist under
-# inception-snapshots and are absent from inception.
+# only final releases go to ghcr.io/eclipse-inception/inception. Verified
+# against ghcr.io for the earlier ghcr.io/inception-project location, used up
+# to 42.x -- 41.0-beta-1 and 41.0-beta-2 exist under inception-snapshots and
+# are absent from inception.
 #
 # It decides where the image is pushed, where `status` looks for it, and which
 # example scripts can be attached to the release, which is why it gets a named
 # function rather than an inline test at each point of use.
 image_repo_for() {
   if is_beta_version "$1"; then
-    printf 'ghcr.io/inception-project/inception-snapshots\n'
+    printf 'ghcr.io/eclipse-inception/inception-snapshots\n'
   else
-    printf 'ghcr.io/inception-project/inception\n'
+    printf 'ghcr.io/eclipse-inception/inception\n'
   fi
 }
 
@@ -227,9 +228,9 @@ expected_artifacts() {
 # literal placeholder would not: the spelling changes from {revnumber} to
 # @project.version@ with the fix for #6186.
 generated_scripts() {
-  printf 'docker-compose.yml|ghcr.io/inception-project/inception\n'
-  printf 'docker-compose-mysql8.yml|ghcr.io/inception-project/inception\n'
-  printf 'kubernetes.yml|ghcr.io/inception-project/inception\n'
+  printf 'docker-compose.yml|ghcr.io/eclipse-inception/inception\n'
+  printf 'docker-compose-mysql8.yml|ghcr.io/eclipse-inception/inception\n'
+  printf 'kubernetes.yml|ghcr.io/eclipse-inception/inception\n'
 }
 
 GENERATED_SCRIPTS_DIR="$WEBAPP_TARGET/generated-docs/admin-guide/scripts"
