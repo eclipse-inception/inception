@@ -24,14 +24,13 @@ import static de.tudarmstadt.ukp.inception.kb.http.PerThreadSslCheckingHttpClien
 import static de.tudarmstadt.ukp.inception.kb.querybuilder.SPARQLQueryBuilderAsserts.asHandle;
 import static de.tudarmstadt.ukp.inception.kb.querybuilder.SPARQLQueryBuilderAsserts.asHandles;
 import static de.tudarmstadt.ukp.inception.kb.querybuilder.SPARQLQueryBuilderAsserts.exists;
-import static de.tudarmstadt.ukp.inception.kb.util.TestFixtures.isReachable;
+import static de.tudarmstadt.ukp.inception.kb.util.TestFixtures.assumeEndpointIsAvailable;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
 import static org.eclipse.rdf4j.rio.RDFFormat.RDFXML;
 import static org.eclipse.rdf4j.rio.RDFFormat.TURTLE;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -1629,8 +1628,7 @@ public class SPARQLQueryBuilderLocalTestScenarios
     public static void assertIsReachable(Repository aRepository)
     {
         if (aRepository instanceof SPARQLRepository sparqlRepository) {
-            assumeTrue(isReachable(sparqlRepository.toString()),
-                    "Remote repository at [" + sparqlRepository + "] is not reachable");
+            assumeEndpointIsAvailable(sparqlRepository.toString());
         }
     }
 }
