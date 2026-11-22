@@ -1,0 +1,262 @@
+// Licensed to the Technische Universität Darmstadt under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The Technische Universität Darmstadt
+// licenses this file to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+[[sect_dependency_upgrades]]
+= Upgrading dependencies
+
+After performing a release and sometimes also during the regular development process, it should be checked if there are 
+newer versions of the dependencies used in {product-name}. This is important to keep the software up to date and to avoid security vulnerabilities.
+
+== Branch policy
+
+The kind of dependency upgrades that should be made depends on the kind of release that is being worked towards. Every 
+dependency upgrade is a risk. For bug-fix releases, we want to keep the risk as low as possible. For feature releases,
+risky upgrades should be made early in the development cycle and be avoided close to the actual release.
+
+[cols="2,3,3", options="header"]
+|===
+| | Bug-fix release (`release/...`) | Feature release (`main`)
+
+| Production dependencies
+| Patch only; a minor only for a fix we need
+| Minor and patch
+
+| Build and test tooling
+| Patch and minor
+| Minor and patch
+
+| Major upgrades (production dependencies, build and test tooling)
+| Never
+| Investigate upgrade viability and upgrade if possible
+
+| Major upgrades (affecting system requirements, deployed dependencies, such as the JDKs)
+| Never
+| Investigate upgrade viability considering also impact on the users/admins deploying {product-name} and upgrade if impact is acceptable. Update system requirements in the administrator guide and mention in the migration guide and the release notes.
+
+| Dropping vendored code or workarounds
+| Never
+| Drop if workarounds are no longer necessary or changes to vendored code have been incorporated
+  upstream
+|===
+
+== Areas
+
+Each block of commands starts at the root of the repository.
+
+[[sect_dependency_upgrades_maven_dependencies]]
+=== Maven dependencies
+
+Run the check in `inception-app-webapp`, which depends on everything that ships, so the result is what matters for production:
+
+[source,bash]
+----
+cd inception/inception-app-webapp
+mvn -Dversions.outputLineWidth=120 -Dversions.showNewestPerSegment=true \
+  versions:display-dependency-updates | grep -- '->' | sort | uniq
+mvn versions:display-property-updates
+mvn versions:display-parent-updates
+cd ../inception-test-dependencies
+mvn -Dversions.outputLineWidth=120 -Dversions.showNewestPerSegment=true \
+  versions:display-dependency-updates | grep -- '->' | sort | uniq
+----
+
+Major updates are reported by default.
+On a bug-fix branch, add `-DallowMajorUpdates=false` (`-DallowMinorUpdates=false` hides minor updates as well). `-Dversions.showNewestPerSegment=true` lists the newest patch, minor and major release side by side instead of only the newest overall.
+Run `versions:display-property-updates` and `versions:display-parent-updates` the same way.
+Test-only dependencies do not show up in `inception-app-webapp`; run the check in `inception-test-dependencies` for them. Bump imported BOMs (Spring Boot and the like), not the artifacts they manage.
+
+[[sect_dependency_upgrades_maven_plugins]]
+=== Maven plugins
+
+[source,bash]
+----
+cd inception/inception-app-webapp
+mvn versions:display-plugin-updates
+----
+
+Run `versions:display-plugin-updates` in the same way.
+It has no `allowMajorUpdates` option and always reports the newest release, so on a bug-fix branch, skip the majors by hand.
+Plugins used only by other modules, such as the code generators, show up only when you run it there.
+Treat code generators (`ph-javacc-maven-plugin` in `inception-constraints`, `jcasgen-maven-plugin`) like API changes: even a patch release can change the generated code our sources call.
+
+[[sect_dependency_upgrades_known_broken]]
+=== Known-broken versions
+
+Known-broken versions go into `inception/inception-build/src/main/resources/inception/rules.xml`, with a comment above the rule saying why.
+
+[[sect_dependency_upgrades_what_ships]]
+=== What ships after an upgrade
+
+[source,bash]
+----
+cd inception/inception-app-webapp
+mvn -q dependency:list -DincludeScope=runtime -DoutputFile=runtime-before.txt  # before
+mvn -q dependency:list -DincludeScope=runtime -DoutputFile=runtime-after.txt   # after
+diff <(sort runtime-before.txt) <(sort runtime-after.txt)
+rm runtime-before.txt runtime-after.txt
+----
+
+Compare the runtime classpath of `inception-app-webapp` before and after (`dependency:list -DincludeScope=runtime`) and explain every added dependency.
+E.g. an imported BOM may manage a scope, which then overrides the scope a transitive dependency would inherit and can pull test-only code into the application.
+Fix such leaks with an exclusion; `inception-dependencies` manages versions and exclusions, never scopes (e.g. `test`).
+
+[[sect_dependency_upgrades_npm]]
+=== npm
+
+[source,bash]
+----
+mvn clean install -DskipTests
+cd inception
+./check-outdated-packages.sh
+# edit the version properties in the root pom.xml, then:
+./update-bun-lock.sh
+rm outdated-packages-*.txt
+----
+
+The versions are properties in the root `pom.xml`, filled into each module's `src/main/ts_template/package.json`, but `display-property-updates` does not handle them.
+First run a full no-test build (`mvn clean install -DskipTests`).
+Then run `inception/check-outdated-packages.sh` to see what is outdated.
+The command writes `inception/outdated-packages-report.txt` and `inception/outdated-packages-summary.txt`.
+Those shouldn't get committed.
+Bump the property, never the generated `src/main/ts/package.json`, and keep its form (range or exact version).
+Then run `inception/update-bun-lock.sh`, which regenerates the lock files on `main` and keeps them on other branches.
+It also scans each lock file for vulnerabilities with `osv-scanner`, but only if `osv-scanner` is installed; otherwise it prints a warning and skips the scan.
+In that mode, bun re-resolves only the packages whose range no longer matches the lock, and takes the newest release the range allows, so on a bug-fix branch, use `~x.y.z` to bump to a patch release.
+Transitive packages do not move unless something requires a newer version; if one of them has a vulnerability, report it rather than forcing it.
+
+[[sect_dependency_upgrades_osv_ignores]]
+=== osv-scanner ignores
+
+[source,bash]
+----
+cd inception
+for L in */src/main/ts_template/bun.lock; do
+  osv-scanner scan source --config=osv-scanner.toml -L "$L"
+done
+----
+
+For each entry in `inception/osv-scanner.toml`: has `ignoreUntil` passed, and is the vulnerability still reported?
+New findings get an upgrade or a new entry with a reason and a date.
+
+[[sect_dependency_upgrades_toolchain]]
+=== Toolchain
+
+`node.version` in the root `pom.xml` (newest patch of the current major; flag an end of life less than six months away), `bun.version` in `inception/pom.xml` (rerun `update-bun-lock.sh` afterwards, as the lock format may change), and `maven-version` in the GitHub workflows (the same Maven 3 version everywhere).
+Look the versions up on the https://nodejs.org/en/about/previous-releases[Node.js releases page] (which also lists the end-of-life dates), the https://github.com/oven-sh/bun/releases[bun releases] and the https://maven.apache.org/download.cgi[Maven download page].
+
+[[sect_dependency_upgrades_docker_image]]
+=== Release Docker image
+
+The `Dockerfile` in `inception-dist-docker` pins a tag and a digest.
+The image behind a tag is rebuilt for every JRE and OS patch, so compare the multi-architecture digest on https://hub.docker.com/_/eclipse-temurin/tags[Docker Hub] even when the tag is current.
+
+[[sect_dependency_upgrades_database_tests]]
+=== Database test matrix
+
+The class name suffixes in the `db` test package of `inception-app-webapp` (`Latest`, `Previous`, `LTS`, `LTS_Previous`, `Oldest`, `LTS_Oldest`, `Legacy`) describe where each version sits in its upstream support window, as listed on endoflife.date for https://endoflife.date/mariadb[MariaDB], https://endoflife.date/mysql[MySQL] and https://endoflife.date/postgresql[PostgreSQL].
+Patch releases within a line are always fine.
+Moving `Oldest`, `LTS_Oldest` or `Legacy` raises the minimum in the system requirements. Keep the database images in the administrator guide's example files on a supported LTS line.
+
+[[sect_dependency_upgrades_test_images]]
+=== Other test images
+
+The triple store images in the `inception-kb` tests and the ollamazure image in `inception-testing`; look up their newest tags on Docker Hub.
+
+[[sect_dependency_upgrades_github_actions]]
+=== GitHub Actions
+
+[source,bash]
+----
+gh actions-lock
+gh actions-lock --verify
+----
+
+Check every action, including those in commented-out steps, against the releases page of its GitHub repository.
+On `main`, change the tag in the `uses:` lines, then run `gh actions-lock` and `gh actions-lock --verify`;
+never edit `.github/workflows/actions.lock` by hand.
+Keep each action on the same version in every workflow.
+
+[[sect_dependency_upgrades_vendored_code]]
+=== Vendored code
+
+[source,bash]
+----
+for F in $(git ls-files '*DEPENDENCIES-EMBEDDED.spdx.json'); do
+  M=$(echo $F | cut -d/ -f2)
+  jq -r --arg m "$M" '.packages[]? | "\($m)\t\(.name)\t\(.versionInfo // "-")"' $F
+done | column -t -s $'\t'
+----
+
+Copied third-party code is recorded in each module's `META-INF/DEPENDENCIES-EMBEDDED.spdx.json`.
+For each copy of a dependency we also use, compare the copied-from version with the one we use, port the relevant upstream fixes and update `versionInfo`.
+Check whether upstream has made the copy unnecessary, and likewise for workarounds that link an upstream issue.
+
+[[sect_dependency_upgrades_bundled_code]]
+=== Code bundled into third-party jars
+
+The legal documentation generator in `inception-build-legal` fails the build on bundled code under folders such as `shaded` or `repackaged` that `DEPENDENCIES-SHADED.spdx.json` does not declare.
+Bundled code without such a name passes, so look at the new and upgraded jars of the standalone jar and the installers for it, and declare what you find.
+
+[[sect_dependency_upgrades_kb_profiles]]
+=== Knowledge base profiles
+
+[source,bash]
+----
+cd inception/inception-kb
+PROFILES=$(ruby -ryaml -e 'puts YAML.load_file(ARGV[0]).keys.reject { |k| k == "snomed-ct" }.join(",")' \
+  src/main/resources/de/tudarmstadt/ukp/inception/kb/yaml/knowledgebase-profiles.yaml)
+mvn test -P'full-tests,!rat-check' \
+  -Dtest=SPARQLQueryBuilderGenericTest -Dsurefire.failIfNoSpecifiedTests=false \
+  -Dinception.kb.test.profiles=$PROFILES -Dinception.kb.test.require-reachable=true
+----
+
+Run `SPARQLQueryBuilderGenericTest` in `inception-kb` with `-Pfull-tests`, `-Dinception.kb.test.profiles=<all profile ids but snomed-ct>` and `-Dinception.kb.test.require-reachable=true`, and accept no skipped tests.
+Then check the profiles in `knowledgebase-profiles.yaml` by hand:
+version pins in download URLs, website and licence links, names and institutions, and a stated licence for each profile.
+
+[[sect_dependency_upgrades_jdks]]
+=== JDKs
+
+Check the JDKs bundled into the macOS installers (set by `jdk.aarch64.home` and `jdk.x86_64.home` in `~/.m2/settings.xml`) against the latest update on the https://adoptium.net/temurin/releases/[Temurin releases page].
+The Java feature version should agree across the CI test matrix, the Windows bundle, the Docker image and the macOS bundles.
+`maven.compiler.release` is the minimum users need and may be lower.
+
+== After the upgrades
+
+* [ ] Build, then run the tests of the modules the upgrades touch.
+  Clean modules from which an upgrade removed classes, as incremental builds keep them.
+* [ ] Scan the standalone jar for vulnerabilities and fix what the branch policy allows.
+  It contains every library that ships, including those managed by imported BOMs, which Dependabot does not see.
+  For each vulnerability that remains, say why: no fix released, fix only in a major, or bundled inside another jar.
++
+[source,bash]
+----
+cd inception/inception-app-webapp
+osv-scanner scan source --experimental-plugins java/archive -L target/*-standalone.jar
+----
+* [ ] On `main`:
+  run the Eclipse Dash licence check (`mvn -P'dash-licenses,!rat-check' -DskipTests package` in `inception-app-webapp`).
+  It reports known problems too, so the build fails anyway; read `target/dash/report.txt` for the libraries you upgraded.
+  For each one listed there, request an IP review (restricted) or check whether our licence or Dash's is wrong (licence differs).
++
+[source,bash]
+----
+cd inception/inception-app-webapp
+mvn -P'dash-licenses,!rat-check' -DskipTests package
+less target/dash/report.txt
+----
+* [ ] Summarise the pass in the commit message / pull request description:
+  the upgrades with their test results, the copies and workarounds dropped, the vulnerabilities that remain and why, the licence problems the upgrades brought in, and anything left open or unchecked.

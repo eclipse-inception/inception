@@ -94,6 +94,10 @@ include::{include-dir}release.adoc
 
 <<<
 
+include::{include-dir}dependency-upgrades.adoc
+
+<<<
+
 = Appendices 
 
 [appendix]
