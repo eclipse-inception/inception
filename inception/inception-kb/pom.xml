@@ -81,11 +81,6 @@
       <artifactId>inception-security</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>de.tudarmstadt.ukp.inception.app</groupId>
-      <artifactId>inception-kb-lucene-sail</artifactId>
-      <version>${project.version}</version>
-    </dependency>
 
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -131,6 +126,10 @@
     <dependency>
       <groupId>org.eclipse.rdf4j</groupId>
       <artifactId>rdf4j-sail-lucene-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-sail-lucene</artifactId>
     </dependency>
     <dependency>
       <groupId>org.eclipse.rdf4j</groupId>
