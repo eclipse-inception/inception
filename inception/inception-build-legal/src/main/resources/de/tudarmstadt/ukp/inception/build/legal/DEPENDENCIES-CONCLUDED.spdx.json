@@ -88,7 +88,7 @@
     },
     {
       "name": "RosettaAnnotations",
-      "versionInfo": "3.11.8",
+      "versionInfo": "3.11.11",
       "externalRefs": [
         {
           "referenceCategory": "PACKAGE-MANAGER",

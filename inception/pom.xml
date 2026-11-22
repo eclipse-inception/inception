@@ -570,6 +570,10 @@
                     <exclude>org.slf4j:jcl-over-slf4j</exclude>
                     <!-- Liquibase >= 5 has an incompatible non-OSS license -->
                     <exclude>org.liquibase:liquibase-core:[5.0.0,)</exclude>
+                    <!-- Unmaintained lz4-java coordinates; use at.yawk.lz4:lz4-java -->
+                    <exclude>org.lz4:lz4-java</exclude>
+                    <exclude>org.lz4:lz4-pure-java</exclude>
+                    <exclude>net.jpountz.lz4:lz4</exclude>
                   </excludes>
                 </bannedDependencies>
               </rules>
