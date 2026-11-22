@@ -1408,21 +1408,15 @@
         <version>${snappy.version}</version>
       </dependency>
       <!--
-        lz4-java arrives transitively: at.yawk.lz4 through kafka-clients, and the old
-        org.lz4 coordinates through rdf4j-collection-factory-mapdb3. Both jars contain the
-        same net.jpountz.lz4 classes. org.lz4:lz4-java 1.8.1 is a relocation to at.yawk.lz4,
-        so managing it collapses the two onto one jar. The version is managed for the fixes
-        of GHSA-mcr4-qmvw-px4g, GHSA-gm45-99xc-r7wv and GHSA-343h-94h5-c4wr.
+        lz4-java is maintained under at.yawk.lz4. The old org.lz4 coordinates receive no
+        more fixes and are banned by the enforcer; see the exclusion on
+        rdf4j-collection-factory-mapdb3. The version is managed for the fixes of
+        GHSA-mcr4-qmvw-px4g, GHSA-gm45-99xc-r7wv and GHSA-343h-94h5-c4wr.
       -->
       <dependency>
         <groupId>at.yawk.lz4</groupId>
         <artifactId>lz4-java</artifactId>
         <version>${lz4-java.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.lz4</groupId>
-        <artifactId>lz4-java</artifactId>
-        <version>1.8.1</version>
       </dependency>
       <!--
         Guava is otherwise managed by the imported Jena BOM. Overridden for the fix of
@@ -1503,10 +1497,20 @@
         <artifactId>rdf4j-collection-factory-api</artifactId>
         <version>${rdf4j.version}</version>
       </dependency>
+      <!--
+        Depends on the old org.lz4:lz4-java coordinates. mapdb needs the net.jpountz classes
+        at runtime, so modules using the native store declare at.yawk.lz4:lz4-java instead.
+      -->
       <dependency>
         <groupId>org.eclipse.rdf4j</groupId>
         <artifactId>rdf4j-collection-factory-mapdb3</artifactId>
         <version>${rdf4j.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.lz4</groupId>
+            <artifactId>lz4-java</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.eclipse.rdf4j</groupId>
