@@ -40,7 +40,7 @@ logging.level.de.tudarmstadt.ukp.inception.security=TRACE
 
 A custom logging configuration can be specified when starting up {product-name} using the parameter
 `-Dlogging.config=/path/to/your/log4.xml`. This should be a standard Log4J2 configuration file.
-A good starting point is the default configuration used by {product-name} which can be found in link:https://github.com/inception-project/inception/blob/main/inception/inception-app-webapp/src/main/resources/log4j2-spring.xml[our code repository].
+A good starting point is the default configuration used by {product-name} which can be found in link:https://github.com/eclipse-inception/inception/blob/main/inception/inception-app-webapp/src/main/resources/log4j2-spring.xml[our code repository].
 
 == Logging the remote address
 

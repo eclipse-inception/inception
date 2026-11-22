@@ -45,7 +45,7 @@ const defaults = {
     })
   ],
   bundle: true,
-  sourcemap: false,
+  sourcemap: true,
   minify: !dev,
   target: 'es2022',
   loader: { '.ts': 'ts' },

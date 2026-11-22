@@ -52,7 +52,7 @@ public class HfRecommenderFactory
     @Override
     public String getName()
     {
-        return "Hugging Face Recommender";
+        return "Token classifier via Hugging Face";
     }
 
     @Override

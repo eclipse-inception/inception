@@ -17,6 +17,7 @@
  */
 package de.tudarmstadt.ukp.clarin.webanno.support.standalone;
 
+import static de.tudarmstadt.ukp.inception.support.about.ApplicationInformation.LOGO;
 import static java.awt.BorderLayout.CENTER;
 import static java.awt.BorderLayout.SOUTH;
 import static java.awt.Color.WHITE;
@@ -52,6 +53,7 @@ import org.springframework.boot.web.server.servlet.context.ServletWebServerIniti
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 
+import de.tudarmstadt.ukp.inception.support.about.ApplicationInformation;
 import de.tudarmstadt.ukp.inception.support.spring.StartupProgressInfoEvent;
 
 public class LoadingSplashScreen
@@ -78,7 +80,8 @@ public class LoadingSplashScreen
 
     public static Optional<SplashWindow> setupScreen(String aApplicationName)
     {
-        var splashScreenImageUrl = LoadingSplashScreen.class.getResource("/splash.png");
+        // Swing also picks up the @2x variant next to it for high-resolution screens
+        var splashScreenImageUrl = ApplicationInformation.class.getResource(LOGO);
         var iconUrl = LoadingSplashScreen.class.getResource("/icon.png");
 
         if (splashScreenImageUrl == null || iconUrl == null) {

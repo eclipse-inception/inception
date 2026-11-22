@@ -27,7 +27,7 @@ For example:
 
 [source,shell,subs="+attributes"]
 ----
-$ java -Dinception.home="/srv/inception" -jar inception-app-webapp-{revnumber}-standalone.jar --help
+$ java -Dinception.home="/srv/inception" -jar eclipse-inception-incubation-{revnumber}-standalone.jar --help
 ----
 
 If you are using Docker, you can pass the command line arguments via the `APP_ARGS` environment variable.
@@ -35,7 +35,7 @@ For example:
 
 [source,shell,subs="+attributes"]
 ----
-$ docker run -e APP_ARGS="--help" ghcr.io/inception-project/inception:{revnumber}
+$ docker run -e APP_ARGS="--help" ghcr.io/eclipse-inception/inception:{revnumber}
 ----
 
 Note that if you usually pass other parameters startup, make sure you also pass them when you want to use the CLI - in particular the `inception.home` system property, database-related properties/variables or volume mounts.

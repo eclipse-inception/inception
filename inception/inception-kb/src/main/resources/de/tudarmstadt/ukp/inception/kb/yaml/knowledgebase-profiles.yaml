@@ -47,18 +47,28 @@ agrovoc:
       It offers a structured collection of agricultural concepts, terms, definitions and 
       relationships which are used to unambiguously identify resources, allowing standardized 
       indexing processes and making searches more efficient. The thesaurus is hierarchically 
-      organized under 25 top concepts.
+      organized under 25 top concepts and contains more than 41,000 concepts in up to 42
+      languages.
 
-      AGROVOC uses semantic web technologies, linking to other multilingual knowledge 
-      organization systems and building bridges between datasets. AGROVOC is edited using 
+      AGROVOC uses semantic web technologies, linking to other multilingual knowledge
+      organization systems and building bridges between datasets. AGROVOC is edited using
       VocBench 3, a web-based vocabulary management tool.
 
-      For more information, please consult <http://www.fao.org/agrovoc/>.
-      
-      Source: <https://agrovoc.fao.org/browse/en/about>
+      For more information, please consult <https://www.fao.org/agrovoc/>.
+
+      Source: <https://www.fao.org/agrovoc/about>
+
+      **License and attribution:** According to the AGROVOC dataset description
+      (<https://aims.fao.org/aos/agrovoc/void.ttl>), as checked in November 2026, AGROVOC is
+      published by FAO under the Creative Commons Attribution 4.0 International license
+      (CC BY 4.0), which requires that you give appropriate credit to FAO, link to the license
+      and indicate any changes. This summary may be out of date; please consult the FAO
+      AGROVOC website for the current terms, which take precedence over this summary.
     host-institution-name: Food and Agriculture Organization (FAO) of the United Nations
     author-name: Food and Agriculture Organization (FAO) of the United Nations
-    website-url: http://www.fao.org/agrovoc/
+    website-url: https://www.fao.org/agrovoc/
+    license-name: CC BY 4.0
+    license-url: https://creativecommons.org/licenses/by/4.0/
   # The 25 documented top concepts (skos:topConceptOf). Pinning them avoids the expensive and
   # highly variable "concepts without a broader parent" enumeration that would otherwise be run
   # to discover the roots dynamically. This set is identical to what that enumeration returns.
@@ -123,9 +133,16 @@ dblp:
       predicates.
 
       For more information, please consult <https://blog.dblp.org/2024/09/09/introducing-our-public-sparql-query-service/>.
+
+      **License:** According to the dataset metadata published on the dblp SPARQL endpoint, as
+      checked in November 2026, the dblp data is released under the CC0 1.0 public domain
+      dedication. This may have changed since; please consult the dblp website for the current
+      terms.
     host-institution-name: Schloss Dagstuhl - Leibniz Center for Informatics / University of Trier
     author-name: dblp team
     website-url: https://dblp.org
+    license-name: CC0 1.0
+    license-url: https://creativecommons.org/publicdomain/zero/1.0/
   root-concepts:
     - https://dblp.org/rdf/schema#Publication
     - https://dblp.org/rdf/schema#Creator
@@ -150,11 +167,24 @@ db_pedia:
     deprecation-property: http://www.w3.org/2002/07/owl#deprecated
   info:
     description: |
-      DBpedia is a crowd-sourced community effort to extract structured content from the information 
+      DBpedia is a crowd-sourced community effort to extract structured content from the information
       created in various Wikimedia projects.
-    host-institution-name: Leipzig University, University of Mannheim, OpenLink Software
-    author-name: Leipzig University, University of Mannheim, OpenLink Software
-    website-url: https://wiki.dbpedia.org/
+
+      This profile queries the public DBpedia SPARQL endpoint, which serves the English DBpedia
+      together with labels in many other languages; it prefers the German labels.
+
+      **License and attribution:** According to the [DBpedia website](https://www.dbpedia.org/about/),
+      as checked in November 2026, DBpedia is made available under the terms of the Creative
+      Commons Attribution-ShareAlike 3.0 license (CC BY-SA 3.0) and the GNU Free Documentation
+      License, as it is derived from Wikipedia. CC BY-SA requires that you give appropriate
+      credit and that you share material you build from it under the same license. This summary
+      may be out of date; please consult the DBpedia website for the current terms, which take
+      precedence over this summary.
+    host-institution-name: DBpedia Association (SPARQL endpoint hosted by OpenLink Software)
+    author-name: DBpedia community
+    website-url: https://www.dbpedia.org/
+    license-name: CC BY-SA 3.0 and GFDL
+    license-url: https://www.dbpedia.org/about/
   root-concepts:
     - http://www.w3.org/2002/07/owl#Thing
 
@@ -194,9 +224,19 @@ eurovoc:
       canonical EU concept IRIs.
 
       For more information, please consult <https://op.europa.eu/en/web/eu-vocabularies>.
+
+      **License and attribution:** According to its entry on the
+      [data.europa.eu](https://data.europa.eu/data/datasets/eurovoc) portal, as checked in
+      November 2026, EuroVoc may be reused under the European Commission's reuse policy
+      ([Commission Decision 2011/833/EU](https://eur-lex.europa.eu/eli/dec/2011/833/oj)), which
+      requires that you acknowledge the source (© European Union) and do not distort the
+      original meaning of the data. This summary may be out of date; please consult the
+      Publications Office for the current terms, which take precedence over this summary.
     host-institution-name: Publications Office of the European Union
     author-name: Publications Office of the European Union
     website-url: https://op.europa.eu/en/web/eu-vocabularies/eurovoc
+    license-name: Commission Decision 2011/833/EU (reuse of Commission documents)
+    license-url: https://eur-lex.europa.eu/eli/dec/2011/833/oj
 
 eu-corporate-bodies:
   name: EU Corporate Bodies (EU Vocabularies / CELLAR)
@@ -234,9 +274,19 @@ eu-corporate-bodies:
       / LegalDocML) to canonical EU corporate-body IRIs.
 
       For more information, please consult <https://op.europa.eu/en/web/eu-vocabularies>.
+
+      **License and attribution:** According to its entry on the
+      [data.europa.eu](https://data.europa.eu/data/datasets/corporate-body) portal, as checked
+      in November 2026, the list may be reused under the European Commission's reuse policy
+      ([Commission Decision 2011/833/EU](https://eur-lex.europa.eu/eli/dec/2011/833/oj)), which
+      requires that you acknowledge the source (© European Union) and do not distort the
+      original meaning of the data. This summary may be out of date; please consult the
+      Publications Office for the current terms, which take precedence over this summary.
     host-institution-name: Publications Office of the European Union
     author-name: Publications Office of the European Union
     website-url: https://op.europa.eu/en/web/eu-vocabularies/concept-scheme/-/resource?uri=http://publications.europa.eu/resource/authority/corporate-body
+    license-name: Commission Decision 2011/833/EU (reuse of Commission documents)
+    license-url: https://eur-lex.europa.eu/eli/dec/2011/833/oj
 
 wikidata:
   name: Wikidata (direct mapping)
@@ -261,9 +311,16 @@ wikidata:
     description: |
       Wikidata is a free and open knowledge base and acts as central storage for the structured data
       of its Wikimedia sister projects including Wikipedia, Wikivoyage, Wikisource, and others.
+
+      **License:** According to the [Wikidata copyright policy](https://www.wikidata.org/wiki/Wikidata:Copyright),
+      as checked in November 2026, the structured data in Wikidata is released under the CC0 1.0
+      public domain dedication. This may have changed since; please consult the policy for the
+      current terms.
     host-institution-name: Wikimedia Foundation, Inc.
     author-name: Wikidata editors
     website-url: https://www.wikidata.org/wiki/Wikidata:Main_Page
+    license-name: CC0 1.0
+    license-url: https://www.wikidata.org/wiki/Wikidata:Copyright
   root-concepts:
     - http://www.wikidata.org/entity/Q35120
 
@@ -321,10 +378,21 @@ yago:
     subproperty-of: http://www.w3.org/2000/01/rdf-schema#subPropertyOf
     deprecation-property: http://www.w3.org/2002/07/owl#deprecated
   info:
-    description: YAGO is a semantic knowledge base, derived from Wikipedia WordNet and GeoNames.
-    host-institution-name: Max-Planck-Institute Saarbrücken
-    author-name: Max-Planck-Institute Saarbrücken, DIG group at Télécom ParisTech University.
+    description: |
+      YAGO is a large knowledge base with general knowledge about people, cities, countries,
+      movies, and organizations. Since version 4 it is derived from Wikidata and uses the
+      schema.org taxonomy; earlier versions were derived from Wikipedia, WordNet and GeoNames.
+
+      **License and attribution:** According to the [YAGO website](https://yago-knowledge.org/),
+      as checked in November 2026, YAGO is licensed under the Creative Commons Attribution 4.0
+      International license (CC BY 4.0), which requires that you give appropriate credit, link
+      to the license and indicate any changes. This summary may be out of date; please consult
+      the YAGO website for the current terms, which take precedence over this summary.
+    host-institution-name: Télécom Paris
+    author-name: Max Planck Institute for Informatics, Télécom Paris
     website-url: https://yago-knowledge.org
+    license-name: CC BY 4.0
+    license-url: https://creativecommons.org/licenses/by/4.0/
   root-concepts:
     - http://schema.org/Thing
 
@@ -348,11 +416,21 @@ zbw-stw-economics:
     deprecation-property: http://www.w3.org/2002/07/owl#deprecated
   info:
     description: |
-      Thesaurus that provides vocabulary on any economic subject. Almost 6,000 standardized subject
-      headings and about 20,000 additional entry terms to support individual keywords.
+      Thesaurus that provides vocabulary on any economic subject: more than 6,000 standardized
+      subject headings and more than 22,000 additional entry terms to support individual
+      keywords, in English and German.
+
+      **License and attribution:** According to the [STW website](https://zbw.eu/stw/version/latest/about.en.html),
+      as checked in November 2026, the STW Thesaurus for Economics is licensed under the
+      Creative Commons Attribution 4.0 International license (CC BY 4.0), which requires that you
+      give appropriate credit to ZBW, link to the license and indicate any changes. This summary
+      may be out of date; please consult the STW website for the current terms, which take
+      precedence over this summary.
     host-institution-name: ZBW - Leibniz Information Centre for Economics
     author-name: ZBW - Leibniz Information Centre for Economics
-    website-url: http://zbw.eu/stw/version/latest/about
+    website-url: https://zbw.eu/stw/version/latest/about.en.html
+    license-name: CC BY 4.0
+    license-url: https://creativecommons.org/licenses/by/4.0/
 
 zbw-gnd:
   name: Integrated Authority File (GND)
@@ -374,11 +452,22 @@ zbw-gnd:
     deprecation-property: http://www.w3.org/2002/07/owl#deprecated
   info:
     description: |
-      Mapping Integrated Authority File (GND).The Integrated Authority File (GND) is a controlled 
-      keyword system, that is mainly used for indexing in German libraries.
+      The Integrated Authority File (GND) is an authority file for persons, corporate bodies,
+      conferences, geographic names, subject headings and works, maintained by the German
+      National Library (DNB) together with the German-speaking library networks. It is mainly
+      used for cataloguing and indexing in libraries.
+
+      This profile queries a copy of the GND hosted by ZBW - Leibniz Information Centre for
+      Economics.
+
+      **License:** According to the license statements in the GND data, as checked in
+      November 2026, the GND is released by the DNB under the CC0 1.0 public domain dedication.
+      This may have changed since; please consult the DNB for the current terms.
     host-institution-name: ZBW - Leibniz Information Centre for Economics
-    author-name: German National Library (DNB), ZBW - Leibniz Information Centre for Economics
-    website-url: http://zbw.eu/stw/version/9.02/mapping/gnd/about.en.html
+    author-name: German National Library (DNB) and the GND network
+    website-url: https://www.dnb.de/EN/Professionell/Standardisierung/GND/gnd_node.html
+    license-name: CC0 1.0
+    license-url: https://creativecommons.org/publicdomain/zero/1.0/
   root-concepts:
     - https://d-nb.info/standards/elementset/gnd#AuthorityResource
 
@@ -409,17 +498,31 @@ olia_penn.owl:
     deprecation-property: http://www.w3.org/2002/07/owl#deprecated
   info:
     description: |
-      Ontologies of Linguistic Annotation (OLiA)
-    host-institution-name: Applied Computational Linguistics (ACoLi) Lab at the Goethe University Frankfurt, Germany
+      The Ontologies of Linguistic Annotation (OLiA) are a set of OWL ontologies that model
+      the tags of many annotation schemes and link them to a common reference model. This
+      profile loads the OLiA annotation model for the part-of-speech tagset of the Penn
+      Treebank.
+
+      **License and attribution:** According to the [OLiA website](https://acoli-repo.github.io/olia/),
+      as checked in November 2026, the OLiA ontologies are released under the Creative Commons
+      Attribution 3.0 Unported license (CC BY 3.0), unless marked otherwise in the ontology
+      itself. For attribution, the OLiA project asks you to cite: Christian Chiarcos and Maria
+      Sukhareva (2015). OLiA - Ontologies of Linguistic Annotation. Semantic Web Journal 6(4):
+      379-386; applications and derived data should also give the source URL of the
+      repository. This summary may be out of date; please consult the OLiA website for the
+      current terms, which take precedence over this summary.
+    host-institution-name: Applied Computational Linguistics (ACoLi) Lab, University of Augsburg (formerly Goethe University Frankfurt), Germany
     author-name: Christian Chiarcos and Maria Sukhareva
-    website-url: http://www.acoli.informatik.uni-frankfurt.de/resources/olia/
-    
+    website-url: https://acoli-repo.github.io/olia/
+    license-name: CC BY 3.0
+    license-url: https://creativecommons.org/licenses/by/3.0/
+
 iao:
-  name: Information Artifact Ontology (IAO) (v2022-11-07)
+  name: Information Artifact Ontology (IAO) (v2026-03-30)
   type: LOCAL
   default-language: en
   access:
-    access-url: https://raw.githubusercontent.com/information-artifact-ontology/IAO/v2022-11-07/iao.owl
+    access-url: https://raw.githubusercontent.com/information-artifact-ontology/IAO/v2026-03-30/iao.owl
     full-text-search: http://www.openrdf.org/contrib/lucenesail#matches
   mapping:
     class: http://www.w3.org/2000/01/rdf-schema#Class
@@ -434,12 +537,22 @@ iao:
     deprecation-property: http://www.w3.org/2002/07/owl#deprecated
   info:
     description: |
-      The Information Artifact Ontology (IAO) is a new ontology of information entities, originally driven by work by 
-      the OBI digital entity and realizable information entity branch.
+      The Information Artifact Ontology (IAO) is an ontology of information entities, originally
+      driven by work by the OBI digital entity and realizable information entity branch. It is
+      part of the OBO Foundry.
 
       For more information, please refer to the project's website.
+
+      **License and attribution:** According to the license file in the IAO repository, as
+      checked in November 2026, the IAO is licensed under the Creative Commons Attribution 4.0
+      International license (CC BY 4.0), which requires that you give appropriate credit, link
+      to the license and indicate any changes. This summary may be out of date; please consult
+      the project's website for the current terms, which take precedence over this summary.
+    author-name: IAO developers
     website-url: https://github.com/information-artifact-ontology/IAO/
-    
+    license-name: CC BY 4.0
+    license-url: https://creativecommons.org/licenses/by/4.0/
+
 hpo:
   name: Human Phenotype Ontology
   type: LOCAL
@@ -466,9 +579,28 @@ hpo:
       disease-phenotype annotations, and the algorithms that operate on these. 
 
       Find out more at [http://www.human-phenotype-ontology.org](http://www.human-phenotype-ontology.org).
-    host-institution-name: The Jackson Laboratory 
-    website-url: https://hpo.jax.org/app/
-    license-url: https://hpo.jax.org/app/license
+
+      **Attribution:** INCEpTION does not ship the HPO; the ontology is downloaded from the HPO
+      project when you add this knowledge base, and its terms of use apply to you.
+
+      The following summary was taken from the [HPO license](https://hpo.jax.org/license) and
+      [citation](https://hpo.jax.org/citation) pages in November 2026. It is provided for
+      convenience only and may be out of date. Please consult these pages for the current
+      terms, which take precedence over this summary.
+
+      At the time of writing, the license requires that you acknowledge and cite the Human
+      Phenotype Ontology Consortium, that you state the date or version of the HPO files
+      whenever you display them publicly, and that you do not alter their content. The HPO
+      project also asks services using the HPO to state on their website: "This service/product
+      uses the Human Phenotype Ontology (version information). Find out more at
+      http://www.human-phenotype-ontology.org", together with the HPO logo. The citation
+      requested at the time of writing is: Gargano MA et al. The Human Phenotype Ontology in
+      2024: phenotypes around the world. Nucleic Acids Res. 2024;52(D1):D1333-D1346.
+      [doi:10.1093/nar/gkad1005](https://doi.org/10.1093/nar/gkad1005)
+    host-institution-name: The Jackson Laboratory
+    website-url: https://hpo.jax.org/
+    license-name: HPO license
+    license-url: https://hpo.jax.org/license
 
 go:
   name: Gene Ontology
@@ -497,10 +629,28 @@ go:
       component. The GO-basic subset used here covers the is_a / part_of relationships and
       excludes cross-products.
 
-      Find out more at [http://geneontology.org](http://geneontology.org).
+      Find out more at [https://geneontology.org](https://geneontology.org).
+
+      **License and attribution:** INCEpTION does not ship the GO; the ontology is downloaded
+      from the GO project when you add this knowledge base, and its terms of use apply to you.
+
+      The following summary was taken from the
+      [GO citation policy and license](https://geneontology.org/docs/go-citation-policy/) page
+      in November 2026. It is provided for convenience only and may be out of date. Please
+      consult that page for the current terms, which take precedence over this summary.
+
+      At the time of writing, GO data is licensed under the Creative Commons Attribution 4.0
+      license (CC BY 4.0). The GO Consortium asks that you mention the GO release you used,
+      that tools and services using GO data show the GO release date and DOI with their
+      results, and that publications using the GO cite: Ashburner et al. Gene ontology: tool for
+      the unification of biology. Nat Genet. 2000;25(1):25-9.
+      [doi:10.1038/75556](https://doi.org/10.1038/75556); and The Gene Ontology Consortium. The
+      Gene Ontology knowledgebase in 2026. Nucleic Acids Res. 2025;gkaf1292.
+      [doi:10.1093/nar/gkaf1292](https://doi.org/10.1093/nar/gkaf1292)
     host-institution-name: Gene Ontology Consortium
-    website-url: http://geneontology.org/
-    license-url: http://geneontology.org/docs/go-citation-policy/
+    website-url: https://geneontology.org/
+    license-name: CC BY 4.0
+    license-url: https://geneontology.org/docs/go-citation-policy/
 
 mesh:
   name: Medical Subject Headings (MeSH)
@@ -552,9 +702,21 @@ mesh:
       feature's "Allowed values" to "concepts only" in the feature settings.
 
       Find out more at [https://www.nlm.nih.gov/mesh/](https://www.nlm.nih.gov/mesh/).
+
+      **Terms of use and attribution:** The following summary was taken from the
+      [NLM terms and conditions](https://www.nlm.nih.gov/databases/download/terms_and_conditions.html)
+      in November 2026. It is provided for convenience only and may be out of date. Please
+      consult that page for the current terms, which take precedence over this summary.
+
+      At the time of writing, users of NLM data agree to acknowledge NLM as the source of the
+      data by including the phrase "Courtesy of the U.S. National Library of Medicine" in a
+      clear and conspicuous manner, and not to indicate or imply that NLM has endorsed their
+      products, services or applications. Users who republish or redistribute the data must
+      keep it current or state clearly that it does not reflect the most recent version.
     host-institution-name: U.S. National Library of Medicine (NLM)
     author-name: U.S. National Library of Medicine (NLM)
     website-url: https://www.nlm.nih.gov/mesh/
+    license-name: NLM Terms and Conditions
     license-url: https://www.nlm.nih.gov/databases/download/terms_and_conditions.html
 
 snomed-ct:
@@ -585,7 +747,13 @@ snomed-ct:
       SNOMED CT is a systematically organized collection of medical terms providing codes, terms, synonyms and 
       definitions used in clinical documentation and reporting.
 
-      **Note: Manual steps are required.** Choosing this profile will **not automatically download** and install the resources. 
+      **Note: Manual steps are required.** Choosing this profile will **not automatically download** and install the resources.
+
+      **License:** SNOMED CT is not freely licensed. You need a license to use it: in SNOMED
+      International member countries this is usually provided through the National Release
+      Center (in the USA, through the NLM's UMLS license), elsewhere through an Affiliate
+      License from SNOMED International. Please consult [SNOMED International](https://www.snomed.org/get-snomed)
+      for the terms that apply to you.
 
       Here is what you need to do to obtain and load the actual SNOMED CT data:
       
@@ -605,4 +773,5 @@ snomed-ct:
       After all imports are complete, enable the _read only_ checkbox - this enables an internal cache and improves performance.
     host-institution-name: SNOMED International
     website-url: https://www.snomed.org
+    license-name: SNOMED CT Affiliate License
     license-url: https://www.snomed.org/get-snomed

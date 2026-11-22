@@ -17,33 +17,99 @@
   limitations under the License.
 -->
 <html xmlns:wicket="http://wicket.apache.org">
+<wicket:head>
+  <style>
+    /* Narrow screens: one column, the whole page scrolls, the dependencies scroll in a box */
+    .about-layout {
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .about-info {
+      flex: none;
+      padding: 1.5rem 1rem;
+    }
+    .about-info-content {
+      max-width: 40rem;
+      margin: 0 auto;
+    }
+    .about-deps {
+      flex: none;
+      margin: 0 1rem 1rem;
+    }
+    .about-deps .card-body {
+      height: 25rem;
+      overflow: auto;
+    }
+    /* Wide screens: info 60% on the left, dependencies 40% on the right, scrolling separately */
+    @media (min-width: 992px) {
+      .about-layout {
+        flex-direction: row;
+        overflow: hidden;
+      }
+      .about-info {
+        flex: 3 1 0;
+        min-width: 0;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+      }
+      .about-info-content {
+        margin: auto;
+      }
+      .about-deps {
+        flex: 2 1 0;
+        min-width: 0;
+        margin: 1rem 1rem 1rem 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .about-deps .card-body {
+        flex: 1;
+        height: auto;
+        min-height: 0;
+      }
+    }
+  </style>
+</wicket:head>
 <body>
   <wicket:extend>
-    <div class="scrolling flex-content flex-h-container" style="min-width: 30em;">
-      <div class="flex-content flex-v-container flex-centered text-center" style="min-height: 20em;">
-        <h1 class="display-1 mt-5 pt-5"><wicket:message key="product.name"/></h1>
-        <p class="lead mb-4">your friendly neighborhood semantic text annotation tool</p>
-        <p class="mb-3">
-          <wicket:message key="shortDescription"/>
-        </p>
-        <p class="mb-3">
-          <wicket:message key="license"/>
-        </p>
-        <p class="mb-3">
-          <wicket:container wicket:id="copyright"/>
-        </p>
-        <p class="mb-3">
-          <a wicket:id="home" class="btn btn-secondary">Back to work</a>
-        </p>
-        <div class="flex-content panel card w-75 m-3 small text-left" wicket:enclosure="dependencies">
-          <div class="card-header">
-            Dependencies
-          </div>
-          <div class="scrolling card-body fit-child-snug overflow-hidden rounded flex-v-container p-0 m-0" style="min-height: 10em;">
-            <pre class="p-3 m-0"><wicket:container wicket:id="dependencies"/></pre>
-          </div>
+    <!-- fit-child-snug: the layout fills the page without its content stretching the page -->
+    <div class="flex-content fit-child-snug">
+    <div class="about-layout">
+      <div class="about-info text-center">
+        <div class="about-info-content">
+          <h1 class="mb-3"><img wicket:id="logo" class="img-fluid" wicket:message="alt:logo.alt"/></h1>
+          <p class="lead mb-4">your friendly neighborhood semantic text annotation tool</p>
+          <p class="mb-3">
+            <wicket:message key="shortDescription"/>
+          </p>
+          <p class="mb-3">
+            <wicket:message key="license"/>
+          </p>
+          <p class="mb-3">
+            <wicket:container wicket:id="copyright"/>
+          </p>
+          <p class="mb-3 small">
+            <wicket:message key="trademarks"/>
+          </p>
+          <p class="mb-3 small">
+            <wicket:message key="cryptography"/>
+          </p>
+          <p class="mb-0">
+            <a wicket:id="home" class="btn btn-secondary">Back to work</a>
+          </p>
         </div>
       </div>
+      <div class="about-deps card small text-start" wicket:enclosure="dependencies">
+        <div class="card-header">
+          Dependencies
+        </div>
+        <div class="card-body p-0">
+          <pre class="p-3 m-0"><wicket:container wicket:id="dependencies"/></pre>
+        </div>
+      </div>
+    </div>
     </div>
   </wicket:extend>
 </body>

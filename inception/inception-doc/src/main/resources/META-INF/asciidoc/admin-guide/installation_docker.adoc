@@ -23,7 +23,7 @@ If you have Docker installed, you can run {product-name} using
 
 [source,shell,subs="+attributes"]
 ----
-$ docker run -it --name inception -p8080:8080 ghcr.io/inception-project/inception:{revnumber}
+$ docker run -it --name inception -p8080:8080 ghcr.io/eclipse-inception/inception:{revnumber}
 ----
 
 The command downloads {product-name} from GitHub and starts it on port 8080. If this port is not
@@ -35,7 +35,7 @@ To run the {product-name} docker in the background use
 
 [source,shell,subs="+attributes"]
 ----
-$ docker run -d --name inception -p8080:8080 ghcr.io/inception-project/inception:{revnumber}
+$ docker run -d --name inception -p8080:8080 ghcr.io/eclipse-inception/inception:{revnumber}
 ----
 
 Logs are accessible by typing
@@ -82,7 +82,7 @@ When you run {product-name} via Docker, you then mount this folder into the cont
 
 [source,shell,subs="+attributes"]
 ----
-$ docker run -it --name inception -v /srv/inception:/export -p8080:8080 ghcr.io/inception-project/inception:{revnumber}
+$ docker run -it --name inception -v /srv/inception:/export -p8080:8080 ghcr.io/eclipse-inception/inception:{revnumber}
 ----
 
 == Settings file
@@ -110,14 +110,14 @@ For example, to set the available memory (RAM) to e.g. 4GB, append `-Xmx4g`.
 
 [source,shell,subs="+attributes"]
 ----
-$ docker run -it -e JAVA_MEM_OPTS=-Xmx4g ghcr.io/inception-project/inception:{revnumber}
+$ docker run -it -e JAVA_MEM_OPTS=-Xmx4g ghcr.io/eclipse-inception/inception:{revnumber}
 ----
 
 Be sure to leave some memory for the operating system inside the Docker container as well. Instead of setting a fixed value for the memory, you might consider allocating a percentage of the container's memory to {product-name} using `-XX:MaxRAMPercentage=80`.
 
 [source,shell,subs="+attributes"]
 ----
-$ docker run -it -e JAVA_MEM_OPTS=-XX:MaxRAMPercentage=80 ghcr.io/inception-project/inception:{revnumber}
+$ docker run -it -e JAVA_MEM_OPTS=-XX:MaxRAMPercentage=80 ghcr.io/eclipse-inception/inception:{revnumber}
 ----
 
 The applications logs the amount of memory it will use during startup. Check this value to validate that your memory setting takes effect.
@@ -134,7 +134,7 @@ By default, {product-name} runs with the UID 2000 and the GID 2000. On startup, 
 
 [source,shell,subs="+attributes"]
 ----
-$ docker run -it -e APP_UID=1234 -e APP_GID=4321 ghcr.io/inception-project/inception:{revnumber}
+$ docker run -it -e APP_UID=1234 -e APP_GID=4321 ghcr.io/eclipse-inception/inception:{revnumber}
 ----
 
 NOTE: If the container is already started using a non-root UID, then `APP_UID` and `APP_GID` have no effect and also

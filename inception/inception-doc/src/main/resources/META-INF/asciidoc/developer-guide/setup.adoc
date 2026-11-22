@@ -22,41 +22,45 @@ This section covers setting up a development environment.
 == Source code management
 
 We use git as our source code management system and collaborate via the {product-name}
-repository on https://github.com/inception-project/inception[GitHub].
+repository on https://github.com/eclipse-inception/inception[GitHub]. The
+https://github.com/eclipse-inception/inception/blob/main/CONTRIBUTING.md[contribution guidelines]
+in the repository are the authoritative reference for the workflow summarized here.
+
+=== Branches
+
+* `main`: the next feature release.
+* `release/<major>.x` (e.g. `release/42.x`): bug fixes for the current release line. Fixes made
+  there are merged up into `main`.
 
 === Development workflow
-
-Every feature or bug fix needs to be tracked in an issue on GitHub. Development is done in branches. 
-Based on the milestone (see the issue description on GitHub), the new branch is either created from
-master (if the code should be in the next major release) or from a bugfix release branch
-(if the code should be in the next minor release). In order to get the code in production,
-you need to create a pull request on GitHub of your branch into the target branch (as described before).
 
 In order to contribute to {product-name}, you need to create a pull request. This section briefly
 guides you through the best way of doing this:
 
-- Every feature or bug fix needs to be tracked in an issue on GitHub. If there is no issue for the
-feature yet, create an issue first.
-- Create a branch based on the branch to which you wish to contribute. Normally, you should create
-this branch from the master branch of the respective project. In the case that you want to fix a bug in
-the latest released version, you should consider to branch off the latest maintenance branch (e.g.
-0.10.x). If you are not sure, ask via the issue you have just created. Do *not* make changes directly
-to the master or maintenance branches. The name of the branch should be e.g.
-`feature/[ISSUE-NUMBER]-[SHORT-ISSUE-DESCRIPTION]` or `bugfix/[ISSUE-NUMBER]-[SHORT-ISSUE-DESCRIPTION]`.
-- Now you make changes to your branch. When committing to your branch, use the format shown below
-for your commit messages. Note that **#** normally introduces comments in git. You may have to reconfigure
-git before attempting an interactive rebase and switch it to another comment character.
+. *Start from an issue.* Every feature or bug fix needs to be tracked in an issue on GitHub. If
+  there is no issue yet, create one first. For larger changes, wait for feedback from the
+  committers before you invest a lot of work.
+. *Create a branch* from the branch you want to contribute to. Fixes for the current release go on
+  a branch off `release/<major>.x`, everything else on a branch off `main`. If you are not sure,
+  ask in the issue. Do *not* commit directly to `main` or the release branches. Name the branch
+  after the issue type, number and title, e.g. `bugfix/1234-Short-issue-title`,
+  `feature/1234-...` or `refactoring/1234-...`.
+. *Commit* to your branch using the format shown below for your commit messages.
++
+[source,text]
+----
+Issue #1234: Issue title
 
-  #[ISSUE NUMBER] - [ISSUE TITLE]
-  [EMPTY LINE]
-  - [CHANGE 1]
-  - [CHANGE 2]
-  - [...]
-
-You can create the pull request any time after your first commit. I.e. you do not have to wait until
-you are completely finished with your implementation. Creating a pull request early tells other
-developers that you are actively working on an issue and facilitates asking questions about and
-discussing implementation details.
+- Change 1
+- Change 2
+----
+. *Open a pull request* against the branch you started from. You can open it any time after your
+  first commit, e.g. as a draft. You do not have to wait until you are completely finished with
+  your implementation. Opening a pull request early tells other developers that you are actively
+  working on an issue and facilitates asking questions about and discussing implementation
+  details.
+. *Review.* A committer reviews every pull request before it is merged. The build and the
+  Eclipse Contributor Agreement check must pass.
 
 === Git configuration
 

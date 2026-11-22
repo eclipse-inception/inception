@@ -65,7 +65,7 @@ public class ChatGptRecommenderFactory
     @Override
     public String getName()
     {
-        return "ChatGPT Recommender";
+        return "LLM via OpenAI-compatible API";
     }
 
     @Override

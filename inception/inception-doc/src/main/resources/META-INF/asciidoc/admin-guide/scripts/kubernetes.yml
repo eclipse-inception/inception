@@ -116,7 +116,7 @@ spec:
         runAsNonRoot: true
       containers:
       - name: inception
-        image: "ghcr.io/inception-project/inception:@project.version@"
+        image: "ghcr.io/eclipse-inception/inception:@project.version@"
         imagePullPolicy: Always
         ports:
         - containerPort: 8080

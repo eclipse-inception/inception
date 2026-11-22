@@ -17,10 +17,12 @@
 :include-dir: developer-guide/
 :imagesdir: developer-guide/
 
-= {product-name} Developer Guide
-The {product-name} Team
+= {product-formal-name} Developer Guide
+Contributors to {product-formal-name}
 
 This document targets developers working on {product-name}.
+
+include::common/legal-notice.adoc[]
 
 include::{include-dir}introduction.adoc[]
 

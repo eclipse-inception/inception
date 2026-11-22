@@ -5,7 +5,7 @@
   "author": "INCEpTION Team",
   "license": "Apache-2.0",
   "private": true,
-  "homepage": "https://github.com/inception-project/inception#readme",
+  "homepage": "https://github.com/eclipse-inception/inception#readme",
   "scripts": {
     "build": "node build.mjs",
     "test": "vitest run --reporter=junit --outputFile=\"../../../target/surefire-reports/vitest-test-report.xml\"",
@@ -15,23 +15,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/inception-project/inception.git"
+    "url": "git+https://github.com/eclipse-inception/inception.git"
   },
   "bugs": {
-    "url": "https://github.com/inception-project/issues"
+    "url": "https://github.com/eclipse-inception/inception/issues"
   },
   "dependencies": {
     "@stomp/stompjs": "${stomp-stompjs.version}",
     "@types/stompjs": "${types-stompjs.version}"
   },
-  "optionalDependencies": {
-    "@rollup/rollup-win32-x64-msvc": "${rollup.version}",
-    "@rollup/rollup-linux-x64-gnu": "${rollup.version}",
-    "@rollup/rollup-darwin-x64": "${rollup.version}",
-    "@rollup/rollup-darwin-arm64": "${rollup.version}"
-  },
   "devDependencies": {
-    "license-checker": "${license-checker.version}",
     "esbuild": "${esbuild.version}",
     "esbuild-svelte": "${esbuild-svelte.version}",
     "esbuild-sass-plugin": "${esbuild-sass-plugin.version}",

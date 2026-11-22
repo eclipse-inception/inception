@@ -14,7 +14,7 @@ Two profiles control the build:
   buildx build and pushes the resulting manifest list to the registry.
 
 Image name and tags are controlled by the `docker.image.name` property
-(defaults to `ghcr.io/inception-project/inception-snapshots`).
+(defaults to `ghcr.io/eclipse-inception/inception-snapshots`).
 
 ## SNAPSHOT builds
 
@@ -23,30 +23,30 @@ Build a single-architecture image into your local Docker daemon (no push):
     mvn -Pdist-docker clean install
 
 Build and push a multi-architecture SNAPSHOT image to
-`ghcr.io/inception-project/inception-snapshots`:
+`ghcr.io/eclipse-inception/inception-snapshots`:
 
     mvn -Pdist-docker,release-docker clean deploy
 
 Run the latest published SNAPSHOT:
 
-    docker run -p8080:8080 -v inception-data:/export -it ghcr.io/inception-project/inception-snapshots
+    docker run -p8080:8080 -v inception-data:/export -it ghcr.io/eclipse-inception/inception-snapshots
 
 Run the latest SNAPSHOT via Docker Compose:
 
-    export INCEPTION_IMAGE=ghcr.io/inception-project/inception-snapshots
+    export INCEPTION_IMAGE=ghcr.io/eclipse-inception/inception-snapshots
     export INCEPTION_VERSION=latest
     docker-compose -f ../inception-doc/src/main/resources/META-INF/asciidoc/admin-guide/scripts/docker-compose.yml -p inception up
 
 ## Release builds
 
 Build and push a multi-architecture release image to
-`ghcr.io/inception-project/inception`:
+`ghcr.io/eclipse-inception/inception`:
 
-    mvn -Pdist-docker,release-docker clean deploy -Ddocker.image.name=ghcr.io/inception-project/inception
+    mvn -Pdist-docker,release-docker clean deploy -Ddocker.image.name=ghcr.io/eclipse-inception/inception
 
 Run the released image:
 
-    docker run -p8080:8080 -v inception-data:/export -it ghcr.io/inception-project/inception
+    docker run -p8080:8080 -v inception-data:/export -it ghcr.io/eclipse-inception/inception
 
 ## Building only the docker module
 

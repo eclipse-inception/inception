@@ -30,11 +30,11 @@
 # Configuration
 # ---------------------------------------------------------------------------
 
-REPO="inception-project/inception"
+REPO="eclipse-inception/inception"
 
 # The GitHub Pages site lives in a separate repository. It carries the release
 # index (`releases.yml`) and a per-release copy of the documentation.
-PAGES_REPO="inception-project/inception-project.github.io"
+PAGES_REPO="eclipse-inception/eclipse-inception.github.io"
 PAGES_RELEASES_YML="_data/releases.yml"
 
 # Resolve the project root from *this file's* location, so it is correct no
@@ -143,24 +143,26 @@ warn_if_checkout_published() {
 
 # Native installers are named after the base version *without* any beta
 # suffix, e.g. the inception-41.0-beta-2 release contains
-# INCEpTION-41.0-x86_64.msi, while the JAR keeps the full version.
+# eclipse-inception-incubation-41.0-x86_64.msi, while the JAR keeps the full
+# version.
 base_version_for() { printf '%s\n' "${1%%-beta*}"; }
 
 is_beta_version() { [ "$(base_version_for "$1")" != "$1" ]; }
 
 # Betas are published to the snapshots repository, not to the release one:
-# only final releases go to ghcr.io/inception-project/inception. Verified
-# against ghcr.io -- 41.0-beta-1 and 41.0-beta-2 exist under
-# inception-snapshots and are absent from inception.
+# only final releases go to ghcr.io/eclipse-inception/inception. Verified
+# against ghcr.io for the earlier ghcr.io/inception-project location, used up
+# to 42.x -- 41.0-beta-1 and 41.0-beta-2 exist under inception-snapshots and
+# are absent from inception.
 #
 # It decides where the image is pushed, where `status` looks for it, and which
 # example scripts can be attached to the release, which is why it gets a named
 # function rather than an inline test at each point of use.
 image_repo_for() {
   if is_beta_version "$1"; then
-    printf 'ghcr.io/inception-project/inception-snapshots\n'
+    printf 'ghcr.io/eclipse-inception/inception-snapshots\n'
   else
-    printf 'ghcr.io/inception-project/inception\n'
+    printf 'ghcr.io/eclipse-inception/inception\n'
   fi
 }
 
@@ -177,20 +179,25 @@ expected_artifacts() {
   local base; base="$(base_version_for "$version")"
 
   printf 'macOS DMG (Apple Silicon)|%s|%s\n' \
-    "$MACOS_TARGET/jpackage-aarch64/INCEpTION-$base-aarch64.dmg" \
-    "INCEpTION-$base-aarch64.dmg"
+    "$MACOS_TARGET/jpackage-aarch64/eclipse-inception-incubation-$base-aarch64.dmg" \
+    "eclipse-inception-incubation-$base-aarch64.dmg"
   printf 'macOS DMG (Intel)|%s|%s\n' \
-    "$MACOS_TARGET/jpackage-x86_64/INCEpTION-$base-x86_64.dmg" \
-    "INCEpTION-$base-x86_64.dmg"
+    "$MACOS_TARGET/jpackage-x86_64/eclipse-inception-incubation-$base-x86_64.dmg" \
+    "eclipse-inception-incubation-$base-x86_64.dmg"
   printf 'Windows MSI|%s|%s\n' \
-    "$WIN_TARGET/jpackage-x86_64/INCEpTION-$base-x86_64.msi" \
-    "INCEpTION-$base-x86_64.msi"
+    "$WIN_TARGET/jpackage-x86_64/eclipse-inception-incubation-$base-x86_64.msi" \
+    "eclipse-inception-incubation-$base-x86_64.msi"
   printf 'Executable JAR|%s|%s\n' \
-    "$WEBAPP_TARGET/inception-app-webapp-$version-standalone.jar" \
-    "inception-app-webapp-$version-standalone.jar"
+    "$WEBAPP_TARGET/eclipse-inception-incubation-$version-standalone.jar" \
+    "eclipse-inception-incubation-$version-standalone.jar"
   printf 'JAR signature|%s|%s\n' \
-    "$WEBAPP_TARGET/inception-app-webapp-$version-standalone.jar.asc" \
-    "inception-app-webapp-$version-standalone.jar.asc"
+    "$WEBAPP_TARGET/eclipse-inception-incubation-$version-standalone.jar.asc" \
+    "eclipse-inception-incubation-$version-standalone.jar.asc"
+  # Written by the legal documentation generator; the same SBOM is inside the
+  # jar as META-INF/sbom.spdx.json.
+  printf 'SBOM (SPDX)|%s|%s\n' \
+    "$WEBAPP_TARGET/eclipse-inception-incubation-$version-standalone.spdx.json" \
+    "eclipse-inception-incubation-$version-standalone.spdx.json"
 
   # The generated example scripts, so users can grab a compose file pinned to
   # this release instead of copying one out of the documentation. Note releases
@@ -222,9 +229,9 @@ expected_artifacts() {
 # literal placeholder would not: the spelling changes from {revnumber} to
 # @project.version@ with the fix for #6186.
 generated_scripts() {
-  printf 'docker-compose.yml|ghcr.io/inception-project/inception\n'
-  printf 'docker-compose-mysql8.yml|ghcr.io/inception-project/inception\n'
-  printf 'kubernetes.yml|ghcr.io/inception-project/inception\n'
+  printf 'docker-compose.yml|ghcr.io/eclipse-inception/inception\n'
+  printf 'docker-compose-mysql8.yml|ghcr.io/eclipse-inception/inception\n'
+  printf 'kubernetes.yml|ghcr.io/eclipse-inception/inception\n'
 }
 
 GENERATED_SCRIPTS_DIR="$WEBAPP_TARGET/generated-docs/admin-guide/scripts"

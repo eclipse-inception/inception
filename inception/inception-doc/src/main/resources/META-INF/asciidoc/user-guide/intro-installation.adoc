@@ -38,20 +38,20 @@ NOTE: *Hey system operators and admins!* If you are installing {product-name}
 
 == Windows (MSI)
 
-. Download the `{product-name}-{revnumber}-x86_64.msi` file from the
-  link:https://inception-project.github.io/downloads/[downloads page].
+. Download the `eclipse-inception-incubation-{revnumber}-x86_64.msi` file from the
+  link:https://eclipse-inception.github.io/downloads/[downloads page].
 . Double-click the installer and follow the prompts. By default,
-  {product-name} is installed under `C:\Program Files\INCEpTION` and a
+  {product-name} is installed under `C:\Program Files\Eclipse INCEpTION` and a
   Start Menu shortcut is created.
-. Launch *{product-name}* from the Start Menu. The application opens its main
+. Launch *Eclipse INCEpTION* from the Start Menu. The application opens its main
   page in your default browser once the server has started.
 
 == macOS (DMG)
 
-. Download the appropriate `{product-name}-{revnumber}-<arch>.dmg` for your
+. Download the appropriate `eclipse-inception-incubation-{revnumber}-<arch>.dmg` for your
   Mac (`aarch64` for Apple Silicon, `x86_64` for Intel).
-. Open the DMG and drag *{product-name}* into the *Applications* folder.
-. Launch *{product-name}* from Launchpad or the *Applications* folder. The
+. Open the DMG and drag *Eclipse INCEpTION* into the *Applications* folder.
+. Launch *Eclipse INCEpTION* from Launchpad or the *Applications* folder. The
   application opens its main page in your default browser once the server
   has started.
 
@@ -61,8 +61,8 @@ The platform-independent JAR requires Java {min-java-version} or higher to be in
 your system. If you do not have Java installed, you can obtain it for example
 from link:https://adoptium.net[Adoptium].
 
-. Download the `inception-app-standalone-{revnumber}.jar` file from the
-  link:https://inception-project.github.io/downloads/[downloads page].
+. Download the `eclipse-inception-incubation-{revnumber}-standalone.jar` file from the
+  link:https://eclipse-inception.github.io/downloads/[downloads page].
 . Start {product-name} by double-clicking the downloaded JAR file.
   A splash screen is shown while the application is loading.
 +
@@ -78,7 +78,7 @@ Alternatively, you can start the application from the command line:
 +
 [source,text,subs="+attributes"]
 ----
-$ java -jar inception-app-standalone-{revnumber}.jar
+$ java -jar eclipse-inception-incubation-{revnumber}-standalone.jar
 ----
 . Once the application has started, a dialog appears from which you can open
   the application in your default browser or shut it down again. When started

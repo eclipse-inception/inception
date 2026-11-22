@@ -29,33 +29,33 @@
   <version>43.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>INCEpTION</name>
-  <description>INCEpTION provides a semantic annotation platform offering intelligent annotation assistance and knowledge management.</description>
-  <url>https://inception-project.github.io</url>
+  <name>Eclipse INCEpTION</name>
+  <description>Eclipse INCEpTION provides a semantic annotation platform offering intelligent annotation assistance and knowledge management.</description>
+  <url>https://eclipse-inception.github.io</url>
   <inceptionYear>2018</inceptionYear>
 
   <organization>
-    <name>The INCEpTION Project</name>
-    <url>https://inception-project.github.io</url>
+    <name>Eclipse INCEpTION</name>
+    <url>https://eclipse-inception.github.io</url>
   </organization>
 
   <licenses>
     <license>
-      <name>Apache License Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <name>Apache-2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
 
   <issueManagement>
-    <url>https://github.com/inception-project/inception/issues</url>
+    <url>https://github.com/eclipse-inception/inception/issues</url>
     <system>GitHub Issues</system>
   </issueManagement>
 
   <scm>
-    <connection>scm:git:https://github.com/inception-project/inception.git</connection>
-    <developerConnection>scm:git:https://github.com/inception-project/inception.git</developerConnection>
-    <url>https://github.com/inception-project/inception</url>
+    <connection>scm:git:https://github.com/eclipse-inception/inception.git</connection>
+    <developerConnection>scm:git:https://github.com/eclipse-inception/inception.git</developerConnection>
+    <url>https://github.com/eclipse-inception/inception</url>
     <tag>inception-41.0</tag>
   </scm>
 
@@ -71,6 +71,18 @@
   </distributionManagement>
 
   <properties>
+    <!--
+      The name of the product as shown to users, e.g. in the documentation and the generated legal
+      documentation. Not project.name, which each module overrides with its own.
+    -->
+    <product.name>INCEpTION</product.name>
+    <!--
+      The formal name of the product, used at its first prominent mention, e.g. in the titles of
+      the guides. Eclipse Foundation branding rules ask for the formal name there and allow the
+      short name (product.name) elsewhere.
+    -->
+    <product.formal.name>Eclipse INCEpTION</product.formal.name>
+
     <build-ant-version>1.10.18</build-ant-version>
     <build-groovy-version>5.1.3</build-groovy-version>
 
@@ -108,6 +120,13 @@
     <tomcat.version>11.0.29</tomcat.version>
     <jetty.version>12.1.15</jetty.version>
     <servlet-api.version>6.1.0</servlet-api.version>
+    <!--
+      Pinned in inception-dependencies to undo the provided scope that the imported wicket-parent
+      manages for them. The versions are those wicket-parent resolved to.
+    -->
+    <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
+    <jakarta.validation-api.version>3.1.1</jakarta.validation-api.version>
+    <hamcrest.version>3.0</hamcrest.version>
 
     <mariadb.driver.version>3.5.11</mariadb.driver.version>
     <mssql.driver.version>13.6.2.jre11</mssql.driver.version>
@@ -174,6 +193,9 @@
     <txtmark.version>0.13</txtmark.version>
     <owasp-java-html-sanitizer.version>20260924.2</owasp-java-html-sanitizer.version>
     <jinjava.version>2.8.5</jinjava.version>
+    <jinjava.hubspot-immutables.version>1.9</jinjava.hubspot-immutables.version>
+    <jinjava.hubspot-rosetta.version>3.11.8</jinjava.hubspot-rosetta.version>
+    <jinjava.immutables-encode.version>2.10.1</jinjava.immutables-encode.version>
     <fastutil.version>8.5.19</fastutil.version>
     <zjsonpatch.version>0.6.4</zjsonpatch.version>
     <picocli.version>4.7.7</picocli.version>
@@ -218,6 +240,7 @@
     <hsqldb.version>2.7.4</hsqldb.version>
     <opensaml.version>5.2.3</opensaml.version>
     <shib-shared.version>9.2.3</shib-shared.version>
+    <bouncycastle.version>1.87</bouncycastle.version>
     <oauth2-oidc-sdk.version>11.39</oauth2-oidc-sdk.version>
     <javassist.version>3.33.0-GA</javassist.version>
     <openjson.version>1.0.13</openjson.version>
@@ -255,7 +278,6 @@
     <jsdom-global.version>^3.0.2</jsdom-global.version>
     <jquery.version>4.0.0</jquery.version>
     <jquery-ui.version>1.14.2+1</jquery-ui.version>
-    <license-checker.version>^25.0.1</license-checker.version>
     <marked.version>~18.2.0</marked.version>
     <pdfjs.version>5.4.449</pdfjs.version>
     <neostandard.version>^0.14.1</neostandard.version>

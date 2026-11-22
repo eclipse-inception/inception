@@ -18,8 +18,10 @@
 :imagesdir: user-guide/
 :doctype: book
 
-= {product-name} User Guide
-The {product-name} Team
+= {product-formal-name} User Guide
+Contributors to {product-formal-name}
+
+include::common/legal-notice.adoc[]
 
 = Getting Started
 

@@ -3,7 +3,8 @@
   "version": "${semver}",
   "author": "INCEpTION Team",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/inception-project/inception#readme",
+  "private": true,
+  "homepage": "https://github.com/eclipse-inception/inception#readme",
   "scripts": {
     "build": "node build.mjs",
     "test": "exit 0",
@@ -13,10 +14,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/inception-project/inception.git"
+    "url": "git+https://github.com/eclipse-inception/inception.git"
   },
   "bugs": {
-    "url": "https://github.com/inception-project/issues"
+    "url": "https://github.com/eclipse-inception/inception/issues"
   },
   "dependencies": {
     "@inception-project/inception-js-api": "file:../../../../inception-js-api/src/main/ts",
@@ -25,7 +26,6 @@
     "bootstrap": "${bootstrap.version}"
   },
   "devDependencies": {
-    "license-checker": "${license-checker.version}",
     "esbuild": "${esbuild.version}",
     "esbuild-svelte": "${esbuild-svelte.version}",
     "esbuild-sass-plugin": "${esbuild-sass-plugin.version}",

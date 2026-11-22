@@ -1096,8 +1096,11 @@
               <project-version>${project.version}</project-version>
               <revnumber>${project.version}</revnumber>
               <min-java-version>${maven.compiler.release}</min-java-version>
-              <product-name>INCEpTION</product-name>
-              <product-website-url>https://inception-project.github.io</product-website-url>
+              <product-name>${product.name}</product-name>
+              <product-formal-name>${product.formal.name}</product-formal-name>
+              <product-website-url>${project.organization.url}</product-website-url>
+              <!-- Set by the parent POM, from the reproducible build timestamp if pinned -->
+              <copyright-year>${dkpro.copyright.year}</copyright-year>
               <icons>font</icons>
               <experimental>true</experimental>
             </attributes>
@@ -1429,6 +1432,13 @@
           <name>!m2e.version</name>
         </property>
       </activation>
+      <properties>
+        <!--
+          Download name of the standalone jar, matching the installers. Deployed to Maven
+          repositories, it keeps the name from its coordinates.
+        -->
+        <standalone.jar.basename>eclipse-inception-incubation-${project.version}-standalone</standalone.jar.basename>
+      </properties>
       <build>
         <plugins>
           <plugin>
@@ -1458,6 +1468,19 @@
                       <groupId>org.slf4j</groupId>
                       <artifactId>jcl-over-slf4j</artifactId>
                     </exclude>
+                    <!--
+                      Provided dependencies would otherwise go into WEB-INF/lib-provided. Neither is
+                      needed at runtime: the embedded Tomcat brings the servlet API, and jsr305 only
+                      holds annotations for compile-time checks.
+                    -->
+                    <exclude>
+                      <groupId>jakarta.servlet</groupId>
+                      <artifactId>jakarta.servlet-api</artifactId>
+                    </exclude>
+                    <exclude>
+                      <groupId>com.google.code.findbugs</groupId>
+                      <artifactId>jsr305</artifactId>
+                    </exclude>
                   </excludes>
                 </configuration>
               </execution>
@@ -1482,7 +1505,7 @@
                 </goals>
                 <configuration>
                   <target>
-                    <move file="target/${project.artifactId}-${project.version}-standalone.war" tofile="target/${project.artifactId}-${project.version}-standalone.jar" />
+                    <move file="target/${project.artifactId}-${project.version}-standalone.war" tofile="target/${standalone.jar.basename}.jar" />
                   </target>
                 </configuration>
               </execution>
@@ -1501,7 +1524,7 @@
                 <configuration>
                   <artifacts>
                     <artifact>
-                      <file>target/${project.artifactId}-${project.version}-standalone.jar</file>
+                      <file>target/${standalone.jar.basename}.jar</file>
                       <type>jar</type>
                       <classifier>standalone</classifier>
                     </artifact>
@@ -1509,6 +1532,71 @@
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+          <plugin>
+            <!--
+              Analyses the standalone jar produced above and writes LICENSE, NOTICE.md, DEPENDENCIES,
+              the license texts in LICENSES/ and the SPDX SBOM into its META-INF/ (and into
+              target/legal). Declared after the antrun
+              plugin, so that it runs on the renamed .jar and the spring-boot-maven-plugin above
+              stays in front of the antrun plugin. The generator is a plugin dependency, so it does
+              not ship.
+            -->
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>generate-legal-documentation</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>java</goal>
+                </goals>
+                <configuration>
+                  <mainClass>de.tudarmstadt.ukp.inception.build.legal.LegalDocumentationGenerator</mainClass>
+                  <includeProjectDependencies>false</includeProjectDependencies>
+                  <includePluginDependencies>true</includePluginDependencies>
+                  <arguments>
+                    <argument>--artifact</argument>
+                    <argument>${project.build.directory}/${standalone.jar.basename}.jar</argument>
+                    <argument>--patch</argument>
+                    <!-- The standalone jar contains every component with a concluded license -->
+                    <argument>--fail-on-unused-conclusions</argument>
+                    <!-- Published as a release asset next to the jar -->
+                    <argument>--sbom-copy</argument>
+                    <argument>${project.build.directory}/${standalone.jar.basename}.spdx.json</argument>
+                    <argument>--license</argument>
+                    <argument>${project.basedir}/LICENSE.txt</argument>
+                    <argument>--output</argument>
+                    <argument>${project.build.directory}/legal</argument>
+                    <argument>--own-group-id</argument>
+                    <argument>${project.groupId}</argument>
+                    <argument>--own-npm-scope</argument>
+                    <argument>@inception-project</argument>
+                    <argument>--project-name</argument>
+                    <argument>${product.name}</argument>
+                    <argument>--project-version</argument>
+                    <argument>${project.version}</argument>
+                    <argument>--project-license</argument>
+                    <argument>${project.licenses[0].name}</argument>
+                    <argument>--project-url</argument>
+                    <!-- Not project.url, which inheritance extends by the module path -->
+                    <argument>${project.organization.url}</argument>
+                    <!--
+                      One argument: Maven 3 passes an unset property on its own as null, but leaves
+                      it as text inside a longer string, which the generator reads as not set.
+                    -->
+                    <argument>--output-timestamp=${project.build.outputTimestamp}</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
+            <dependencies>
+              <dependency>
+                <groupId>de.tudarmstadt.ukp.inception.app</groupId>
+                <artifactId>inception-build-legal</artifactId>
+                <version>${project.version}</version>
+              </dependency>
+            </dependencies>
           </plugin>
         </plugins>
       </build>

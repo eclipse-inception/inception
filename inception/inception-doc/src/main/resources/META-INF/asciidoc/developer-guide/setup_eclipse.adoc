@@ -70,7 +70,7 @@ client, use the command
 
 [source,text]
 ----
-$ git clone https://github.com/inception-project/inception.git
+$ git clone https://github.com/eclipse-inception/inception.git
 ----
 
 In Eclipse, go to *File -> Import*, choose *Existing Maven projects*, and select the folder to which

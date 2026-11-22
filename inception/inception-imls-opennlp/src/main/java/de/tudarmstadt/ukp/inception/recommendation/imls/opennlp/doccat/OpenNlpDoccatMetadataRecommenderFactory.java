@@ -56,7 +56,7 @@ public class OpenNlpDoccatMetadataRecommenderFactory
     @Override
     public String getName()
     {
-        return "Document Classifier (OpenNLP Document Categorizer)";
+        return "Document Classifier (Apache OpenNLP Document Categorizer)";
     }
 
     @Override

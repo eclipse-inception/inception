@@ -15,15 +15,18 @@
 // limitations under the License.
 
 [[sect_imls_chatgpt]]
-== 🧪 ChatGPT
+== 🧪 LLM via OpenAI-compatible API
 
 ====
 CAUTION: Experimental feature. To use this functionality, you need to enable it first by adding `recommender.chatgpt.enabled=true` to the `settings.properties` file (see the <<admin-guide.adoc#sect_settings, Admin Guide>>).
 ====
 
-This recommender allows to obtain annotation suggestions using link:https://openai.com/chatgpt/[ChatGPT] and other services compatible with the ChatGPT API.
+This recommender allows to obtain annotation suggestions from large language models (LLMs) offered through
+the link:https://platform.openai.com/docs/api-reference[OpenAI API] or through other services
+compatible with it.
 
-In order to use this recommender, you have to generate a link:https://platform.openai.com/api-keys[ChatGPT API key] and set it in the recommender configuration.
+In order to use this recommender, you have to generate an API key for the service, e.g. an
+link:https://platform.openai.com/api-keys[OpenAI API key], and set it in the recommender configuration.
 Once you have done this, you can select a model form the model drop-down list.
 
 For further information on how to configure the modes of the recommender, please refer to <<sect_imls_ollama>>.

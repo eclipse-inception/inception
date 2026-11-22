@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -68,9 +69,12 @@ public class GenerateDocumentation
                 .setAnchors(true) //
                 .attribute("docinfo1", "true") //
                 .attribute("project-version", "DEVELOPER BUILD") //
-                .attribute("revnumber", "DEVELOPER BUILD").attribute("product-name", "INCEpTION") //
+                .attribute("revnumber", "DEVELOPER BUILD") //
+                .attribute("product-name", "INCEpTION") //
+                .attribute("product-formal-name", "Eclipse INCEpTION") //
                 .attribute("min-java-version", getMinJavaVersion()) //
-                .attribute("product-website-url", "https://inception-project.github.io") //
+                .attribute("product-website-url", "https://eclipse-inception.github.io") //
+                .attribute("copyright-year", Integer.toString(Year.now().getValue())) //
                 .icons(Attributes.FONT_ICONS) //
                 .tableOfContents(Placement.LEFT) //
                 .experimental(true) //

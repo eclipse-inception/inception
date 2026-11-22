@@ -5,13 +5,13 @@
   "author": "INCEpTION Team",
   "license": "Apache-2.0",
   "private": true,
-  "homepage": "https://github.com/inception-project/inception#readme",
+  "homepage": "https://github.com/eclipse-inception/inception#readme",
   "bugs": {
-    "url": "https://github.com/inception-project/issues"
+    "url": "https://github.com/eclipse-inception/inception/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/inception-project/inception.git"
+    "url": "git+https://github.com/eclipse-inception/inception.git"
   },
   "scripts": {
     "build": "node build.mjs",
@@ -26,14 +26,7 @@
     "@types/stompjs": "${types-stompjs.version}",
     "fast-json-patch": "${fast-json-patch.version}"
   },
-  "optionalDependencies": {
-    "@rollup/rollup-win32-x64-msvc": "${rollup.version}",
-    "@rollup/rollup-linux-x64-gnu": "${rollup.version}",
-    "@rollup/rollup-darwin-x64": "${rollup.version}",
-    "@rollup/rollup-darwin-arm64": "${rollup.version}"
-  },
   "devDependencies": {
-    "license-checker": "${license-checker.version}",
     "cross-env": "${cross-env.version}",
     "esbuild": "${esbuild.version}",
     "esbuild-sass-plugin": "${esbuild-sass-plugin.version}",
