@@ -394,8 +394,30 @@
 
         The results are written to target/dash/summary. Add -Ddash.fail=true to fail the build if
         any dependency requires review.
+
+        In inception-app-webapp, the same profile instead checks exactly what ships: the
+        components in the DEPENDENCIES file generated for the standalone jar, including the npm
+        packages and the code bundled into libraries. It fails on any component that is not
+        approved or whose license differs from ours:
+
+          mvn -Pdash-licenses -DskipTests package -pl inception/inception-app-webapp
+
+        Both need network access to the Eclipse API and ClearlyDefined, so they are run by hand.
       -->
       <id>dash-licenses</id>
+      <properties>
+        <dash.licenses.version>1.1.0</dash.licenses.version>
+      </properties>
+      <repositories>
+        <!-- The Dash command-line jar, which the webapp runs -->
+        <repository>
+          <id>dash-licenses-releases</id>
+          <url>https://repo.eclipse.org/content/repositories/dash-licenses-releases/</url>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
       <pluginRepositories>
         <pluginRepository>
           <id>dash-licenses-releases</id>
@@ -411,7 +433,7 @@
             <plugin>
               <groupId>org.eclipse.dash</groupId>
               <artifactId>license-tool-plugin</artifactId>
-              <version>1.1.0</version>
+              <version>${dash.licenses.version}</version>
               <configuration>
                 <includeScope>runtime</includeScope>
                 <!-- The reactor modules themselves are not third-party content -->
