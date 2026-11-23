@@ -33,7 +33,7 @@ import de.tudarmstadt.ukp.inception.schema.api.AnnotationSchemaService;
 /**
  * <p>
  * This class is exposed as a Spring Component via
- * {@link ExternalRecommenderAutoConfiguration#externalRecommenderFactory}.
+ * {@link ExternalRecommenderAutoConfiguration#externalRecommenderFactoryV1}.
  * </p>
  */
 public class ExternalRecommenderFactory
@@ -69,7 +69,7 @@ public class ExternalRecommenderFactory
     @Override
     public String getName()
     {
-        return "External recommender";
+        return "Remote classifier V1";
     }
 
     @Override

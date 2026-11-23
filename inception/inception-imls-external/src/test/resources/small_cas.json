@@ -1,0 +1,85 @@
+{
+  "text": "Joe waited for the train . The train was late .",
+  "version": 23,
+  "annotations": {
+    "t.token": [
+      {
+        "begin": 0,
+        "end": 3
+      },
+      {
+        "begin": 4,
+        "end": 10
+      },
+      {
+        "begin": 11,
+        "end": 14
+      },
+      {
+        "begin": 15,
+        "end": 18
+      },
+      {
+        "begin": 19,
+        "end": 24
+      },
+      {
+        "begin": 25,
+        "end": 26
+      },
+      {
+        "begin": 27,
+        "end": 30
+      },
+      {
+        "begin": 31,
+        "end": 36
+      },
+      {
+        "begin": 37,
+        "end": 40
+      },
+      {
+        "begin": 41,
+        "end": 45
+      },
+      {
+        "begin": 46,
+        "end": 47
+      }
+    ],
+    "t.sentence": [
+      {
+        "begin": 0,
+        "end": 26
+      },
+      {
+        "begin": 27,
+        "end": 47
+      }
+    ],
+    "t.annotation": [
+      {
+        "begin": 0,
+        "end": 3,
+        "features": {
+          "f.value": "PER"
+        }
+      },
+      {
+        "begin": 19,
+        "end": 24,
+        "features": {
+          "f.value": "OTH"
+        }
+      },
+      {
+        "begin": 31,
+        "end": 36,
+        "features": {
+          "f.value": "OTH"
+        }
+      }
+    ]
+  }
+}
