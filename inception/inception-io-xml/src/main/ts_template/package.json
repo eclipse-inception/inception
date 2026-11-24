@@ -34,7 +34,6 @@
     "temp-write": "${temp-write.version}",
     "@types/events": "${types-events.version}",
     "@types/jquery": "${types-jquery.version}",
-    "@types/urijs": "${types-urijs.version}",
     "typescript": "${typescript.version}",
     "uuid": "${uuid.version}",
     "yargs": "${yargs.version}"

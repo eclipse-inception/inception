@@ -19,7 +19,32 @@
 
     import { onMount, onDestroy, tick } from 'svelte';
     import dayjs from 'dayjs';
-    import * as echarts from 'echarts';
+    // Import only the parts of ECharts the chart uses to keep the bundle small
+    import * as echarts from 'echarts/core';
+    import { LineChart } from 'echarts/charts';
+    import {
+        DataZoomComponent,
+        GridComponent,
+        LegendComponent,
+        MarkLineComponent,
+        ToolboxComponent,
+        TooltipComponent,
+    } from 'echarts/components';
+    import { LegacyGridContainLabel } from 'echarts/features';
+    import { CanvasRenderer } from 'echarts/renderers';
+
+    echarts.use([
+        LineChart,
+        GridComponent,
+        TooltipComponent,
+        LegendComponent,
+        ToolboxComponent,
+        DataZoomComponent,
+        MarkLineComponent,
+        // grid.containLabel needs this since ECharts 6
+        LegacyGridContainLabel,
+        CanvasRenderer,
+    ]);
 
     export let dataUrl: string;
     export let devMode: boolean = false;

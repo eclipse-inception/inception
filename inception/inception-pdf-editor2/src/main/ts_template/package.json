@@ -23,7 +23,6 @@
   "dependencies": {
     "@inception-project/inception-js-api": "file:../../../../inception-js-api/src/main/ts",
     "events": "${events.version}",
-    "urijs": "${urijs.version}",
     "pdfjs-dist": "${pdfjs.version}",
     "bootstrap": "${bootstrap.version}"
   },
@@ -48,7 +47,6 @@
     "typescript": "${typescript.version}",
     "@types/events": "${types-events.version}",
     "@types/jquery": "${types-jquery.version}",
-    "@types/urijs": "${types-urijs.version}",
     "uuid": "${uuid.version}",
     "vite": "${vite.version}",
     "vitest": "${vitest.version}",

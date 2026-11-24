@@ -303,9 +303,7 @@
     <types-events.version>^3.0.3</types-events.version>
     <types-jquery.version>^4.0.1</types-jquery.version>
     <types-stompjs.version>^2.3.10</types-stompjs.version>
-    <types-urijs.version>^1.19.26</types-urijs.version>
     <uuid.version>^14.0.3</uuid.version>
-    <urijs.version>^1.19.11</urijs.version>
     <vite.version>^8.3.8</vite.version>
     <vitest.version>^5.1.0</vitest.version>
     <yargs.version>^18.2.0</yargs.version>
