@@ -689,6 +689,10 @@
           <name>m2e.version</name>
         </property>
       </activation>
+      <properties>
+        <!-- Disable tests during m2e runs in Eclipse -->
+        <ts-test-phase>none</ts-test-phase>
+      </properties>
       <build>
         <pluginManagement>
           <plugins>

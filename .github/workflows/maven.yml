@@ -127,7 +127,7 @@ jobs:
       with:
         java-version: ${{ matrix.jdk }}
         distribution: 'temurin'
-        cache: maven
+        check-latest: true
         server-id: ukp-oss-snapshots
         server-username-env-var: MAVEN_USERNAME
         server-password-env-var: MAVEN_PASSWORD
@@ -136,6 +136,29 @@ jobs:
       uses: stCarolas/setup-maven@v5.1
       with:
         maven-version: 3.10.2
+
+    # The cache of setup-java (`cache: maven`) is keyed on the POM hashes without a fallback, so
+    # every POM change started from an empty local repository and depended on every remote
+    # repository - including the less reliable ones like build.shibboleth.net - being up.
+    # Instead, fall back to the newest cache of the same ISO week. A new week starts cold, which
+    # keeps unused artifact versions from piling up and still regularly proves that the build
+    # resolves from scratch (e.g. that the Harden Runner allowlist is complete).
+    - name: Determine Maven cache week
+      id: maven-cache-week
+      shell: bash
+      run: echo "week=$(date -u +%G-W%V)" >> "$GITHUB_OUTPUT"
+
+    - name: Cache Maven repository
+      uses: actions/cache@v6.1.0
+      with:
+        # Our own artifacts are excluded so that a stale SNAPSHOT cannot stand in for a module
+        # the reactor did not build
+        path: |
+          ~/.m2/repository
+          !~/.m2/repository/de/tudarmstadt/ukp/inception
+        key: maven-${{ runner.os }}-${{ steps.maven-cache-week.outputs.week }}-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          maven-${{ runner.os }}-${{ steps.maven-cache-week.outputs.week }}-
 
 #    - name: Cache Docker layers
 #      uses: actions/cache@v6.1.0

@@ -290,7 +290,7 @@
     <stomp-stompjs.version>^7.2.1</stomp-stompjs.version>
     <svelte.version>^5.57.3</svelte.version>
     <svelte-preprocess.version>^6.0.5</svelte-preprocess.version>
-    <sveltejs-vite-plugin-svelte.version>^7.3.1</sveltejs-vite-plugin-svelte.version>
+    <sveltejs-vite-plugin-svelte.version>~7.3.2</sveltejs-vite-plugin-svelte.version>
     <svgdotjs-svg-js.version>^3.2.8</svgdotjs-svg-js.version>
     <svgdotjs-svg-filter-js.version>^3.0.10</svgdotjs-svg-filter-js.version>
     <temp-write.version>^6.0.1</temp-write.version>
