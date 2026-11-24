@@ -36,6 +36,7 @@ jobs:
         java-version: 25
         distribution: 'temurin'
         architecture: x64
+        check-latest: true
         cache: maven
 
     - name: Set up Maven
