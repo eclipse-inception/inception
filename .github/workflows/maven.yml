@@ -153,9 +153,9 @@ jobs:
         path: |
           ~/.m2/repository
           !~/.m2/repository/de/tudarmstadt/ukp/inception
-        key: maven-${{ runner.os }}-${{ steps.maven-cache-week.outputs.week }}-${{ hashFiles('**/pom.xml') }}
+        key: maven-${{ runner.os }}-${{ runner.arch }}-${{ steps.maven-cache-week.outputs.week }}-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
-          maven-${{ runner.os }}-${{ steps.maven-cache-week.outputs.week }}-
+          maven-${{ runner.os }}-${{ runner.arch }}-${{ steps.maven-cache-week.outputs.week }}-
 
 #    - name: Cache Docker layers
 #      uses: actions/cache@v6.1.0
@@ -177,9 +177,9 @@ jobs:
       uses: actions/cache@v6.1.0
       with:
         path: inception/nodejs
-        key: nodejs-cache-${{ runner.os }}-${{ github.sha }}
+        key: nodejs-cache-${{ runner.os }}-${{ runner.arch }}-${{ github.sha }}
         restore-keys: |
-          nodejs-cache-${{ runner.os }}-
+          nodejs-cache-${{ runner.os }}-${{ runner.arch }}-
 
     - name: Build with Maven
       if: "!(matrix.os == 'ubuntu-24.04-arm' && github.event_name == 'push')"
