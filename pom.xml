@@ -287,14 +287,14 @@
     <stomp-stompjs.version>^7.2.1</stomp-stompjs.version>
     <svelte.version>^5.57.3</svelte.version>
     <svelte-preprocess.version>^6.0.5</svelte-preprocess.version>
-    <sveltejs-vite-plugin-svelte.version>^7.3.1</sveltejs-vite-plugin-svelte.version>
+    <sveltejs-vite-plugin-svelte.version>~7.3.2</sveltejs-vite-plugin-svelte.version>
     <svgdotjs-svg-js.version>^3.2.8</svgdotjs-svg-js.version>
     <svgdotjs-svg-filter-js.version>^3.0.10</svgdotjs-svg-filter-js.version>
     <temp-write.version>^6.0.1</temp-write.version>
     <testing-library-svelte.version>^5.4.2</testing-library-svelte.version>
     <typescript.version>^5.8.3</typescript.version>
-    <typescript-eslint-eslint-plugin.version>^8.73.0</typescript-eslint-eslint-plugin.version>
-    <typescript-eslint-parser.version>^8.73.0</typescript-eslint-parser.version>
+    <typescript-eslint-eslint-plugin.version>^8.74.0</typescript-eslint-eslint-plugin.version>
+    <typescript-eslint-parser.version>^8.74.0</typescript-eslint-parser.version>
     <types-events.version>^3.0.3</types-events.version>
     <types-jquery.version>^3.5.34</types-jquery.version>
     <types-stompjs.version>^2.3.10</types-stompjs.version>
