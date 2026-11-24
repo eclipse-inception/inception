@@ -73,6 +73,7 @@ public class VirtuosoRepositoryTest
 
     // Pinned: 7.2.17 and the "latest" image (7.2.18-dev at the time of writing) reject SPARQL
     // updates that end with a semicolon, which RDF4J always appends, so no test data can be loaded
+    // (https://github.com/openlink/virtuoso-opensource/issues/1486)
     @Container
     private static final GenericContainer<?> VIRTUOSO = new GenericContainer<>(
             "openlink/virtuoso-opensource-7:7.2.16") //
