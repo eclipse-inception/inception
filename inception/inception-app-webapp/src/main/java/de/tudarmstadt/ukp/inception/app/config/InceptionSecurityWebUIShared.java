@@ -17,11 +17,52 @@
  */
 package de.tudarmstadt.ukp.inception.app.config;
 
+import static java.util.Locale.ROOT;
+import static org.springframework.http.HttpMethod.GET;
+
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.util.matcher.AndRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 public class InceptionSecurityWebUIShared
 {
+    public static void requestCache(HttpSecurity aHttp) throws Exception
+    {
+        var requestCache = new HttpSessionRequestCache();
+        requestCache.setRequestMatcher(savedRequestMatcher());
+        aHttp.requestCache(cache -> cache.requestCache(requestCache));
+    }
+
+    static RequestMatcher savedRequestMatcher()
+    {
+        return new AndRequestMatcher( //
+                request -> GET.matches(request.getMethod()), //
+                new NegatedRequestMatcher(
+                        new RequestHeaderRequestMatcher("X-Requested-With", "XMLHttpRequest")),
+                new NegatedRequestMatcher(new RequestHeaderRequestMatcher("Upgrade", "websocket")),
+                InceptionSecurityWebUIShared::isPageNavigation);
+    }
+
+    private static boolean isPageNavigation(HttpServletRequest aRequest)
+    {
+        // Browsers send the fetch metadata headers only to secure origins (HTTPS, localhost).
+        var fetchDest = aRequest.getHeader("Sec-Fetch-Dest");
+        if (fetchDest != null) {
+            return "document".equals(fetchDest);
+        }
+
+        // Over plain HTTP, fall back to the Accept header. Browsers explicitly ask for HTML when
+        // navigating, while background fetches like the Safari icon loader send "*/*".
+        var accept = aRequest.getHeader("Accept");
+        return accept != null && accept.toLowerCase(ROOT).contains("text/html");
+    }
+
     public static void accessToStaticResources(
             AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry aCfg)
     {
@@ -31,6 +72,8 @@ public class InceptionSecurityWebUIShared
         aCfg //
                 .requestMatchers("/favicon.ico").permitAll() //
                 .requestMatchers("/favicon.png").permitAll() //
+                .requestMatchers("/apple-touch-icon.png").permitAll() //
+                .requestMatchers("/apple-touch-icon-precomposed.png").permitAll() //
                 .requestMatchers("/assets/**").permitAll() //
                 .requestMatchers("/images/**").permitAll() //
                 .requestMatchers("/resources/**").permitAll() //

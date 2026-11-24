@@ -21,6 +21,7 @@ import static de.tudarmstadt.ukp.clarin.webanno.ui.core.page.ProjectPageBase.NS_
 import static de.tudarmstadt.ukp.inception.app.config.InceptionSecurityWebUIShared.accessToApplication;
 import static de.tudarmstadt.ukp.inception.app.config.InceptionSecurityWebUIShared.accessToRemoteApiAndSwagger;
 import static de.tudarmstadt.ukp.inception.app.config.InceptionSecurityWebUIShared.accessToStaticResources;
+import static de.tudarmstadt.ukp.inception.app.config.InceptionSecurityWebUIShared.requestCache;
 import static de.tudarmstadt.ukp.inception.support.logging.BaseLoggers.BOOT_LOG;
 
 import java.util.Optional;
@@ -93,6 +94,8 @@ public class InceptionSecurityWebUIBuiltInAutoConfiguration
         // .formLogin(form -> form.loginPage("/login.html").permitAll())
         aHttp.exceptionHandling(exceptions -> exceptions.defaultAuthenticationEntryPointFor(
                 new LoginUrlAuthenticationEntryPoint("/login.html"), request -> true));
+
+        requestCache(aHttp);
 
         if (aClientRegistrationRepository.isPresent()) {
             aHttp.oauth2Login(oauth2 -> oauth2 //
