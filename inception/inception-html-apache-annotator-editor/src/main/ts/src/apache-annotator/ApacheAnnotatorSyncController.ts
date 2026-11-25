@@ -25,6 +25,7 @@ import {
     generateTOCKeyIndex,
     offsetToRange,
     calculateStartOffset,
+    calculateStartOffsets,
     calculateEndOffset,
 } from '@inception-project/inception-js-api';
 import { removeClassFromAncestors } from './Utilities';
@@ -80,7 +81,7 @@ export interface SyncRegion {
 
 /**
  * Build the sorted, non-overlapping regions from a TOC. Region boundaries are the keyed sections'
- * start offsets (via {@code calculateStartOffset}); {@code docEnd} closes the last region. Sections
+ * start offsets (via {@code calculateStartOffsets}); {@code docEnd} closes the last region. Sections
  * without a key are ignored (they do not partition -- their content belongs to the enclosing
  * region). Duplicate/shared keys keep their first occurrence in document order, matching
  * {@link generateTOCKeyIndex}. Returns regions in ascending start order, always beginning with the
@@ -90,14 +91,17 @@ export function buildSyncRegions(root: Element, tocRoot: TocLevel, docEnd: numbe
     const byKey = generateTOCKeyIndex(tocRoot);
 
     type Boundary = { key: string; start: number; element?: Element };
-    const starts: Boundary[] = [];
-    for (const key of Object.keys(byKey)) {
-        const el = byKey[key].element;
-        if (!el) continue;
-        const start = calculateStartOffset(root, el);
-        if (start < 0) continue;
-        starts.push({ key, start, element: el });
-    }
+    const keyed = Object.keys(byKey).flatMap((key) => {
+        const element = byKey[key].element;
+        return element ? [{ key, element }] : [];
+    });
+    const offsets = calculateStartOffsets(
+        root,
+        keyed.map((k) => k.element)
+    );
+    const starts: Boundary[] = keyed
+        .map(({ key, element }, i) => ({ key, start: offsets[i], element }))
+        .filter((s) => s.start >= 0);
 
     starts.sort((a, b) => a.start - b.start);
 
@@ -326,8 +330,10 @@ export type SyncPointRamps = { start: number; end: number };
 
 export const DEFAULT_SYNC_POINT_RAMPS: SyncPointRamps = { start: 0.5, end: 0.5 };
 
+const MIN_RAMP_LENGTH = 1;
+
 /**
- * The two ramps in pixels of scrolling. When together they are longer than the scroll range, both
+ * The two ramps in pixels of scrolling, at least {@link MIN_RAMP_LENGTH} each. When together they are longer than the scroll range, both
  * shrink in proportion so that they meet, and the sync point moves from top to bottom across the
  * whole range.
  */
@@ -336,8 +342,9 @@ function rampLengths(
     viewportHeight: number,
     ramps: SyncPointRamps
 ): { start: number; end: number } {
-    const start = ramps.start * viewportHeight;
-    const end = ramps.end * viewportHeight;
+    // A ramp of zero length would divide zero by zero at its document end; one pixel is a jump
+    const start = Math.max(MIN_RAMP_LENGTH, ramps.start * viewportHeight);
+    const end = Math.max(MIN_RAMP_LENGTH, ramps.end * viewportHeight);
     const scale = Math.min(1, maxScroll / (start + end));
     return { start: start * scale, end: end * scale };
 }
@@ -460,19 +467,17 @@ export class ApacheAnnotatorSyncController {
     /**
      * Last viewport position applied by {@link scrollToViewportPosition}, for per-frame dedup.
      *
-     * {@code scrollProgress} is part of the key because it moves the target near an extreme even
-     * when begin/fraction agree. Dedup never crosses the by-key ({@link scrollToRegion}) and offset
-     * ({@link scrollToOffset}) paths, which compute different pixel targets from the same position:
-     * each guard also checks that the last apply came from its own path.
+     * The offset path ({@link scrollToOffset}) compares the position it was sent: {@code
+     * scrollProgress} is part of the key because it moves the target near an extreme even when
+     * begin/fraction agree. The by-key path ({@link scrollToRegion}) compares the scrollTop it
+     * computed instead, which also changes when the regions on either side moved while the sender's
+     * position stayed the same. Dedup never crosses the two paths, which compute different pixel
+     * targets from the same position: each guard also checks that the last apply came from its own
+     * path, which the shape of the record tells.
      */
     private lastAppliedViewportScrollPosition:
-        | {
-              begin: number;
-              fraction: number;
-              scrollProgress: number | undefined;
-              sectionKey?: string;
-              sectionFraction?: number;
-          }
+        | { begin: number; fraction: number; scrollProgress: number | undefined }
+        | { scrollTop: number }
         | undefined = undefined;
 
     /** How long the sync point's transitions at the document ends are, see {@link syncPointFraction}. */
@@ -602,9 +607,15 @@ export class ApacheAnnotatorSyncController {
     /**
      * The sync point as a position in the scrolled content (0 = content top) when the container is
      * scrolled to {@code scrollTop}.
+     * <p>
+     * Safari reports a scrollTop outside [0, maxScroll] while it rubber-bands past either end. That
+     * is clamped, so the sync point stays in its range: above the content top it would lie before
+     * the first region, which then reports no section at all.
      */
     private syncPointAt(container: Element, scrollTop = container.scrollTop): number {
-        return scrollTop + this.syncPointOffset(container, scrollTop);
+        const maxScroll = Math.max(0, container.scrollHeight - container.clientHeight);
+        const clamped = Math.min(maxScroll, Math.max(0, scrollTop));
+        return clamped + this.syncPointOffset(container, clamped);
     }
 
     /**
@@ -801,28 +812,18 @@ export class ApacheAnnotatorSyncController {
         );
         if (target === undefined) return false;
 
-        // Dedup identical re-applies (per-frame)
-        const frac = Math.min(1, Math.max(0, pos.sectionFraction ?? 0));
+        // target is where the sync point goes, not the viewport top
+        const scrollTop = this.scrollTopForSyncPoint(container, target);
+
+        // Dedup re-applies of the same target (per-frame), so a user who scrolled on since is not
+        // pulled back
         const last = this.lastAppliedViewportScrollPosition;
-        if (
-            last &&
-            last.sectionKey === pos.sectionKey &&
-            last.sectionFraction !== undefined &&
-            Math.abs(last.sectionFraction - frac) < 0.001 &&
-            sameScrollProgress(last.scrollProgress, pos.scrollProgress)
-        ) {
+        if (last && 'scrollTop' in last && Math.abs(last.scrollTop - scrollTop) < 0.5) {
             return true;
         }
-        this.lastAppliedViewportScrollPosition = {
-            begin: pos.begin,
-            fraction: Math.min(1, Math.max(0, pos.fraction)),
-            scrollProgress: pos.scrollProgress,
-            sectionKey: pos.sectionKey,
-            sectionFraction: frac,
-        };
+        this.lastAppliedViewportScrollPosition = { scrollTop };
 
-        // target is where the sync point goes, not the viewport top
-        this.applyScrollTop(container, this.scrollTopForSyncPoint(container, target));
+        this.applyScrollTop(container, scrollTop);
         return true;
     }
 
@@ -929,7 +930,7 @@ export class ApacheAnnotatorSyncController {
         const last = this.lastAppliedViewportScrollPosition;
         if (
             last &&
-            last.sectionKey === undefined && // only dedup against a prior offset-path apply (see field doc)
+            'begin' in last && // only dedup against a prior offset-path apply (see field doc)
             last.begin === pos.begin &&
             Math.abs(last.fraction - fraction) < 0.01 &&
             sameScrollProgress(last.scrollProgress, pos.scrollProgress)

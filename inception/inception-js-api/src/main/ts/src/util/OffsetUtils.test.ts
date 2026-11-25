@@ -16,7 +16,12 @@
  * limitations under the License.
  */
 import { describe, it, expect } from 'vitest';
-import { offsetToRange, calculateStartOffset, calculateEndOffset } from './OffsetUtils';
+import {
+    offsetToRange,
+    calculateStartOffset,
+    calculateStartOffsets,
+    calculateEndOffset,
+} from './OffsetUtils';
 
 // Build a root <div> from an HTML string and attach it to the document so
 // Range / NodeIterator have a live context.
@@ -184,5 +189,30 @@ describe('offsetToRange', () => {
 
         const r = offsetToRange(root, begin, end)!;
         expect(r.toString()).toBe('bbb');
+    });
+});
+
+describe('calculateStartOffsets', () => {
+    it('gives each node the offset calculateStartOffset gives it', () => {
+        const root = makeRoot(
+            'intro<section><h2>one</h2><p>a <b>bold</b> word</p><!-- not text -->' +
+                '<section><h3>nested</h3><p></p><p>after an empty one</p></section></section>tail'
+        );
+        const nodes = [root, ...Array.from(root.querySelectorAll('*'))];
+        expect(calculateStartOffsets(root, nodes)).toEqual(
+            nodes.map((node) => calculateStartOffset(root, node))
+        );
+    });
+
+    it('keeps the order and the duplicates of the nodes asked for', () => {
+        const root = makeRoot('<p>one</p><p>two</p>');
+        const [first, second] = Array.from(root.querySelectorAll('p'));
+        expect(calculateStartOffsets(root, [second, first, second])).toEqual([3, 0, 3]);
+    });
+
+    it('gives -1 for a node outside of the root', () => {
+        const root = makeRoot('<p>one</p>');
+        const other = makeRoot('<p>two</p>');
+        expect(calculateStartOffsets(root, [other.firstChild!])).toEqual([-1]);
     });
 });

@@ -62,6 +62,34 @@ export function calculateStartOffset(root: Node, element: Node): number {
     }
 }
 
+/**
+ * The start offsets of several nodes, as {@link calculateStartOffset} gives them one by one. Each of
+ * those calls copies all the text before its node, so for many nodes in a long document this takes a
+ * single walk over the document instead.
+ *
+ * @return the offset of each node, in the order given; -1 for a node that is not {@code root} or
+ *         below it.
+ */
+export function calculateStartOffsets(root: Node, nodes: Node[]): number[] {
+    const wanted = new Set(nodes);
+    const found = new Map<Node, number>();
+
+    const doc = root.ownerDocument ?? (root as Document);
+    const walker = doc.createTreeWalker(root, NodeFilter.SHOW_ALL);
+    let offset = 0;
+    for (let node: Node | null = walker.currentNode; node; node = walker.nextNode()) {
+        if (wanted.has(node)) {
+            found.set(node, offset);
+            if (found.size === wanted.size) break;
+        }
+        // A range's text is that of its text nodes, CDATA sections included, but not comments
+        if (node.nodeType === Node.TEXT_NODE || node.nodeType === Node.CDATA_SECTION_NODE) {
+            offset += node.nodeValue?.length ?? 0;
+        }
+    }
+    return nodes.map((n) => found.get(n) ?? -1);
+}
+
 export function calculateEndOffset(root: Node, element: Node): number {
     try {
         const range = document.createRange();

@@ -871,12 +871,15 @@ public class DocumentEditorPanel
         }
         catch (IOException e) {
             error("Unable to load document: " + e.getMessage());
-            if (aTarget != null) {
-                aTarget.addChildren(getPage(), IFeedback.class);
-            }
 
             unloadDocument();
             refreshAfterDocumentChange(aTarget);
+
+            // The previous document is gone all the same - whatever followed it must hear of it
+            if (aTarget != null) {
+                aTarget.addChildren(getPage(), IFeedback.class);
+                send(getPage(), BREADTH, new EditorContentReplacedEvent(getModelObject(), aTarget));
+            }
         }
     }
 

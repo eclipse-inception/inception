@@ -190,6 +190,23 @@ describe('syncPointFraction', () => {
         ]);
     });
 
+    it('copes with transitions of zero length', () => {
+        // E.g. set to 0 in the playground: the sync point jumps instead of moving
+        for (const ramps of [
+            { start: 0, end: 0.5 },
+            { start: 0.5, end: 0 },
+            { start: 0, end: 0 },
+        ]) {
+            expect(syncPointFraction(0, 5000, H, ramps)).toBe(0);
+            expect(syncPointFraction(2500, 5000, H, ramps)).toBe(0.5);
+            expect(syncPointFraction(5000, 5000, H, ramps)).toBe(1);
+            for (let t = 0; t <= 5000; t += 100) {
+                const syncPoint = t + syncPointFraction(t, 5000, H, ramps) * H;
+                expect(scrollTopForSyncPointAt(syncPoint, 5000, H, ramps)).toBeCloseTo(t, 6);
+            }
+        }
+    });
+
     it('runs the sync point from the top to the bottom of the content, only ever forward', () => {
         for (const maxScroll of [5000, 600, 100]) {
             let previous = -1;
@@ -731,9 +748,73 @@ describe('ApacheAnnotatorSyncController region geometry', () => {
         controller.scrollToViewportPosition(target);
         expect(container.scrollTop).toBe(applied + 100);
 
-        // A target that differs from the last one is applied
+        // A position that leads somewhere else is applied; the sender's fraction alone does not
+        // move the target, so a position differing only in it is still skipped
         controller.scrollToViewportPosition({ ...target, sectionFraction: 0.9 });
+        expect(container.scrollTop).toBe(applied + 100);
+        controller.scrollToViewportPosition({ ...target, scrollProgress: 0.2 });
         expect(container.scrollTop).not.toBe(applied + 100);
+    });
+
+    it('follows the same position again once its own regions have moved', () => {
+        layout(
+            [
+                ['a', 0],
+                ['b', 1000],
+            ],
+            3000
+        );
+        const target: ViewportScrollTarget = {
+            begin: 0,
+            fraction: 0,
+            scrollProgress: 0.5,
+            sectionKey: 'b',
+            sectionFraction: 0,
+            sections: sender(['a', 0], ['b', 0.5]),
+        };
+        const syncPoint = () => Math.round((controller as any).syncPointAt(container));
+
+        controller.scrollToViewportPosition(target);
+        expect(syncPoint()).toBe(1000);
+
+        // Annotations render above 'b'; the sender has not moved and sends the same position again
+        const b = root.querySelectorAll('section')[1];
+        b.getBoundingClientRect = () => ({ top: 1200 - container.scrollTop }) as DOMRect;
+        controller.scrollToViewportPosition(target);
+        expect(syncPoint()).toBe(1200);
+    });
+
+    it('reports the region at the end while overscrolled past it', () => {
+        layout(
+            [
+                ['a', 0],
+                ['b', 1000],
+            ],
+            3000
+        );
+        const maxScroll = 3000 - CLIENT_HEIGHT;
+
+        // Safari rubber-banding: scrollTop briefly lies outside [0, maxScroll]
+        const reportAt = (scrollTop: number) => {
+            Object.defineProperty(container, 'scrollTop', { value: scrollTop, configurable: true });
+            const pos = { begin: 0, end: 0, fraction: 0 } as ViewportScrollPosition;
+            (controller as any).augmentWithSectionPosition(pos, container);
+            return [pos.sectionKey, pos.sectionFraction];
+        };
+
+        expect(reportAt(-8)).toEqual(reportAt(0));
+        expect(reportAt(-8)).toEqual(['a', 0]);
+        expect(reportAt(maxScroll + 8)).toEqual(reportAt(maxScroll));
+        expect(reportAt(maxScroll + 8)).toEqual(['b', 1]);
+
+        // The sync point also drives the reported scrollProgress, which must stay in [0, 1]
+        const syncPointAt = (scrollTop: number) =>
+            (controller as any).syncPointAt(container, scrollTop);
+        const syncPointEnd = (controller as any).syncPointEnd(container);
+        expect(syncPointAt(-8)).toBe(syncPointAt(0));
+        expect(syncPointAt(-8) / syncPointEnd).toBe(0);
+        expect(syncPointAt(maxScroll + 8)).toBe(syncPointAt(maxScroll));
+        expect(syncPointAt(maxScroll + 8) / syncPointEnd).toBe(1);
     });
 
     it('reports where every region starts as a fraction of the content height', () => {
