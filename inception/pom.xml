@@ -683,69 +683,6 @@
 
   <profiles>
     <profile>
-      <id>m2e</id>
-      <activation>
-        <property>
-          <name>m2e.version</name>
-        </property>
-      </activation>
-      <properties>
-        <!-- Disable tests during m2e runs in Eclipse -->
-        <ts-test-phase>none</ts-test-phase>
-      </properties>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.eclipse.m2e</groupId>
-              <artifactId>lifecycle-mapping</artifactId>
-              <version>1.0.0</version>
-              <configuration>
-                <lifecycleMappingMetadata>
-                  <pluginExecutions>
-                    <pluginExecution>
-                      <!-- Activate groovy plugin in Eclipse -->
-                      <pluginExecutionFilter>
-                        <groupId>org.codehaus.gmaven</groupId>
-                        <artifactId>groovy-maven-plugin</artifactId>
-                        <versionRange>[2.1,)</versionRange>
-                        <goals>
-                          <goal>execute</goal>
-                        </goals>
-                      </pluginExecutionFilter>
-                      <action combine.self="override">
-                        <execute>
-                          <runOnConfiguration>true</runOnConfiguration>
-                          <runOnIncremental>true</runOnIncremental>
-                        </execute>
-                      </action>
-                    </pluginExecution>
-                    <pluginExecution>
-                      <!-- Activate buildnumber plugin in Eclipse -->
-                      <pluginExecutionFilter>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>buildnumber-maven-plugin</artifactId>
-                        <versionRange>[0,)</versionRange>
-                        <goals>
-                          <goal>create</goal>
-                        </goals>
-                      </pluginExecutionFilter>
-                      <action combine.self="override">
-                        <execute>
-                          <runOnConfiguration>true</runOnConfiguration>
-                          <runOnIncremental>true</runOnIncremental>
-                        </execute>
-                      </action>
-                    </pluginExecution>
-                  </pluginExecutions>
-                </lifecycleMappingMetadata>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
-    </profile>
-    <profile>
       <id>rat-check</id>
       <activation>
         <file>
@@ -1205,6 +1142,73 @@
                   <inputExclude>**/mocha-test-report.xml</inputExclude>
                   <inputExclude>**/vite.config.js.timestamp*</inputExclude>
                 </inputExcludes>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+    <profile>
+      <!--
+        Must stay the last profile: when several active profiles set the same property, the one
+        declared last wins, and ts-test-phase is also set by the typescript-module profile.
+      -->
+      <id>m2e</id>
+      <activation>
+        <property>
+          <name>m2e.version</name>
+        </property>
+      </activation>
+      <properties>
+        <!-- Disable tests during m2e runs in Eclipse -->
+        <ts-test-phase>none</ts-test-phase>
+      </properties>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.eclipse.m2e</groupId>
+              <artifactId>lifecycle-mapping</artifactId>
+              <version>1.0.0</version>
+              <configuration>
+                <lifecycleMappingMetadata>
+                  <pluginExecutions>
+                    <pluginExecution>
+                      <!-- Activate groovy plugin in Eclipse -->
+                      <pluginExecutionFilter>
+                        <groupId>org.codehaus.gmaven</groupId>
+                        <artifactId>groovy-maven-plugin</artifactId>
+                        <versionRange>[2.1,)</versionRange>
+                        <goals>
+                          <goal>execute</goal>
+                        </goals>
+                      </pluginExecutionFilter>
+                      <action combine.self="override">
+                        <execute>
+                          <runOnConfiguration>true</runOnConfiguration>
+                          <runOnIncremental>true</runOnIncremental>
+                        </execute>
+                      </action>
+                    </pluginExecution>
+                    <pluginExecution>
+                      <!-- Activate buildnumber plugin in Eclipse -->
+                      <pluginExecutionFilter>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>buildnumber-maven-plugin</artifactId>
+                        <versionRange>[0,)</versionRange>
+                        <goals>
+                          <goal>create</goal>
+                        </goals>
+                      </pluginExecutionFilter>
+                      <action combine.self="override">
+                        <execute>
+                          <runOnConfiguration>true</runOnConfiguration>
+                          <runOnIncremental>true</runOnIncremental>
+                        </execute>
+                      </action>
+                    </pluginExecution>
+                  </pluginExecutions>
+                </lifecycleMappingMetadata>
               </configuration>
             </plugin>
           </plugins>
