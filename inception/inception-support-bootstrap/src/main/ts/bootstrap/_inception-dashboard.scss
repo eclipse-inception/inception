@@ -170,7 +170,8 @@ $dashboard-border-left: 3em;
                 color: var(--bs-light) !important;
             }
 
-            &:hover {
+            &:is(a):hover,
+            .icon:hover {
                 color: var(--bs-light);
             }
 
@@ -204,7 +205,8 @@ $dashboard-border-left: 3em;
                 color: var(--bs-emphasis-color) !important;
             }
 
-            &:hover {
+            &:is(a):hover,
+            .icon:hover {
                 color: var(--bs-emphasis-color);
             }
 
