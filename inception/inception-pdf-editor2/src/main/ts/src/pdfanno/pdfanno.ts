@@ -1,5 +1,4 @@
 import './pdfanno.css';
-import urijs from 'urijs';
 import * as textLayer from './page/textLayer';
 import PDFAnnoPage from './page/pdf/PDFAnnoPage';
 import { dispatchWindowEvent } from './shared/util';
@@ -616,9 +615,9 @@ function calculateRectangles(range: [number, number]): Rectangle[] | null {
 
 async function displayViewer(): Promise<void> {
     // Display a PDF specified via URL query parameter.
-    const q = urijs(document.URL).query(true);
-    const pdfUrl = q.pdf;
-    const vModelUrl = q.vmodel;
+    const params = new URL(document.URL).searchParams;
+    const pdfUrl = params.get('pdf');
+    const vModelUrl = params.get('vmodel');
 
     if (!vModelUrl) {
         console.error('No vmodel URL provided in query parameters');

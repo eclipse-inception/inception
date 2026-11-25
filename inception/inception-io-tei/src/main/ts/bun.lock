@@ -12,7 +12,6 @@
         "@testing-library/svelte": "^5.4.2",
         "@types/events": "^3.0.3",
         "@types/jquery": "^4.0.1",
-        "@types/urijs": "^1.19.26",
         "esbuild": "^0.28.2",
         "esbuild-sass-plugin": "^3.7.0",
         "eslint": "^10.14.0",
@@ -253,8 +252,6 @@
     "@types/node": ["@types/node@26.6.6", "", { "dependencies": { "undici-types": "~8.9.0" } }, "sha512-MzQj+8Kx3XI40OmUAE6Qoh58ZMNstNNMwn2nfd3qWsfe7nDNSqJNzes4njhz6AHwrSHOffSLwXU6yb474Q4aog=="],
 
     "@types/stompjs": ["@types/stompjs@2.3.10", "", { "dependencies": { "@types/node": "*" } }, "sha512-iGTEy0T3fl21FdSoRk65G/6AyL7ETj25h39XkT756gw9mrKm2JRBqPcHRWcWRiP8daAv+kNT9mGOH4UZ/fBT+Q=="],
-
-    "@types/urijs": ["@types/urijs@1.19.26", "", {}, "sha512-wkXrVzX5yoqLnndOwFsieJA7oKM8cNkOKJtf/3vVGSUFkWDKZvFHpIl9Pvqb/T9UsawBBFMTTD8xu7sK5MWuvg=="],
 
     "@typescript-eslint/eslint-plugin": ["@typescript-eslint/eslint-plugin@8.74.0", "", { "dependencies": { "@eslint-community/regexpp": "^4.12.2", "@typescript-eslint/scope-manager": "8.74.0", "@typescript-eslint/type-utils": "8.74.0", "@typescript-eslint/utils": "8.74.0", "@typescript-eslint/visitor-keys": "8.74.0", "ignore": "^7.0.5", "natural-compare": "^1.4.0", "ts-api-utils": "^2.5.0" }, "peerDependencies": { "@typescript-eslint/parser": "^8.74.0", "eslint": "^8.57.0 || ^9.0.0 || ^10.0.0", "typescript": ">=4.8.4 <6.1.0" } }, "sha512-z3KXk1+Vm+d82ZRplOoC89ho4Rf1da5ju6sx8//92GnN532U62DGPjECXkkVqtYzIv0zoJlpO39SX2Z9tk6LVw=="],
 
