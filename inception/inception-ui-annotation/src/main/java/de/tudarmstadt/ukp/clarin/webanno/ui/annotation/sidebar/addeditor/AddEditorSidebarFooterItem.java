@@ -28,6 +28,7 @@ import org.apache.wicket.event.IEvent;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.LambdaModel;
+import org.apache.wicket.model.StringResourceModel;
 
 import de.agilecoders.wicket.core.markup.html.bootstrap.image.Icon;
 import de.agilecoders.wicket.core.markup.html.bootstrap.image.IconType;
@@ -88,9 +89,9 @@ public class AddEditorSidebarFooterItem
 
         var toggleScrollSync = new LambdaAjaxLink(MID_TOGGLE_SCROLL_SYNC,
                 this::actionToggleScrollSync);
-        toggleScrollSync.add(enabledWhen(this::isScrollSyncPossible));
+        toggleScrollSync.add(enabledWhen(this::isScrollSyncToggleable));
         toggleScrollSync.add(new Icon(MID_SCROLL_SYNC_ICON,
-                LambdaModel.of(() -> workspace() != null && workspace().isScrollSyncEnabled()
+                LambdaModel.of(() -> workspace() != null && workspace().getScrollSync().isEnabled()
                         ? ICON_SYNC_ON
                         : ICON_SYNC_OFF)));
         scrollSyncGroup.add(toggleScrollSync);
@@ -101,9 +102,9 @@ public class AddEditorSidebarFooterItem
         return workspace() != null && workspace().isScrollSyncAvailable();
     }
 
-    private boolean isScrollSyncPossible()
+    private boolean isScrollSyncToggleable()
     {
-        return workspace() != null && workspace().getScrollSyncObstacle().isEmpty();
+        return workspace() != null && workspace().getScrollSync().isToggleable();
     }
 
     private String getScrollSyncTooltip()
@@ -112,9 +113,20 @@ public class AddEditorSidebarFooterItem
             return null;
         }
 
-        return workspace().getScrollSyncObstacle() //
-                .map(obstacle -> getString("scrollSync." + obstacle.name())) //
-                .orElseGet(() -> getString("scrollSync"));
+        var scrollSync = workspace().getScrollSync();
+        var obstacle = scrollSync.getObstacle();
+        if (obstacle.isEmpty()) {
+            return getString("scrollSync");
+        }
+
+        var reason = getString("scrollSync." + obstacle.get().name());
+        if (!scrollSync.isEnabled()) {
+            return reason;
+        }
+
+        return new StringResourceModel("scrollSync.paused", this) //
+                .setParameters(reason) //
+                .getString();
     }
 
     private void actionToggleScrollSync(AjaxRequestTarget aTarget)
