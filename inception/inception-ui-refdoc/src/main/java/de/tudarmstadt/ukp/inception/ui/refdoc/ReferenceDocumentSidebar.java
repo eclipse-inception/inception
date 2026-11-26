@@ -49,7 +49,9 @@ import de.tudarmstadt.ukp.clarin.webanno.model.SourceDocument;
 import de.tudarmstadt.ukp.clarin.webanno.security.UserDao;
 import de.tudarmstadt.ukp.clarin.webanno.ui.annotation.actionbar.open.OpenDocumentDialog;
 import de.tudarmstadt.ukp.clarin.webanno.ui.annotation.editor.DocumentEditorPanel;
+import de.tudarmstadt.ukp.clarin.webanno.ui.annotation.editor.PausableSwitch;
 import de.tudarmstadt.ukp.clarin.webanno.ui.annotation.editor.ViewportSyncLink;
+import de.tudarmstadt.ukp.clarin.webanno.ui.annotation.editor.ViewportSyncLink.Obstacle;
 import de.tudarmstadt.ukp.clarin.webanno.ui.annotation.sidebar.AnnotationSidebar_ImplBase;
 import de.tudarmstadt.ukp.inception.editor.state.AnnotatorStateImpl;
 import de.tudarmstadt.ukp.inception.preferences.PreferencesService;
@@ -77,7 +79,8 @@ public class ReferenceDocumentSidebar
 
     private final ViewportSyncLink scrollSyncLink;
 
-    private boolean scrollSyncEnabled = false;
+    /** Whether the user wants the sidebar to scroll together with the document editor. */
+    private final PausableSwitch<Obstacle> scrollSync;
 
     private WebMarkupContainer scrollSyncGroup;
 
@@ -102,8 +105,6 @@ public class ReferenceDocumentSidebar
             catch (IOException e) {
                 throw new RuntimeException("Unable to load annotation preferences", e);
             }
-
-            scrollSyncEnabled = loadSidebarState().isScrollSyncEnabled();
         }
 
         state.setDocument(aContext.activeEditor() //
@@ -115,6 +116,11 @@ public class ReferenceDocumentSidebar
         add(documentEditorPanel);
 
         scrollSyncLink = new ViewportSyncLink(() -> documentEditorPanel, this::getSyncPartner);
+        scrollSync = new PausableSwitch<>(scrollSyncLink::getObstacle);
+        if (project != null && loadSidebarState().isScrollSyncEnabled()) {
+            // Restored even if the editors cannot be synchronized right now: it is then paused
+            scrollSync.enable();
+        }
 
         openDialog = new OpenDocumentDialog("openDialog",
                 stateModel.map(AnnotatorState::getProject),
@@ -162,10 +168,10 @@ public class ReferenceDocumentSidebar
 
     private void actionToggleScrollSync(AjaxRequestTarget aTarget)
     {
-        scrollSyncEnabled = !scrollSyncEnabled;
+        scrollSync.toggle();
 
         var sidebarState = loadSidebarState();
-        sidebarState.setScrollSyncEnabled(scrollSyncEnabled);
+        sidebarState.setScrollSyncEnabled(scrollSync.isEnabled());
         saveSidebarState(sidebarState);
 
         aTarget.add(scrollSyncGroup);
@@ -174,12 +180,7 @@ public class ReferenceDocumentSidebar
 
     private Optional<String> scrollSyncScript()
     {
-        return scrollSyncLink.linkScript(scrollSyncEnabled);
-    }
-
-    private boolean isScrollSyncPossible()
-    {
-        return scrollSyncLink.isPossible();
+        return scrollSyncLink.linkScript(scrollSync.isEnabled());
     }
 
     /**
@@ -204,9 +205,28 @@ public class ReferenceDocumentSidebar
         return editors.size() == 1 ? editors.get(0) : null;
     }
 
+    /**
+     * What scroll sync does if nothing stands in its way. Otherwise why it cannot be switched on,
+     * or, if it is on already, that it is paused for that reason and can still be switched off.
+     */
     private String getScrollSyncTooltip()
     {
-        return scrollSyncLink.getObstacle().map(obstacle -> switch (obstacle) {
+        var obstacle = scrollSync.getObstacle();
+        if (obstacle.isEmpty()) {
+            return "Synchronize scrolling with the document editor";
+        }
+
+        var reason = getScrollSyncObstacleDescription(obstacle.get());
+        if (!scrollSync.isEnabled()) {
+            return reason;
+        }
+
+        return "Paused: " + reason + ". Click to stop synchronizing.";
+    }
+
+    private String getScrollSyncObstacleDescription(Obstacle aObstacle)
+    {
+        return switch (aObstacle) {
         case NO_EDITOR, NO_DOCUMENT -> "Scroll synchronization is unavailable while the document "
                 + "editor shows no document";
         case MIXED_PAGING -> "Scroll synchronization is unavailable while only one of the two "
@@ -215,7 +235,7 @@ public class ReferenceDocumentSidebar
                 + "page differently";
         case DIFFERENT_DOCUMENTS -> "Scroll synchronization is unavailable while a paged editor "
                 + "shows a different document than the document editor";
-        }).orElse("Synchronize scrolling with the document editor");
+        };
     }
 
     @Override
@@ -230,7 +250,7 @@ public class ReferenceDocumentSidebar
     @OnEvent
     public void onAnnotatorViewportChanged(AnnotatorViewportChangedEvent aEvent)
     {
-        if (!scrollSyncEnabled || !isScrollSyncEligible()) {
+        if (!scrollSync.isEnabled() || !isScrollSyncEligible()) {
             return;
         }
 
@@ -335,8 +355,8 @@ public class ReferenceDocumentSidebar
             var scrollSyncToggle = new LambdaAjaxLink("toggleScrollSync",
                     ReferenceDocumentSidebar.this::actionToggleScrollSync);
             scrollSyncToggle.add(new Icon("toggleScrollSyncIcon",
-                    LambdaModel.of(() -> scrollSyncEnabled ? link_s : link_slash_s)));
-            scrollSyncToggle.add(enabledWhen(ReferenceDocumentSidebar.this::isScrollSyncPossible));
+                    LambdaModel.of(() -> scrollSync.isEnabled() ? link_s : link_slash_s)));
+            scrollSyncToggle.add(enabledWhen(() -> scrollSync.isToggleable()));
             scrollSyncGroup.add(scrollSyncToggle);
 
             return fragment;

@@ -48,6 +48,7 @@ import de.tudarmstadt.ukp.clarin.webanno.model.Project;
 import de.tudarmstadt.ukp.clarin.webanno.model.SourceDocument;
 import de.tudarmstadt.ukp.clarin.webanno.ui.annotation.AnnotationPageBase2;
 import de.tudarmstadt.ukp.clarin.webanno.ui.annotation.editor.DocumentEditorPanel;
+import de.tudarmstadt.ukp.clarin.webanno.ui.annotation.editor.PausableSwitch;
 import de.tudarmstadt.ukp.clarin.webanno.ui.annotation.editor.ViewportSyncLink;
 import de.tudarmstadt.ukp.clarin.webanno.ui.annotation.editor.ViewportSyncLink.Obstacle;
 import de.tudarmstadt.ukp.clarin.webanno.ui.annotation.url.EditorUrlParameterStrategy;
@@ -95,12 +96,9 @@ public class SplitEditorWorkspace
     private final ViewportSyncLink scrollSyncLink = new ViewportSyncLink(() -> getScrollSyncPane(0),
             () -> getScrollSyncPane(1));
 
-    /**
-     * Whether the user wants the two panes to scroll together. Starts off and is not saved: whether
-     * it makes sense depends on what the two panes happen to show. Kept when a pane changes
-     * document - sync then only pauses while the new pair cannot be synchronized.
-     */
-    private boolean scrollSyncEnabled = false;
+    /** Whether the user wants the two panes to scroll together. */
+    private final PausableSwitch<Obstacle> scrollSync = new PausableSwitch<>(
+            () -> scrollSyncLink.getObstacle());
 
     /**
      * @param aUrlParameterStrategy
@@ -598,23 +596,18 @@ public class SplitEditorWorkspace
         return getEditorPanels().size() == 2;
     }
 
-    public boolean isScrollSyncEnabled()
-    {
-        return scrollSyncEnabled;
-    }
-
     /**
-     * @return why the two panes cannot be synchronized right now, or {@link Optional#empty()} if
-     *         they can.
+     * @return whether the user wants the two panes to scroll together, and why they cannot right
+     *         now.
      */
-    public Optional<Obstacle> getScrollSyncObstacle()
+    public PausableSwitch<Obstacle> getScrollSync()
     {
-        return scrollSyncLink.getObstacle();
+        return scrollSync;
     }
 
     public void actionToggleScrollSync(AjaxRequestTarget aTarget)
     {
-        scrollSyncEnabled = !scrollSyncEnabled;
+        scrollSync.toggle();
 
         refreshScrollSync(aTarget);
     }
@@ -637,7 +630,7 @@ public class SplitEditorWorkspace
             return;
         }
 
-        scrollSyncLink.linkScript(scrollSyncEnabled).ifPresent(aTarget::appendJavaScript);
+        scrollSyncLink.linkScript(scrollSync.isEnabled()).ifPresent(aTarget::appendJavaScript);
     }
 
     @Override
@@ -645,14 +638,14 @@ public class SplitEditorWorkspace
     {
         super.renderHead(aResponse);
 
-        scrollSyncLink.linkScript(scrollSyncEnabled)
+        scrollSyncLink.linkScript(scrollSync.isEnabled())
                 .ifPresent(script -> aResponse.render(OnDomReadyHeaderItem.forScript(script)));
     }
 
     @OnEvent
     public void onAnnotatorViewportChanged(AnnotatorViewportChangedEvent aEvent)
     {
-        if (!scrollSyncEnabled) {
+        if (!scrollSync.isEnabled()) {
             return;
         }
 
